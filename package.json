@@ -1,0 +1,40 @@
+{
+  "name": "omniseo-os",
+  "version": "1.0.0",
+  "description": "Universal AI-Powered SEO Operating System - Unified Intelligence Engine",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js",
+    "test": "node test/test_suite.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abhijeetyadav-Fab-Dev/Universal-AI-SEO-Operating-System.git"
+  },
+  "keywords": [
+    "seo",
+    "ai-seo",
+    "crawler",
+    "geo",
+    "aeo",
+    "core-web-vitals",
+    "lighthouse",
+    "pagespeed",
+    "operating-system"
+  ],
+  "author": "Abhijeet Yadav",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/abhijeetyadav-Fab-Dev/Universal-AI-SEO-Operating-System/issues"
+  },
+  "homepage": "https://github.com/abhijeetyadav-Fab-Dev/Universal-AI-SEO-Operating-System#readme",
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "node-fetch": "^3.3.2"
+  }
+}
