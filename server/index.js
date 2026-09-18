@@ -27,15 +27,67 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// ─── ENTERPRISE SECURITY HEADERS MIDDLEWARE ───────────────
+// ─── ENTERPRISE SECURITY HEADERS & CSP MIDDLEWARE ────────
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'self'; base-uri 'self'; form-action 'self';");
   next();
 });
+
+// ─── IN-MEMORY SLIDING-WINDOW RATE LIMITER ─────────────────
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1-minute window
+const MAX_GENERAL_API_PER_MIN = 120;
+const MAX_CRAWL_API_PER_MIN = 30;
+
+function rateLimiter(req, res, next) {
+  if (!req.path.startsWith('/api/')) return next();
+  
+  const clientIp = (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.socket?.remoteAddress || '127.0.0.1';
+  const now = Date.now();
+  const isCrawlEndpoint = req.path === '/api/audit' || req.path === '/api/scrape';
+  const limit = isCrawlEndpoint ? MAX_CRAWL_API_PER_MIN : MAX_GENERAL_API_PER_MIN;
+
+  let clientRecord = rateLimitMap.get(clientIp);
+  if (!clientRecord) {
+    clientRecord = { timestamps: [] };
+    rateLimitMap.set(clientIp, clientRecord);
+  }
+
+  // Purge expired timestamps in window
+  clientRecord.timestamps = clientRecord.timestamps.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+
+  if (clientRecord.timestamps.length >= limit) {
+    const oldest = clientRecord.timestamps[0];
+    const retryAfterSec = Math.max(1, Math.ceil((RATE_LIMIT_WINDOW_MS - (now - oldest)) / 1000));
+    res.setHeader('Retry-After', retryAfterSec);
+    return res.status(429).json({
+      error: 'Too Many Requests',
+      message: `Rate limit exceeded (${limit} requests/min). Please slow down and try again.`,
+      retryAfter: retryAfterSec
+    });
+  }
+
+  clientRecord.timestamps.push(now);
+  next();
+}
+
+// Stale entry garbage collector (every 5 min)
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of rateLimitMap.entries()) {
+    record.timestamps = record.timestamps.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+    if (record.timestamps.length === 0) {
+      rateLimitMap.delete(ip);
+    }
+  }
+}, 5 * 60 * 1000).unref();
+
+app.use(rateLimiter);
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -60,6 +112,16 @@ app.get('/sitemap.xml', (req, res) => {
 app.get('/llms.txt', (req, res) => {
   res.type('text/plain');
   res.sendFile(path.join(__dirname, '../public/llms.txt'));
+});
+
+app.get(['/.well-known/security.txt', '/security.txt'], (req, res) => {
+  res.type('text/plain');
+  res.send(`Contact: mailto:security@universal-ai-seo-operating-system.onrender.com
+Expires: 2027-12-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://universal-ai-seo-operating-system.onrender.com/.well-known/security.txt
+Policy: https://github.com/abhijeetyadav-Fab-Dev/Universal-AI-SEO-Operating-System/security/policy
+`);
 });
 
 // Clean Knowledge Base & Blog URLs

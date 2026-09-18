@@ -1,16 +1,16 @@
 # Graph Report - OmniSEO-OS  (2026-09-18)
 
 ## Corpus Check
-- 24 files · ~51,200 words
+- 25 files · ~53,447 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 118 nodes · 179 edges · 16 communities
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
+- 125 nodes · 185 edges · 17 communities
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 1 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `44969476`
+- Built from commit: `3f1933c4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -51,11 +51,11 @@
 ## Import Cycles
 - None detected.
 
-## Communities (16 total, 0 thin omitted)
+## Communities (17 total, 0 thin omitted)
 
 ### Community 0 - "index.js"
-Cohesion: 0.22
-Nodes (21): auditHeadAndEeat(), analyzeCompetitorGap(), analyzeDomainOverview(), classifyIntent(), cpcForIntentINR(), crawlMultiPageSite(), diffForKeyword(), extractSavedKeywords() (+13 more)
+Cohesion: 0.19
+Nodes (22): auditHeadAndEeat(), analyzeCompetitorGap(), analyzeDomainOverview(), classifyIntent(), cpcForIntentINR(), crawlMultiPageSite(), diffForKeyword(), extractSavedKeywords() (+14 more)
 
 ### Community 1 - "orchestrator.js"
 Cohesion: 0.26
@@ -86,17 +86,17 @@ Cohesion: 0.83
 Nodes (3): make_request(), run_tests(), scan_for_markers()
 
 ## Knowledge Gaps
-- **43 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+38 more)
+- **44 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+39 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `dependencies` connect `dependencies` to `package.json`?**
-  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+  _High betweenness centrality (0.042) - this node is a cross-community bridge._
 - **Why does `keywords` connect `keywords` to `package.json`?**
-  _High betweenness centrality (0.044) - this node is a cross-community bridge._
+  _High betweenness centrality (0.039) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
-  _43 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _44 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `package.json` be split into smaller, more focused modules?**
   _Cohesion score 0.1111111111111111 - nodes in this community are weakly interconnected._

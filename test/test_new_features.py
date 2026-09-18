@@ -23,6 +23,16 @@ async def main():
         print(f"  ✅ Status Summary: '{summary_text}'")
         assert "14/14 Engines Active" in summary_text, f"Expected 14/14 Engines Active, got: {summary_text}"
         
+        # Verify Data Provenance Modal
+        print("2b. Verifying Data Provenance Modal...")
+        await page.click("button:has-text('Data Provenance')")
+        await page.wait_for_selector("#provenanceInfoModal.active", timeout=5000)
+        prov_title = await page.inner_text("#provenanceInfoModal h3")
+        assert "Data Provenance" in prov_title, f"Expected Data Provenance title, got: {prov_title}"
+        print(f"  ✅ Data Provenance Modal verified: '{prov_title}'")
+        await page.click("#provenanceInfoModal button.modal-close-btn")
+        await page.wait_for_timeout(300)
+
         nav_tags = await page.query_selector_all(".nav-tag")
         print(f"  ✅ Detected {len(nav_tags)} active engine badges in header:")
         tag_texts = [await t.inner_text() for t in nav_tags]
@@ -31,8 +41,9 @@ async def main():
 
         # Execute Unified Audit
         print("3. Executing Unified Audit for Yatradham Kumbh Mela...")
+        await page.fill("#queryInput", "Audit https://yatradham.org/kumbh-mela-nashik/ and inspect images, missing alt text, Core Web Vitals, and technical signals")
         await page.click("#btnExecute")
-        await page.wait_for_selector("#resultsSection", state="visible", timeout=15000)
+        await page.wait_for_selector("#resultsSection", state="visible", timeout=20000)
         await page.wait_for_timeout(2000)
 
         # 4. Verify AI Bot Firewall Matrix & XML Sitemap Explorer (in SERP tab)
@@ -145,6 +156,7 @@ async def main():
 
         # Run Markdown scrape
         print("  👉 Executing live LLM Markdown Extraction...")
+        await page.fill("#scrapeUrlInput", "https://yatradham.org/kumbh-mela-nashik/")
         await page.click("button:has-text('Scrape Now')")
         await page.wait_for_timeout(2500)
 

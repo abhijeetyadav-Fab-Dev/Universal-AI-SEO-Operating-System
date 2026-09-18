@@ -14,5 +14,6 @@
   "12": "test_audit_fixes.py",
   "13": "test_new_features.py",
   "14": "verify_header_ui.py",
-  "15": "verify_sidebar_layout.py"
+  "15": "verify_sidebar_layout.py",
+  "16": "test_security_baseline.py"
 }
