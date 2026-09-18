@@ -27,9 +27,54 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// ─── ENTERPRISE SECURITY HEADERS MIDDLEWARE ───────────────
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, '../public')));
+
+// Static Asset Serving with 1-day Browser Caching
+app.use(express.static(path.join(__dirname, '../public'), {
+  maxAge: '1d',
+  etag: true
+}));
+
+// ─── DEDICATED SEO & DISCOVERY ROUTES ─────────────────────
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.sendFile(path.join(__dirname, '../public/robots.txt'));
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  res.type('application/xml');
+  res.sendFile(path.join(__dirname, '../public/sitemap.xml'));
+});
+
+app.get('/llms.txt', (req, res) => {
+  res.type('text/plain');
+  res.sendFile(path.join(__dirname, '../public/llms.txt'));
+});
+
+// Clean Knowledge Base & Blog URLs
+app.get(['/blog', '/blog/'], (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/blog/index.html'));
+});
+
+app.get('/blog/:slug', (req, res) => {
+  const filePath = path.join(__dirname, `../public/blog/${req.params.slug}.html`);
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      res.status(404).sendFile(path.join(__dirname, '../public/404.html'));
+    }
+  });
+});
 
 // ─── 1. CORE ORCHESTRATOR & PLANNER ENDPOINTS ────────────
 app.post('/api/plan', (req, res) => {
@@ -677,6 +722,11 @@ app.get('/api/health', (req, res) => {
       'Robots & Sitemap Prober (/api/robots-sitemap)'
     ]
   });
+});
+
+// ─── 404 CATCH-ALL HANDLER ───────────────────────────────
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(__dirname, '../public/404.html'));
 });
 
 app.listen(PORT, () => {

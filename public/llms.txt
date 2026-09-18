@@ -1,0 +1,28 @@
+# OmniSEO OS — Universal AI-Powered SEO Operating System
+> Autonomous AI SEO execution platform unifying 14 enterprise architectures: Ahrefs, Semrush, Screaming Frog, Google Search Console, Google PageSpeed Insights, Lighthouse, SERP intelligence, and GEO/AEO.
+
+- Website: https://universal-ai-seo-operating-system.onrender.com/
+- Repository: https://github.com/abhijeetyadav-Fab-Dev/Universal-AI-SEO-Operating-System
+- Type: Autonomous SEO Agent & Command Platform
+- Author: Abhijeet Yadav
+
+## Core Architecture Engines
+1. **Natural-Language Command Engine & Planner** (`/api/plan`): Translates plain English user queries into multi-step execution plans with cost credits, latency forecasts, and required adapter chains.
+2. **Deep Streaming HTML & DOM Crawler** (`/api/crawler/deep-crawl`): Multi-page asynchronous crawler extracting status codes, latency, title, meta descriptions, canonical URLs, robots directives, heading structure, and missing alt images.
+3. **Core Web Vitals & PageSpeed Adapter**: Google PageSpeed Insights v5 REST integration with mobile/desktop field metrics (LCP, INP, CLS, TBT, FCP) and automated code optimization opportunities.
+4. **SERP & Keyword Intelligence Adapter**: Search volume, CPC in INR (`₹`), intent classification (Informational, Commercial, Transactional), and automated keyword cannibalization detection.
+5. **Generative Engine Optimization (GEO / AEO)**: Real-time visibility and citation prominence across AI search models (Perplexity AI, ChatGPT Search, Gemini Grounding).
+6. **Competitor Keyword Gap Matrix**: Real-time domain overlap analysis, shared keywords, and untapped keyword opportunities.
+7. **Canonical Prioritization Engine**: Action scoring matrix: (Impact * Opportunity * Confidence) / Effort.
+
+## API Endpoints
+- `POST /api/plan`: Ingests natural-language SEO questions and outputs structured execution plans.
+- `POST /api/execute`: Executes plan with orchestration across all connected engines.
+- `POST /api/crawler/deep-crawl`: Traverses internal site links up to 20 pages with real-time issue classification.
+- `POST /api/competitor/gap`: Compares a primary domain against multiple competitors for domain rating and keyword gaps.
+- `GET /api/health`: Instant health-check and latency heartbeat.
+
+## Guides & Documentation
+- [GEO vs AEO: How to Optimize for AI Search Engines](https://universal-ai-seo-operating-system.onrender.com/blog/geo-vs-aeo-optimize-for-ai-search)
+- [Keyword Cannibalization: How to Find and Fix Competing URLs](https://universal-ai-seo-operating-system.onrender.com/blog/keyword-cannibalization-find-and-fix)
+- [Core Web Vitals Guide: LCP, CLS, and INP Explained](https://universal-ai-seo-operating-system.onrender.com/blog/core-web-vitals-lcp-cls-inp-explained)

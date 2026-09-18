@@ -316,18 +316,6 @@
       "norm_label": "executeorchestratedplan()"
     },
     {
-      "label": "test_endpoint()",
-      "file_type": "code",
-      "source_file": "test/test_seo_deploy_suite.py",
-      "source_location": "L14",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "test_test_seo_deploy_suite_test_endpoint",
-      "community": 10,
-      "community_name": "test_seo_deploy_suite.py",
-      "norm_label": "test_endpoint()"
-    },
-    {
       "label": "main()",
       "file_type": "code",
       "source_file": "test/header_screenshot.py",
@@ -398,18 +386,6 @@
       "community": 8,
       "community_name": "e2e_verify.py",
       "norm_label": "main()"
-    },
-    {
-      "label": "generate()",
-      "file_type": "code",
-      "source_file": "test/generate_og_image.py",
-      "source_location": "L204",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "test_generate_og_image_generate",
-      "community": 9,
-      "community_name": "generate_og_image.py",
-      "norm_label": "generate()"
     },
     {
       "label": "head_eeat.js",
@@ -586,17 +562,6 @@
       "community": 1,
       "community_name": "orchestrator.js",
       "norm_label": "orchestrator.js"
-    },
-    {
-      "label": "test_seo_deploy_suite.py",
-      "file_type": "code",
-      "source_file": "test/test_seo_deploy_suite.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "test_test_seo_deploy_suite",
-      "community": 10,
-      "community_name": "test_seo_deploy_suite.py",
-      "norm_label": "test_seo_deploy_suite.py"
     },
     {
       "label": "header_screenshot.py",
@@ -1257,17 +1222,6 @@
       "community": 8,
       "community_name": "e2e_verify.py",
       "norm_label": "e2e_verify.py"
-    },
-    {
-      "label": "generate_og_image.py",
-      "file_type": "code",
-      "source_file": "test/generate_og_image.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "test_generate_og_image",
-      "community": 9,
-      "community_name": "generate_og_image.py",
-      "norm_label": "generate_og_image.py"
     }
   ],
   "links": [
@@ -3210,17 +3164,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "test/generate_og_image.py",
-      "source_location": "L204",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "test_generate_og_image",
-      "target": "test_generate_og_image_generate",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "test/header_screenshot.py",
       "source_location": "L8",
       "weight": 1.0,
@@ -3238,17 +3181,6 @@
       "_origin": "ast",
       "source": "test_test_new_features",
       "target": "test_test_new_features_main",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "test/test_seo_deploy_suite.py",
-      "source_location": "L14",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "test_test_seo_deploy_suite",
-      "target": "test_test_seo_deploy_suite_test_endpoint",
       "confidence_score": 1.0
     },
     {
@@ -3285,6 +3217,5 @@
       "confidence_score": 1.0
     }
   ],
-  "hyperedges": [],
-  "built_at_commit": "10b7927dd1b99fb2c51f1d1b11eef568abda1b38"
+  "hyperedges": []
 }

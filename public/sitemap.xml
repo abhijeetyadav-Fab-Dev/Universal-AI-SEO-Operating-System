@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage & Core Command Center -->
+  <url>
+    <loc>https://universal-ai-seo-operating-system.onrender.com/</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Knowledge Base & Guides Hub -->
+  <url>
+    <loc>https://universal-ai-seo-operating-system.onrender.com/blog/</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Guide 1: GEO vs AEO Optimization -->
+  <url>
+    <loc>https://universal-ai-seo-operating-system.onrender.com/blog/geo-vs-aeo-optimize-for-ai-search</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Guide 2: Keyword Cannibalization -->
+  <url>
+    <loc>https://universal-ai-seo-operating-system.onrender.com/blog/keyword-cannibalization-find-and-fix</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Guide 3: Core Web Vitals (LCP, CLS, INP) -->
+  <url>
+    <loc>https://universal-ai-seo-operating-system.onrender.com/blog/core-web-vitals-lcp-cls-inp-explained</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

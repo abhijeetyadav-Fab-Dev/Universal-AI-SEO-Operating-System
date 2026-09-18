@@ -73,10 +73,13 @@ npm install
 
 ### 2. Run Verification Test Suite
 ```bash
-# Automated regression test suite (11 unit tests)
+# Core automated regression test suite (11 unit tests)
 node test/test_suite.js
 
-# Deep crawler & gap analysis integration tests
+# Production SEO deployment test suite (robots, sitemap, llms.txt, headers, 404, blog routes)
+python test/test_seo_deploy_suite.py
+
+# Deep crawler & competitor gap integration tests
 python test/test_new_features.py
 ```
 
@@ -85,6 +88,27 @@ python test/test_new_features.py
 node server/index.js
 ```
 Open **[http://localhost:4000](http://localhost:4000)** in your browser.
+
+---
+
+## 📚 Technical Knowledge Base & Indexable Guides
+
+OmniSEO-OS includes crawlable, static-rendered technical deep-dives to drive topical authority:
+- **Knowledge Base Hub** (`/blog`): Central repository of technical SEO guides.
+- **[GEO vs AEO Guide](/blog/geo-vs-aeo-optimize-for-ai-search)**: Retrieval-augmented generation algorithms and citation grounding for Perplexity, ChatGPT Search, and Gemini.
+- **[Keyword Cannibalization Guide](/blog/keyword-cannibalization-find-and-fix)**: Detecting intent conflicts in Google Search Console and implementing cross-page canonicals or 301 server merges.
+- **[Core Web Vitals Guide](/blog/core-web-vitals-lcp-cls-inp-explained)**: Engineering playbook for sub-2.5s LCP, zero CLS, and passing the new INP (&le;200ms) threshold.
+
+---
+
+## 🤖 Modern AI Discovery & Search Architecture
+
+- **`robots.txt`**: Explicit crawl permissions welcoming modern AI search engines (`GPTBot`, `OAI-SearchBot`, `ClaudeBot`, `PerplexityBot`, `Google-Extended`, `Applebot-Extended`).
+- **`sitemap.xml`**: Validated sitemap protocol covering the core application and all knowledge base hubs.
+- **`llms.txt`**: Standardized AI ingestion document detailing API endpoints, supported architectures, and system capabilities.
+- **Open Graph & Twitter Cards**: High-definition 1200x630 social preview card (`/og-image.png`) with Schema.org `SoftwareApplication` JSON-LD markup.
+- **Enterprise Security Middleware**: Automatic injection of `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, and `Referrer-Policy: strict-origin-when-cross-origin`.
+- **Static Caching**: 1-day HTTP cache headers on all public static assets to optimize TTFB and eliminate redundant bandwidth.
 
 ---
 
@@ -100,3 +124,4 @@ OmniSEO-OS is cloud-ready and includes native Render configuration (`render.yaml
 
 ## 📄 License
 MIT © Abhijeet Yadav
+

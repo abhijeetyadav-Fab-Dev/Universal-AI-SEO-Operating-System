@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniSEO Knowledge Base — Enterprise SEO & AI Search Architecture Guides</title>
+  <meta name="description" content="In-depth technical guides on Generative Engine Optimization (GEO), Answer Engine Optimization (AEO), Keyword Cannibalization, and Core Web Vitals (INP, LCP, CLS).">
+  <meta name="keywords" content="SEO Guides, GEO vs AEO, Generative Engine Optimization, Keyword Cannibalization Fix, Core Web Vitals INP LCP, Technical SEO Hub">
+  <meta name="author" content="Abhijeet Yadav">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://universal-ai-seo-operating-system.onrender.com/blog/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://universal-ai-seo-operating-system.onrender.com/blog/">
+  <meta property="og:title" content="OmniSEO Knowledge Base — Enterprise SEO & AI Search Architecture Guides">
+  <meta property="og:description" content="Actionable technical guides on GEO, AEO, Keyword Cannibalization, and Core Web Vitals written for engineers and modern growth teams.">
+  <meta property="og:image" content="https://universal-ai-seo-operating-system.onrender.com/og-image.png">
+  <meta property="og:site_name" content="OmniSEO OS">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="OmniSEO Knowledge Base — Enterprise SEO & AI Search Guides">
+  <meta name="twitter:description" content="Actionable technical guides on GEO, AEO, Keyword Cannibalization, and Core Web Vitals.">
+  <meta name="twitter:image" content="https://universal-ai-seo-operating-system.onrender.com/og-image.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(22, 29, 47, 0.7);
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.25);
+      --emerald: #10b981;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: radial-gradient(circle at 50% 0%, #172554 0%, var(--bg) 65%); color: var(--text); min-height: 100vh; line-height: 1.6; }
+    header { border-bottom: 1px solid var(--border); backdrop-filter: blur(14px); background: rgba(9, 13, 22, 0.92); position: sticky; top: 0; z-index: 50; }
+    .header-container { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.2rem; text-decoration: none; color: #fff; }
+    .header-nav { display: flex; align-items: center; gap: 12px; }
+    .nav-btn { background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); color: #93c5fd; padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: 0.2s; }
+    .nav-btn:hover { background: var(--accent); color: #fff; box-shadow: 0 0 12px var(--accent-glow); }
+    .container { max-width: 1200px; margin: 40px auto; padding: 0 24px; }
+    .hero { text-align: center; margin-bottom: 48px; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #93c5fd; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .hero h1 { font-size: 2.75rem; font-weight: 800; margin-bottom: 14px; background: linear-gradient(180deg, #fff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: var(--text-muted); max-width: 680px; margin: 0 auto; font-size: 1.05rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.25s ease; text-decoration: none; color: inherit; }
+    .card:hover { transform: translateY(-3px); border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 16px 36px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow); }
+    .card-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 12px; display: inline-block; }
+    .card h2 { font-size: 1.35rem; font-weight: 700; color: #fff; margin-bottom: 12px; line-height: 1.35; }
+    .card p { font-size: 0.92rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 20px; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 14px; font-size: 0.8rem; color: #64748b; }
+    .read-more { color: #60a5fa; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+    footer { text-align: center; padding: 40px 24px; color: #64748b; font-size: 0.85rem; border-top: 1px solid var(--border); margin-top: 80px; }
+  </style>
+
+  <!-- Schema.org CollectionPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "OmniSEO OS Knowledge Base",
+    "description": "Technical SEO and AI Search Optimization engineering guides.",
+    "url": "https://universal-ai-seo-operating-system.onrender.com/blog/",
+    "publisher": {
+      "@type": "Organization",
+      "name": "OmniSEO OS"
+    }
+  }
+  </script>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <a href="/" class="brand">
+        <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="8" fill="#2563eb"/>
+          <path d="M16 6.5L25 11.5V20.5L16 25.5L7 20.5V11.5L16 6.5Z" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="16" cy="16" r="4" fill="#38bdf8"/>
+        </svg>
+        <span>OmniSEO <span style="color:#38bdf8;">OS</span></span>
+      </a>
+      <div class="header-nav">
+        <a href="/" class="nav-btn">⚡ Launch Command Center</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="hero">
+      <div class="hero-badge">📚 Technical Guides & Research</div>
+      <h1>OmniSEO Knowledge Base</h1>
+      <p>Deep-dive architectural blueprints on AI search algorithms, generative engine visibility, crawl efficiency, and Core Web Vitals.</p>
+    </div>
+
+    <div class="grid">
+      <!-- Article 1 -->
+      <a href="/blog/geo-vs-aeo-optimize-for-ai-search" class="card">
+        <div>
+          <span class="card-tag">AI Search Engine Optimization</span>
+          <h2>GEO vs AEO: How to Optimize for Generative Engines & Perplexity</h2>
+          <p>Learn the fundamental differences between Generative Engine Optimization (GEO) and Answer Engine Optimization (AEO), citation grounding algorithms, and how AI agents extract structured answers.</p>
+        </div>
+        <div class="card-footer">
+          <span>7 min read · Sep 2026</span>
+          <span class="read-more">Read Guide →</span>
+        </div>
+      </a>
+
+      <!-- Article 2 -->
+      <a href="/blog/keyword-cannibalization-find-and-fix" class="card">
+        <div>
+          <span class="card-tag">SERP Architecture</span>
+          <h2>Keyword Cannibalization: How to Find and Resolve Competing Internal URLs</h2>
+          <p>Discover how conflicting internal URLs alternate in Google rankings. Step-by-step resolution strategies with cross-page canonical tags, 301 redirects, and search intent de-duplication.</p>
+        </div>
+        <div class="card-footer">
+          <span>8 min read · Sep 2026</span>
+          <span class="read-more">Read Guide →</span>
+        </div>
+      </a>
+
+      <!-- Article 3 -->
+      <a href="/blog/core-web-vitals-lcp-cls-inp-explained" class="card">
+        <div>
+          <span class="card-tag">Performance Engineering</span>
+          <h2>Core Web Vitals Guide: Optimizing LCP, CLS, and the New INP Metric</h2>
+          <p>Actionable code engineering techniques to bring Largest Contentful Paint under 2.5s, achieve zero layout shifts (CLS), and conquer Interaction to Next Paint (INP) to pass Google audits.</p>
+        </div>
+        <div class="card-footer">
+          <span>10 min read · Sep 2026</span>
+          <span class="read-more">Read Guide →</span>
+        </div>
+      </a>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 OmniSEO OS. Built with precision for modern engineering and SEO teams. <a href="/" style="color:#60a5fa; text-decoration:none;">Open Command Center ↗</a></p>
+  </footer>
+</body>
+</html>
