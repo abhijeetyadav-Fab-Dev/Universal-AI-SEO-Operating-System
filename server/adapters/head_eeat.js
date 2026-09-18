@@ -152,34 +152,41 @@ export async function auditHeadAndEeat(url) {
   let eeatScore = 0;
 
   // Experience: First-hand proof, user reviews, visual amenities
-  const hasReviews = html.includes('review') || html.includes('rating') || $('[class*="review"], [class*="rating"]').length > 0;
-  const hasBookingAmenities = html.includes('dharamshala') || html.includes('room') || html.includes('bath') || html.includes('check-in');
-  const expScore = (hasReviews ? 12 : 5) + (hasBookingAmenities ? 13 : 5);
+  const isPilgrim = url.includes('yatradham') || /kumbh|yatra|temple|dharamshala|ashram/i.test(html);
+  const hasReviews = html.includes('review') || html.includes('rating') || html.includes('testimonial') || $('[class*="review"], [class*="rating"]').length > 0;
+  const hasProductOrServiceProof = isPilgrim
+    ? (html.includes('dharamshala') || html.includes('room') || html.includes('bath') || html.includes('check-in'))
+    : (html.includes('feature') || html.includes('pricing') || html.includes('documentation') || html.includes('demo'));
+  const expScore = (hasReviews ? 12 : 5) + (hasProductOrServiceProof ? 13 : 5);
   eeatScore += expScore;
   eeatChecks.push({
     pillar: 'EXPERIENCE',
-    title: 'First-Hand Pilgrim & User Experience Proof',
+    title: isPilgrim ? 'First-Hand Pilgrim & User Experience Proof' : 'First-Hand User Experience & Social Proof',
     score: `${expScore}/25`,
     status: expScore >= 20 ? 'STRONG' : 'MODERATE',
-    evidence: hasReviews ? 'Verified guest reviews, room ratings, and visual booking criteria detected.' : 'Limited review evidence detected on page.'
+    evidence: hasReviews
+      ? (isPilgrim ? 'Verified guest reviews, room ratings, and visual booking criteria detected.' : 'Verified user reviews, ratings, and implementation proof detected.')
+      : 'Limited review or testimonial evidence detected on page.'
   });
 
-  // Expertise: Author, Dates, Specific temple/muhurat schedule
-  const hasDates = /2026|shahi snan|muhurat|astronomical|kumbh/i.test(html);
+  // Expertise: Author, Dates, Specific technical or topic accuracy
+  const hasDates = /202[4-9]|version|release|changelog|schedule|updated/i.test(html);
   const hasAuthorOrContact = $('[class*="author"], [rel="author"], a[href*="contact"], a[href*="about"]').length > 0;
   const expertScore = (hasDates ? 13 : 5) + (hasAuthorOrContact ? 12 : 5);
   eeatScore += expertScore;
   eeatChecks.push({
     pillar: 'EXPERTISE',
-    title: 'Domain Expertise & Up-to-Date Itinerary Accuracy',
+    title: isPilgrim ? 'Domain Expertise & Up-to-Date Itinerary Accuracy' : 'Domain Expertise & Content Freshness',
     score: `${expertScore}/25`,
     status: expertScore >= 20 ? 'STRONG' : 'MODERATE',
-    evidence: hasDates ? 'Exhaustive 2026 festival calendar, Shahi Snan dates, and Trimbakeshwar schedules documented.' : 'Generic descriptions without exact dates.'
+    evidence: hasDates
+      ? (isPilgrim ? 'Verified event dates, schedules, and local itinerary details documented.' : 'Fresh publication dates, version updates, and domain expertise documented.')
+      : 'Generic descriptions without exact publication or update dates.'
   });
 
   // Authoritativeness: Organization schema, Press citations, External links
-  const hasOrgSchema = html.includes('"Organization"') || html.includes('"FAQPage"');
-  const hasExternalPress = html.includes('indiatimes') || html.includes('tourism') || html.includes('wikipedia');
+  const hasOrgSchema = html.includes('"Organization"') || html.includes('"FAQPage"') || html.includes('"WebSite"');
+  const hasExternalPress = html.includes('wikipedia') || html.includes('news') || html.includes('reuters') || html.includes('forbes');
   const authScore = (hasOrgSchema ? 13 : 6) + (hasExternalPress ? 12 : 6);
   eeatScore += authScore;
   eeatChecks.push({
@@ -187,21 +194,21 @@ export async function auditHeadAndEeat(url) {
     title: 'Topical Authority & Institutional Citations',
     score: `${authScore}/25`,
     status: authScore >= 20 ? 'STRONG' : 'MODERATE',
-    evidence: hasOrgSchema ? 'Machine-readable Schema.org Organization and FAQ entities registered.' : 'Missing structured entity grounding.'
+    evidence: hasOrgSchema ? 'Machine-readable Schema.org Organization and structured entities registered.' : 'Missing structured entity grounding.'
   });
 
   // Trustworthiness: HTTPS, Refund policy, Privacy policy, Phone/Email
   const isHttps = url.startsWith('https');
-  const hasTrustPolicies = html.includes('terms') || html.includes('privacy') || html.includes('refund') || html.includes('cancellation');
-  const hasContact = html.includes('phone') || html.includes('+91') || html.includes('support') || html.includes('help');
+  const hasTrustPolicies = html.includes('terms') || html.includes('privacy') || html.includes('refund') || html.includes('license') || html.includes('security');
+  const hasContact = html.includes('contact') || html.includes('email') || html.includes('support') || html.includes('help');
   const trustScore = (isHttps ? 10 : 0) + (hasTrustPolicies ? 8 : 4) + (hasContact ? 7 : 3);
   eeatScore += trustScore;
   eeatChecks.push({
     pillar: 'TRUSTWORTHINESS',
-    title: 'Transactional Security & Clear Policies',
+    title: 'Security & Clear Organizational Policies',
     score: `${trustScore}/25`,
     status: trustScore >= 20 ? 'STRONG' : 'MODERATE',
-    evidence: `${isHttps ? 'HTTPS / TLS 1.3 Active' : 'HTTP Insecure'} | Customer support helpline & verified booking cancellation guidelines detected.`
+    evidence: `${isHttps ? 'HTTPS / TLS 1.3 Active' : 'HTTP Insecure'} | ${hasTrustPolicies ? 'Clear legal policies, terms, and trust standards detected.' : 'Limited policy documentation detected.'}`
   });
 
   // ─── 3. CONTENT QUALITY & READABILITY ─────────────────────────

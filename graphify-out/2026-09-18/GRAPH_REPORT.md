@@ -1,13 +1,18 @@
-# Graph Report - OmniSEO-OS  (2026-09-17)
+# Graph Report - OmniSEO-OS  (2026-09-18)
 
 ## Corpus Check
-- 21 files · ~33,086 words
+- 23 files · ~47,805 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 108 nodes · 172 edges · 13 communities
+- 112 nodes · 174 edges · 15 communities
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `10b7927d`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - index.js
@@ -45,7 +50,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (13 total, 0 thin omitted)
+## Communities (15 total, 0 thin omitted)
 
 ### Community 0 - "index.js"
 Cohesion: 0.23
@@ -83,9 +88,9 @@ Nodes (3): 1. Ecosystem Overview (GitHub `seo` Topic), 2. Universal API Matrix (
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `dependencies` connect `dependencies` to `package.json`?**
-  _High betweenness centrality (0.056) - this node is a cross-community bridge._
-- **Why does `keywords` connect `keywords` to `package.json`?**
   _High betweenness centrality (0.052) - this node is a cross-community bridge._
+- **Why does `keywords` connect `keywords` to `package.json`?**
+  _High betweenness centrality (0.049) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
   _42 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `package.json` be split into smaller, more focused modules?**

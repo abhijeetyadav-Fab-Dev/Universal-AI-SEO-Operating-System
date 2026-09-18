@@ -8,6 +8,8 @@
   "6": "Comprehensive Evaluation & Catalog of Open Source SEO Ecosystem & APIs",
   "7": "find_urls.js",
   "8": "e2e_verify.py",
+  "9": "generate_og_image.py",
+  "10": "test_seo_deploy_suite.py",
   "11": "header_screenshot.py",
   "13": "test_new_features.py",
   "14": "verify_header_ui.py",

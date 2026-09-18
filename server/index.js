@@ -76,14 +76,55 @@ app.get('/blog/:slug', (req, res) => {
   });
 });
 
+export function isSafeUrl(rawUrl) {
+  try {
+    if (!rawUrl || typeof rawUrl !== 'string') return false;
+    let urlToTest = rawUrl.trim();
+    if (!/^https?:\/\//i.test(urlToTest)) {
+      urlToTest = `https://${urlToTest}`;
+    }
+    
+    const parsed = new URL(urlToTest);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+    if (parsed.username || parsed.password) return false;
+
+    const host = parsed.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '0.0.0.0') return false;
+    if (host === '169.254.169.254' || host === 'metadata.google.internal' || host === 'instance-data') return false;
+
+    const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+    const ipMatch = host.match(ipv4Regex);
+    if (ipMatch) {
+      const octets = ipMatch.slice(1, 5).map(Number);
+      if (octets.some(o => o < 0 || o > 255)) return false;
+      if (octets[0] === 10) return false;
+      if (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) return false;
+      if (octets[0] === 192 && octets[1] === 168) return false;
+      if (octets[0] === 127) return false;
+      if (octets[0] === 169 && octets[1] === 254) return false;
+      if (octets[0] === 0) return false;
+    }
+    
+    if (host.endsWith('.local') || host.endsWith('.internal') || host.endsWith('.lan')) return false;
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // ─── 1. CORE ORCHESTRATOR & PLANNER ENDPOINTS ────────────
 app.post('/api/plan', (req, res) => {
   try {
-    const { query, context } = req.body;
-    if (!query) {
-      return res.status(400).json({ error: 'Query string is required.' });
+    if (!req.body || typeof req.body !== 'object') {
+      return res.status(400).json({ error: 'Request body must be a JSON object.' });
     }
-    const plan = parseAndPlan(query, context);
+    const { query, context, url } = req.body;
+    const finalQuery = query || url;
+    if (!finalQuery) {
+      return res.status(400).json({ error: 'Query string or target URL is required.' });
+    }
+    const plan = parseAndPlan(finalQuery, context);
     res.json({ success: true, plan });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -92,8 +133,24 @@ app.post('/api/plan', (req, res) => {
 
 app.post('/api/execute', async (req, res) => {
   try {
-    const { query, plan, context } = req.body;
-    const finalPlan = plan || parseAndPlan(query, context);
+    if (!req.body || typeof req.body !== 'object') {
+      return res.status(400).json({ error: 'Request body must be a JSON object.' });
+    }
+    const { query, plan, context, url, agents } = req.body;
+    if (!query && !plan && !url) {
+      return res.status(400).json({ error: 'Either query, plan, or target url is required.' });
+    }
+    let finalPlan = plan;
+    if (!finalPlan) {
+      finalPlan = parseAndPlan(query || url, context);
+    }
+    if (agents && Array.isArray(agents) && (!finalPlan.executionPlan || !finalPlan.executionPlan.agents || finalPlan.executionPlan.agents.length === 0)) {
+      finalPlan.executionPlan = finalPlan.executionPlan || {};
+      finalPlan.executionPlan.agents = agents.map(a => typeof a === 'string' ? { id: a, name: a } : a);
+    }
+    if (url && !finalPlan.targetUrl) {
+      finalPlan.targetUrl = url;
+    }
     const result = await executeOrchestratedPlan(finalPlan);
     res.json({ success: true, result });
   } catch (err) {
@@ -105,8 +162,9 @@ app.post('/api/execute', async (req, res) => {
 
 // Multi-Page Site Audit (Crawls up to 20 pages)
 app.post('/api/audit', async (req, res) => {
-  const startUrl = req.body.url;
+  const startUrl = req.body?.url;
   if (!startUrl) return res.status(400).json({ error: 'URL is required for audit' });
+  if (!isSafeUrl(startUrl)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
 
   try {
     const results = await crawlMultiPageSite(startUrl, req.body.maxPages || 15);
@@ -118,8 +176,9 @@ app.post('/api/audit', async (req, res) => {
 
 // Deep Backlinks & Authority Inspection
 app.post('/api/backlinks', async (req, res) => {
-  const target = req.body.url || req.body.domain;
+  const target = req.body?.url || req.body?.domain;
   if (!target) return res.status(400).json({ error: 'URL or Domain is required' });
+  if (!isSafeUrl(target)) return res.status(400).json({ error: 'Invalid or restricted domain target (SSRF protection).' });
 
   try {
     let domain = target;
@@ -139,8 +198,9 @@ app.post('/api/backlinks', async (req, res) => {
 
 // Google Search Console (GSC) Insights Simulation
 app.post('/api/gsc', async (req, res) => {
-  const { url } = req.body;
+  const { url } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL is required' });
+  if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
 
   try {
     const data = await simulateGSC(url);
@@ -152,8 +212,9 @@ app.post('/api/gsc', async (req, res) => {
 
 // Rank Tracker
 app.post('/api/rank', async (req, res) => {
-  const { url } = req.body;
+  const { url } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL is required' });
+  if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
 
   try {
     const data = await trackRankings(url);
@@ -165,7 +226,7 @@ app.post('/api/rank', async (req, res) => {
 
 // Keyword Research with INR CPC & Google Autocomplete
 app.post('/api/keywords', async (req, res) => {
-  const { keyword } = req.body;
+  const { keyword } = req.body || {};
   if (!keyword) return res.status(400).json({ error: 'Keyword is required' });
 
   try {
@@ -178,8 +239,9 @@ app.post('/api/keywords', async (req, res) => {
 
 // Domain Overview, Security, SSL & Competitor Benchmark
 app.post('/api/domain', async (req, res) => {
-  const { url } = req.body;
+  const { url } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL is required' });
+  if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted domain target (SSRF protection).' });
 
   try {
     const data = await analyzeDomainOverview(url);
@@ -191,7 +253,7 @@ app.post('/api/domain', async (req, res) => {
 
 // Brand Reputation, Sentiment & Social Share of Voice
 app.post('/api/brand', async (req, res) => {
-  const { brand } = req.body;
+  const { brand } = req.body || {};
   if (!brand) return res.status(400).json({ error: 'Brand name is required' });
 
   try {
@@ -204,8 +266,9 @@ app.post('/api/brand', async (req, res) => {
 
 // AI SEO Strategy Copilot & Prompt Terminal
 app.post('/api/ai-prompt', async (req, res) => {
-  const { prompt, url } = req.body;
+  const { prompt, url } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+  if (url && !isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
 
   try {
     const data = await handleAiPrompt(prompt, url);
@@ -217,8 +280,9 @@ app.post('/api/ai-prompt', async (req, res) => {
 
 // Saved Keywords & Content Bigram Extractor
 app.post('/api/saved-keywords', async (req, res) => {
-  const { url } = req.body;
+  const { url } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL is required' });
+  if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
 
   try {
     const data = await extractSavedKeywords(url);
@@ -233,12 +297,15 @@ app.post('/api/saved-keywords', async (req, res) => {
 // Google SERP Snippet Preview Simulator (Desktop & Mobile)
 app.post('/api/serp-preview', (req, res) => {
   try {
-    const { url, title, description } = req.body;
-    const targetUrl = url || 'https://yatradham.org/kumbh-mela-nashik/';
-    const parsed = new URL(targetUrl);
-    const breadcrumbs = `${parsed.hostname} > ${parsed.pathname.split('/').filter(Boolean).join(' > ')}`;
-    const displayTitle = (title || 'Nashik Kumbh Mela 2026 All Details & Dharamshala Booking').substring(0, 60);
-    const displayDesc = (description || 'Get complete information and latest updates on Simhastha Kumbh Mela Nashik. Book verified dharamshalas, ashrams, and hotels online with instant confirmation.').substring(0, 160);
+    const { url, title, description } = req.body || {};
+    const targetUrl = url || 'https://example.com';
+    if (!isSafeUrl(targetUrl)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
+    const parsed = new URL(targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`);
+    const host = parsed.hostname.replace(/^www\./, '');
+    const cleanTopic = host.split('.')[0];
+    const breadcrumbs = `${parsed.hostname} > ${parsed.pathname.split('/').filter(Boolean).join(' > ') || 'home'}`;
+    const displayTitle = (title || `${cleanTopic.toUpperCase()} — Official Guide & Resources | ${host}`).substring(0, 60);
+    const displayDesc = (description || `Explore official resources, updates, and comprehensive services for ${cleanTopic}. Access documentation and get started today at ${host}.`).substring(0, 160);
 
     res.json({
       url: targetUrl,
@@ -251,7 +318,7 @@ app.post('/api/serp-preview', (req, res) => {
       descriptionLength: displayDesc.length,
       descStatus: displayDesc.length <= 160 ? 'Optimal (Under 160 chars)' : 'Truncated in Google SERP',
       rating: '4.8 ★★★★★ (1,240 reviews)',
-      richSnippet: 'Dharamshala Booking & Shahi Snan Dates 2026'
+      richSnippet: `${cleanTopic} Official Verified Resource`
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -263,6 +330,7 @@ app.get('/api/robots-sitemap', async (req, res) => {
   try {
     const { url } = req.query;
     if (!url) return res.status(400).json({ error: 'URL is required' });
+    if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
     const parsed = new URL(url);
     const origin = parsed.origin;
 
@@ -370,9 +438,11 @@ app.get('/api/robots-sitemap', async (req, res) => {
 
 // Competitor Authority & Keyword Gap Studio
 app.post('/api/competitor-gap', async (req, res) => {
-  const target = req.body.targetUrl || req.body.url;
-  const competitor = req.body.competitorDomain || req.body.competitor || 'tripadvisor.in';
+  const target = req.body?.targetUrl || req.body?.url;
+  const competitor = req.body?.competitorDomain || req.body?.competitor || null;
   if (!target) return res.status(400).json({ success: false, error: 'URL is required' });
+  if (!isSafeUrl(target)) return res.status(400).json({ success: false, error: 'Invalid or restricted URL target (SSRF protection).' });
+  if (competitor && !isSafeUrl(competitor)) return res.status(400).json({ success: false, error: 'Invalid or restricted competitor domain (SSRF protection).' });
 
   try {
     const raw = await analyzeCompetitorGap(target, competitor);
@@ -419,8 +489,9 @@ app.post('/api/competitor-gap', async (req, res) => {
 
 // Universal Multi-Engine Web Scraper
 app.post('/api/scrape', async (req, res) => {
-  const { url, mode, selector } = req.body;
+  const { url, mode, selector } = req.body || {};
   if (!url) return res.status(400).json({ success: false, error: 'URL is required' });
+  if (!isSafeUrl(url)) return res.status(400).json({ success: false, error: 'Invalid or restricted URL target (SSRF protection).' });
 
   try {
     const data = await universalWebScraper(url, mode, selector);
@@ -437,8 +508,9 @@ app.post('/api/scrape', async (req, res) => {
 
 // HTML <head> Completeness & E-E-A-T Quality Signals (joshbuchea/HEAD & claude-seo)
 app.post('/api/head-eeat', async (req, res) => {
-  const { url } = req.body;
+  const { url } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL is required' });
+  if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
 
   try {
     const data = await auditHeadAndEeat(url);
@@ -453,6 +525,7 @@ app.get('/api/view-source', async (req, res) => {
   try {
     const { url, line } = req.query;
     if (!url) return res.status(400).send('URL query parameter required');
+    if (!isSafeUrl(url)) return res.status(400).send('Invalid or restricted URL target (SSRF protection)');
     const targetLine = parseInt(line, 10) || 1;
 
     const fetchRes = await fetch(url, {
@@ -528,11 +601,11 @@ app.get('/api/view-source', async (req, res) => {
   }
 });
 
-// Interactive Live Page Visual Inspector with On-DOM Highlighting
 app.get('/api/inspect-page', async (req, res) => {
   try {
     const { url, highlight, selector, issue } = req.query;
     if (!url) return res.status(400).send('URL query parameter required');
+    if (!isSafeUrl(url)) return res.status(400).send('Invalid or restricted URL target (SSRF protection)');
 
     const fetchRes = await fetch(url, {
       headers: {

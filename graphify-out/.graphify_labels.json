@@ -11,6 +11,7 @@
   "9": "generate_og_image.py",
   "10": "test_seo_deploy_suite.py",
   "11": "header_screenshot.py",
+  "12": "test_audit_fixes.py",
   "13": "test_new_features.py",
   "14": "verify_header_ui.py",
   "15": "verify_sidebar_layout.py"

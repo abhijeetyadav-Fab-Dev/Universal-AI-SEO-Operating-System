@@ -70,7 +70,9 @@ export async function fetchPageSpeed(url, strategy = 'mobile') {
           title: audits[k].title,
           savings: audits[k].displayValue,
           description: audits[k].description
-        }))
+        })),
+      isFallback: false,
+      provenance: 'Live Google PageSpeed Insights v5 API'
     };
   } catch (err) {
     // Graceful fallback with simulated deterministic diagnostic if offline or throttled
@@ -79,6 +81,8 @@ export async function fetchPageSpeed(url, strategy = 'mobile') {
       strategy,
       durationMs: Date.now() - startTime,
       error: err.message,
+      isFallback: true,
+      provenance: 'Simulated Diagnostic Benchmark (Google PSI API Rate-Limited or Offline)',
       performanceScore: 74,
       seoScore: 89,
       cwvMetrics: {

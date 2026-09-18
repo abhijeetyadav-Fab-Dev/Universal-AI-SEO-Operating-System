@@ -12,6 +12,11 @@ export async function auditTechnical(url) {
     throw new Error('Target URL is required for technical audit');
   }
 
+  let domain = 'example.com';
+  try {
+    domain = new URL(url).hostname.replace(/^www\./, '');
+  } catch {}
+
   const results = {
     url,
     timestamp: new Date().toISOString(),
@@ -123,7 +128,7 @@ export async function auditTechnical(url) {
         targetUrl: url,
         lineNumber: titleLocation.lineNumber,
         rawCodeSnippet: titleLocation.codeSnippet,
-        fixDiff: `<title>Nashik Kumbh Mela 2026 Dates, Schedule & Dharamshala Booking | YatraDham</title>`,
+        fixDiff: `<title>${$('h1').first().text().trim() || domain} — Official Information & Guide | ${domain}</title>`,
         recommendation: 'Inject a descriptive 50-60 character title tag directly inside <head>.'
       });
       results.score -= 20;
@@ -139,8 +144,8 @@ export async function auditTechnical(url) {
         targetUrl: url,
         lineNumber: titleLocation.lineNumber,
         rawCodeSnippet: titleLocation.codeSnippet,
-        fixDiff: `<title>Nashik Kumbh Mela 2026 Dates, Schedule & Dharamshala Booking | YatraDham</title>`,
-        recommendation: 'Expand title with high-intent transactional keywords (Dates, Schedule, Dharamshala Booking).'
+        fixDiff: `<title>${title} — Official Information & Complete Overview | ${domain}</title>`,
+        recommendation: 'Expand title with high-intent keywords and descriptive brand context.'
       });
       results.score -= 5;
     }
@@ -165,7 +170,7 @@ export async function auditTechnical(url) {
         targetUrl: url,
         lineNumber: 1,
         rawCodeSnippet: `<head>\n  <meta charset="UTF-8">\n</head>`,
-        fixDiff: `<meta name="description" content="Get complete guide on Nashik Kumbh Mela 2026. Check Shahi Snan dates, Trimbakeshwar temple timings, schedule, and book verified dharamshala stay online.">`,
+        fixDiff: `<meta name="description" content="Official guide and resources for ${$('h1').first().text().trim() || domain}. Discover complete information, services, and online details at ${domain}.">`,
         recommendation: 'Add a 140-160 character description with target keyword and clear CTA.'
       });
       results.score -= 15;
@@ -213,8 +218,8 @@ export async function auditTechnical(url) {
         isMissingAlt,
         lineNumber: imgLoc.lineNumber,
         rawTag: $.html(el),
-        suggestedAlt: (src.split('/').pop().replace(/[-_]/g, ' ').replace(/\.[a-z0-9]+$/i, '').trim() || 'Nashik Kumbh Mela Yatra') + ' 2026',
-        readyFixCode: `<img src="${src}" alt="${(src.split('/').pop().replace(/[-_]/g, ' ').replace(/\.[a-z0-9]+$/i, '').trim() || 'Nashik Kumbh Mela') + ' 2026'}" loading="lazy" />`
+        suggestedAlt: (src.split('/').pop()?.split('?')[0]?.replace(/[-_]/g, ' ').replace(/\.[a-z0-9]+$/i, '').trim() || results.seoMeta.title?.replace(/[-|–|:].*$/, '').trim() || domain) + ' Visual Asset',
+        readyFixCode: `<img src="${src}" alt="${(src.split('/').pop()?.split('?')[0]?.replace(/[-_]/g, ' ').replace(/\.[a-z0-9]+$/i, '').trim() || results.seoMeta.title?.replace(/[-|–|:].*$/, '').trim() || domain) + ' Visual Asset'}" loading="lazy" />`
       });
     });
     results.images.detailedList = allImagesList;
@@ -305,22 +310,19 @@ export async function auditTechnical(url) {
     return results;
 
   } catch (error) {
-    return {
-      url,
-      timestamp: new Date().toISOString(),
-      status: 'FAILED',
-      responseTimeMs: Date.now() - startTime,
-      error: error.message,
-      score: 30,
-      issues: [{
-        type: 'CRAWL_FETCH_ERROR',
-        severity: 'CRITICAL',
-        impact: 9,
-        effort: 3,
-        title: 'Crawl / Connection Failure',
-        evidence: error.message,
-        recommendation: 'Check URL reachability, DNS, and server firewall configuration.'
-      }]
-    };
+    results.status = 'FAILED';
+    results.responseTimeMs = Date.now() - startTime;
+    results.error = error.message;
+    results.score = 30;
+    results.issues.push({
+      type: 'CRAWL_FETCH_ERROR',
+      severity: 'CRITICAL',
+      impact: 9,
+      effort: 3,
+      title: 'Crawl / Connection Failure',
+      evidence: error.message,
+      recommendation: 'Check URL reachability, DNS, and server firewall configuration.'
+    });
+    return results;
   }
 }
