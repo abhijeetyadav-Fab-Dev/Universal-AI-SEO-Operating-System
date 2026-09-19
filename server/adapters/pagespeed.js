@@ -1,20 +1,50 @@
 import fetch from 'node-fetch';
 
 /**
+ * In-memory Cache for Google PageSpeed Insights & Core Web Vitals
+ * Key format: `${url.toLowerCase()}__${strategy}`
+ * Value: { data: object, timestamp: number }
+ * TTL: 6 hours (21,600,000 ms)
+ */
+const psiCache = new Map();
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
+/**
  * Google PageSpeed Insights & Core Web Vitals Adapter
  * Queries the official Google PSI v5 REST endpoint (Free endpoint).
  * Extracts Lab Metrics (LCP, FID/TBT, CLS, Speed Index, FCP) and Overall Performance Score.
+ * Features 6-hour TTL in-memory caching and custom API key support.
  */
-export async function fetchPageSpeed(url, strategy = 'mobile') {
+export async function fetchPageSpeed(url, strategy = 'mobile', customApiKey = null) {
   const startTime = Date.now();
-  const apiKey = process.env.GOOGLE_PSI_API_KEY ? `&key=${process.env.GOOGLE_PSI_API_KEY}` : '';
-  const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=${strategy}${apiKey}`;
+  const normalizedUrl = (url || '').trim();
+  const cacheKey = `${normalizedUrl.toLowerCase()}__${strategy}`;
+
+  // 1. Check in-memory cache
+  const cachedEntry = psiCache.get(cacheKey);
+  const now = Date.now();
+  if (cachedEntry && (now - cachedEntry.timestamp) < CACHE_TTL_MS) {
+    const ageSec = Math.floor((now - cachedEntry.timestamp) / 1000);
+    return {
+      ...cachedEntry.data,
+      fromCache: true,
+      cachedAgeSec: ageSec,
+      durationMs: Date.now() - startTime
+    };
+  }
+
+  // 2. Resolve API Key priority: customApiKey -> GOOGLE_PSI_API_KEY -> PAGESPEED_API_KEY
+  const resolvedApiKey = customApiKey || process.env.GOOGLE_PSI_API_KEY || process.env.PAGESPEED_API_KEY || '';
+  const keyParam = resolvedApiKey ? `&key=${encodeURIComponent(resolvedApiKey)}` : '';
+  const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(normalizedUrl)}&strategy=${strategy}${keyParam}`;
 
   try {
     const res = await fetch(endpoint, { timeout: 25000 });
     if (!res.ok) {
-      throw new Error(`PSI API responded with status ${res.status}`);
+      const errorText = await res.text().catch(() => '');
+      throw new Error(`PSI API responded with status ${res.status}: ${errorText.substring(0, 150)}`);
     }
+
     const data = await res.json();
     const lighthouse = data.lighthouseResult || {};
     const categories = lighthouse.categories || {};
@@ -29,10 +59,13 @@ export async function fetchPageSpeed(url, strategy = 'mobile') {
     const fcpAudit = audits['first-contentful-paint'] || {};
     const speedIndexAudit = audits['speed-index'] || {};
 
-    return {
+    const result = {
       provider: 'Google PageSpeed Insights v5',
       strategy,
       durationMs: Date.now() - startTime,
+      dataStatus: 'live',
+      isConfigured: Boolean(resolvedApiKey),
+      fromCache: false,
       performanceScore,
       seoScore,
       cwvMetrics: {
@@ -63,7 +96,7 @@ export async function fetchPageSpeed(url, strategy = 'mobile') {
         }
       },
       diagnosticOpportunities: Object.keys(audits)
-        .filter(k => audits[k].details?.type === 'opportunity' && audits[k].numericValue > 100)
+        .filter(k => audits[k].details?.type === 'opportunity' && (audits[k].numericValue || 0) > 100)
         .slice(0, 4)
         .map(k => ({
           id: k,
@@ -74,28 +107,62 @@ export async function fetchPageSpeed(url, strategy = 'mobile') {
       isFallback: false,
       provenance: 'Live Google PageSpeed Insights v5 API'
     };
+
+    // Store in 6-hour TTL cache
+    psiCache.set(cacheKey, { data: result, timestamp: Date.now() });
+
+    return result;
   } catch (err) {
-    // Graceful fallback with simulated deterministic diagnostic if offline or throttled
+    // If live call fails but we have a stale cached result, return it with a notice
+    if (cachedEntry) {
+      return {
+        ...cachedEntry.data,
+        fromCache: true,
+        isStale: true,
+        warning: `Serving cached PageSpeed data (live refresh failed: ${err.message})`,
+        durationMs: Date.now() - startTime
+      };
+    }
+
+    // Honest handling: do not fabricate fake performance numbers
     return {
-      provider: 'Google PageSpeed Insights v5 (Simulated Fallback)',
+      provider: 'Google PageSpeed Insights v5',
       strategy,
       durationMs: Date.now() - startTime,
+      dataStatus: 'unavailable',
+      isConfigured: Boolean(resolvedApiKey),
       error: err.message,
       isFallback: true,
-      provenance: 'Simulated Diagnostic Benchmark (Google PSI API Rate-Limited or Offline)',
-      performanceScore: 74,
-      seoScore: 89,
+      fromCache: false,
+      provenance: resolvedApiKey
+        ? 'Google PSI API Rate-Limited or Connection Error'
+        : 'Google PSI API Key Required (Connect Free Key in ⚙️ Settings for Live Core Web Vitals)',
+      performanceScore: null,
+      seoScore: null,
       cwvMetrics: {
-        lcp: { displayValue: '2.8 s', numericValueMs: 2800, status: 'NEEDS_IMPROVEMENT' },
-        cls: { displayValue: '0.04', numericValue: 0.04, status: 'GOOD' },
-        tbt: { displayValue: '190 ms', numericValueMs: 190, status: 'GOOD' },
-        fcp: { displayValue: '1.4 s', numericValueMs: 1400 },
-        speedIndex: { displayValue: '2.9 s' }
+        lcp: { displayValue: 'N/A', numericValueMs: null, status: 'UNAVAILABLE' },
+        cls: { displayValue: 'N/A', numericValue: null, status: 'UNAVAILABLE' },
+        tbt: { displayValue: 'N/A', numericValueMs: null, status: 'UNAVAILABLE' },
+        fcp: { displayValue: 'N/A', numericValueMs: null },
+        speedIndex: { displayValue: 'N/A' }
       },
-      diagnosticOpportunities: [
-        { id: 'render-blocking-resources', title: 'Eliminate render-blocking resources', savings: 'Potential savings of 450 ms' },
-        { id: 'modern-image-formats', title: 'Serve images in next-gen formats (WebP/AVIF)', savings: 'Potential savings of 220 KiB' }
-      ]
+      diagnosticOpportunities: [],
+      message: 'Connect a free Google PageSpeed API key in ⚙️ Settings or .env to fetch live Lighthouse & Core Web Vitals diagnostics.'
     };
   }
+}
+
+/**
+ * Cache management helpers
+ */
+export function getPsiCacheStats() {
+  return {
+    size: psiCache.size,
+    entries: Array.from(psiCache.keys()),
+    ttlHours: CACHE_TTL_MS / (1000 * 60 * 60)
+  };
+}
+
+export function clearPsiCache() {
+  psiCache.clear();
 }

@@ -84,164 +84,172 @@ export async function crawlMultiPageSite(startUrl, maxPages = 15) {
   let totalResponseTime = 0;
 
   while (queue.length > 0 && visited.size < maxPages) {
-    const currentUrl = queue.shift();
-    if (visited.has(currentUrl)) continue;
-    visited.add(currentUrl);
-
-    try {
-      const { html, status, responseTimeMs } = await fetchHTML(currentUrl);
-      totalResponseTime += responseTimeMs;
-      results.pagesCrawled++;
-      const $ = cheerio.load(html);
-
-      let pageIssues = 0;
-      if (responseTimeMs > 1500) {
-        results.issues.slowResponse.push({ url: currentUrl, responseTimeMs });
-        pageIssues++;
+    const batch = [];
+    while (queue.length > 0 && (visited.size + batch.length) < maxPages && batch.length < 4) {
+      const u = queue.shift();
+      if (!visited.has(u)) {
+        visited.add(u);
+        batch.push(u);
       }
+    }
+    if (batch.length === 0) break;
 
-      const metaDesc = $('meta[name="description"]').attr('content') || '';
-      if (metaDesc.length > 160) {
-        results.issues.metaDescriptionTooLong.push({ url: currentUrl, length: metaDesc.length });
-        pageIssues++;
-      }
+    await Promise.all(batch.map(async (currentUrl) => {
+      try {
+        const { html, status, responseTimeMs } = await fetchHTML(currentUrl);
+        totalResponseTime += responseTimeMs;
+        results.pagesCrawled++;
+        const $ = cheerio.load(html);
 
-      const title = $('title').text().trim() || '';
-      if (title.length > 60) {
-        results.issues.titleTooLong.push({ url: currentUrl, length: title.length });
-        pageIssues++;
-      }
-
-      let imagesMissingAlt = 0;
-      let imagesTotal = 0;
-      $('img').each((_, el) => {
-        imagesTotal++;
-        const alt = $(el).attr('alt');
-        if (alt === undefined || alt === null || alt.trim() === '') {
-          imagesMissingAlt++;
+        let pageIssues = 0;
+        if (responseTimeMs > 1500) {
+          results.issues.slowResponse.push({ url: currentUrl, responseTimeMs });
+          pageIssues++;
         }
-      });
-      if (imagesMissingAlt > 0) {
-        results.issues.imagesMissingAlt.push({ url: currentUrl, imagesMissingAlt, imagesTotal });
-        pageIssues++;
-      }
 
-      const blockingScripts = [];
-      $('script[src]').each((_, el) => {
-        if (!$(el).attr('defer') && !$(el).attr('async')) {
-          blockingScripts.push($(el).attr('src'));
+        const metaDesc = $('meta[name="description"]').attr('content') || '';
+        if (metaDesc.length > 160) {
+          results.issues.metaDescriptionTooLong.push({ url: currentUrl, length: metaDesc.length });
+          pageIssues++;
         }
-      });
-      if (blockingScripts.length > 0) {
-        results.issues.renderBlocking.push({ url: currentUrl, scripts: blockingScripts.slice(0, 5) });
-        pageIssues++;
-      }
 
-      const domCount = $('*').length;
-      if (domCount > 1500) {
-        results.issues.excessiveDOM.push({ url: currentUrl, count: domCount });
-        pageIssues++;
-      }
+        const title = $('title').text().trim() || '';
+        if (title.length > 60) {
+          results.issues.titleTooLong.push({ url: currentUrl, length: title.length });
+          pageIssues++;
+        }
 
-      const h1Count = $('h1').length;
-      const pageIssuesList = [];
-
-      if (h1Count === 0) {
-        results.issues.missingH1.push({ url: currentUrl });
-        pageIssuesList.push({
-          type: 'Missing H1 Heading',
-          severity: 'P0 - Critical',
-          description: 'No <h1> heading found. Primary topic relevance anchor is missing for Googlebot and screen readers.',
-          selector: 'h1',
-          code: `<h1>${title ? title.split('|')[0].trim() : 'Primary Content Heading'}</h1>`,
-          recommendation: 'Inject a semantic <h1> heading matching the target search intent at the top of the content container.'
+        let imagesMissingAlt = 0;
+        let imagesTotal = 0;
+        $('img').each((_, el) => {
+          imagesTotal++;
+          const alt = $(el).attr('alt');
+          if (alt === undefined || alt === null || alt.trim() === '') {
+            imagesMissingAlt++;
+          }
         });
-      }
+        if (imagesMissingAlt > 0) {
+          results.issues.imagesMissingAlt.push({ url: currentUrl, imagesMissingAlt, imagesTotal });
+          pageIssues++;
+        }
 
-      if (imagesMissingAlt > 0) {
-        results.issues.imagesMissingAlt.push({ url: currentUrl, imagesMissingAlt, imagesTotal });
-        pageIssuesList.push({
-          type: 'Missing Image Alt Attributes',
-          severity: 'P1 - High',
-          description: `${imagesMissingAlt} of ${imagesTotal} images lack an alt description on this page.`,
-          selector: 'img:not([alt]), img[alt=""]',
-          code: '<img src="..." alt="Descriptive accessible context" loading="lazy" />',
-          recommendation: 'Add descriptive alt text to all visual assets to satisfy accessibility standards (WCAG 2.1) and Google Image Search.'
+        const blockingScripts = [];
+        $('script[src]').each((_, el) => {
+          if (!$(el).attr('defer') && !$(el).attr('async')) {
+            blockingScripts.push($(el).attr('src'));
+          }
         });
-      }
+        if (blockingScripts.length > 0) {
+          results.issues.renderBlocking.push({ url: currentUrl, scripts: blockingScripts.slice(0, 5) });
+          pageIssues++;
+        }
 
-      if (responseTimeMs > 600) {
-        results.issues.slowResponse.push({ url: currentUrl, responseTimeMs });
-        pageIssuesList.push({
-          type: 'Slow Server Latency (TTFB)',
-          severity: responseTimeMs > 1000 ? 'P0 - Critical' : 'P2 - Medium',
-          description: `Server response time was ${responseTimeMs}ms (optimal threshold: < 500ms).`,
-          selector: 'server',
-          code: 'Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=600',
-          recommendation: 'Implement Edge CDN caching and server-side response compression (Brotli/Gzip) to accelerate TTFB.'
+        const domCount = $('*').length;
+        if (domCount > 1500) {
+          results.issues.excessiveDOM.push({ url: currentUrl, count: domCount });
+          pageIssues++;
+        }
+
+        const h1Count = $('h1').length;
+        const pageIssuesList = [];
+
+        if (h1Count === 0) {
+          results.issues.missingH1.push({ url: currentUrl });
+          pageIssuesList.push({
+            type: 'Missing H1 Heading',
+            severity: 'P0 - Critical',
+            description: 'No <h1> heading found. Primary topic relevance anchor is missing for Googlebot and screen readers.',
+            selector: 'h1',
+            code: `<h1>${title ? title.split('|')[0].trim() : 'Primary Content Heading'}</h1>`,
+            recommendation: 'Inject a semantic <h1> heading matching the target search intent at the top of the content container.'
+          });
+        }
+
+        if (imagesMissingAlt > 0) {
+          results.issues.imagesMissingAlt.push({ url: currentUrl, imagesMissingAlt, imagesTotal });
+          pageIssuesList.push({
+            type: 'Missing Image Alt Attributes',
+            severity: 'P1 - High',
+            description: `${imagesMissingAlt} of ${imagesTotal} images lack an alt description on this page.`,
+            selector: 'img:not([alt]), img[alt=""]',
+            code: '<img src="..." alt="Descriptive accessible context" loading="lazy" />',
+            recommendation: 'Add descriptive alt text to all visual assets to satisfy accessibility standards (WCAG 2.1) and Google Image Search.'
+          });
+        }
+
+        if (responseTimeMs > 600) {
+          results.issues.slowResponse.push({ url: currentUrl, responseTimeMs });
+          pageIssuesList.push({
+            type: 'Slow Server Latency (TTFB)',
+            severity: responseTimeMs > 1000 ? 'P0 - Critical' : 'P2 - Medium',
+            description: `Server response time was ${responseTimeMs}ms (optimal threshold: < 500ms).`,
+            selector: 'server',
+            code: 'Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=600',
+            recommendation: 'Implement Edge CDN caching and server-side response compression (Brotli/Gzip) to accelerate TTFB.'
+          });
+        }
+
+        if (blockingScripts.length > 0) {
+          pageIssuesList.push({
+            type: 'Render-Blocking JavaScript',
+            severity: 'P1 - High',
+            description: `${blockingScripts.length} synchronous <script> tags detected in the critical path.`,
+            selector: 'script[src]:not([defer]):not([async])',
+            code: blockingScripts.slice(0, 2).map(s => `<script src="${s}" defer></script>`).join('\n'),
+            recommendation: 'Add "defer" or "async" attributes to non-essential JavaScript to unblock First Contentful Paint (FCP).'
+          });
+        }
+
+        if (domCount > 1500) {
+          pageIssuesList.push({
+            type: 'Excessive DOM Depth',
+            severity: 'P2 - Warning',
+            description: `Page DOM contains ${domCount} nodes (recommended max: 1,500).`,
+            selector: 'body',
+            code: '<!-- Flatten nested DOM containers -->',
+            recommendation: 'Refactor deeply nested <div> elements and lazy-render below-the-fold component trees.'
+          });
+        }
+
+        if (metaDesc.length > 160 || metaDesc.length === 0) {
+          pageIssuesList.push({
+            type: metaDesc.length === 0 ? 'Missing Meta Description' : 'Meta Description Too Long',
+            severity: 'P2 - Warning',
+            description: metaDesc.length === 0 ? 'No meta description tag found in <head>.' : `Meta description is ${metaDesc.length} characters (recommended: 120-155 characters).`,
+            selector: 'meta[name="description"]',
+            code: `<meta name="description" content="${metaDesc.substring(0, 150) || `${title ? title.split('|')[0].trim() : domain} — Complete guide, resources, and essential information.`}">`,
+            recommendation: 'Provide an enticing, intent-driven meta description within 120-155 characters to maximize organic CTR.'
+          });
+        }
+
+        results.crawledPages.push({
+          url: currentUrl,
+          status,
+          responseTimeMs,
+          title: title.substring(0, 60),
+          h1: $('h1').first().text().trim().substring(0, 50) || 'Missing H1',
+          imagesCount: imagesTotal,
+          missingAlts: imagesMissingAlt,
+          issuesCount: pageIssuesList.length,
+          issuesList: pageIssuesList
         });
-      }
 
-      if (blockingScripts.length > 0) {
-        pageIssuesList.push({
-          type: 'Render-Blocking JavaScript',
-          severity: 'P1 - High',
-          description: `${blockingScripts.length} synchronous <script> tags detected in the critical path.`,
-          selector: 'script[src]:not([defer]):not([async])',
-          code: blockingScripts.slice(0, 2).map(s => `<script src="${s}" defer></script>`).join('\n'),
-          recommendation: 'Add "defer" or "async" attributes to non-essential JavaScript to unblock First Contentful Paint (FCP).'
-        });
-      }
-
-      if (domCount > 1500) {
-        pageIssuesList.push({
-          type: 'Excessive DOM Depth',
-          severity: 'P2 - Warning',
-          description: `Page DOM contains ${domCount} nodes (recommended max: 1,500).`,
-          selector: 'body',
-          code: '<!-- Flatten nested DOM containers -->',
-          recommendation: 'Refactor deeply nested <div> elements and lazy-render below-the-fold component trees.'
-        });
-      }
-
-      if (metaDesc.length > 160 || metaDesc.length === 0) {
-        pageIssuesList.push({
-          type: metaDesc.length === 0 ? 'Missing Meta Description' : 'Meta Description Too Long',
-          severity: 'P2 - Warning',
-          description: metaDesc.length === 0 ? 'No meta description tag found in <head>.' : `Meta description is ${metaDesc.length} characters (recommended: 120-155 characters).`,
-          selector: 'meta[name="description"]',
-          code: `<meta name="description" content="${metaDesc.substring(0, 150) || 'Verified online booking for dharamshala, ashram, and stay packages.'}">`,
-          recommendation: 'Provide an enticing, intent-driven meta description within 120-155 characters to maximize organic CTR.'
-        });
-      }
-
-      results.crawledPages.push({
-        url: currentUrl,
-        status,
-        responseTimeMs,
-        title: title.substring(0, 60),
-        h1: $('h1').first().text().trim().substring(0, 50) || 'Missing H1',
-        imagesCount: imagesTotal,
-        missingAlts: imagesMissingAlt,
-        issuesCount: pageIssuesList.length,
-        issuesList: pageIssuesList
-      });
-
-      // Extract internal links to queue
-      $('a[href]').each((_, el) => {
-        const href = $(el).attr('href');
-        if (href) {
-          const nextUrl = normalizeUrl(currentUrl, href);
-          if (nextUrl && new URL(nextUrl).hostname === domain && !visited.has(nextUrl) && !queue.includes(nextUrl)) {
-            if (!nextUrl.match(/\.(png|jpg|jpeg|gif|css|js|pdf|zip|svg|ico)$/i)) {
-              if (queue.length < 30) queue.push(nextUrl);
+        // Extract internal links to queue
+        $('a[href]').each((_, el) => {
+          const href = $(el).attr('href');
+          if (href) {
+            const nextUrl = normalizeUrl(currentUrl, href);
+            if (nextUrl && new URL(nextUrl).hostname === domain && !visited.has(nextUrl) && !queue.includes(nextUrl)) {
+              if (!nextUrl.match(/\.(png|jpg|jpeg|gif|css|js|pdf|zip|svg|ico)$/i)) {
+                if (queue.length < 30) queue.push(nextUrl);
+              }
             }
           }
-        }
-      });
-    } catch {
-      // Continue crawling other links if one fails
-    }
+        });
+      } catch {
+        // Continue crawling other links if one fails
+      }
+    }));
   }
 
   if (results.pagesCrawled > 0) {
@@ -385,7 +393,10 @@ export async function trackRankings(url) {
     avgPosition: avgPos,
     top3Count: top3,
     visibility: visibility + '%',
-    keywords
+    keywords,
+    isSimulated: true,
+    dataStatus: 'simulated',
+    provenance: 'Estimated Rank Visibility Model (Connect DataForSEO in ⚙️ Settings for live SERP tracking)'
   };
 }
 
@@ -463,7 +474,7 @@ export async function researchKeywords(keyword) {
 /**
  * 5. Domain Overview & Authority Benchmark
  */
-export async function analyzeDomainOverview(url) {
+export async function analyzeDomainOverview(url, options = {}) {
   const startTime = Date.now();
   const { html } = await fetchHTML(url);
   const responseTime = Date.now() - startTime;
@@ -490,86 +501,113 @@ export async function analyzeDomainOverview(url) {
 
   const isSSL = url.startsWith('https');
   const cleanDomain = domain.toLowerCase().replace(/^www\./, '');
+  const domainHash = cleanDomain.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const isMega = ['google.com', 'wikipedia.org', 'youtube.com', 'apple.com', 'microsoft.com', 'amazon.com'].includes(cleanDomain);
   const isTech = ['github.com', 'stackoverflow.com', 'gitlab.com', 'cloudflare.com', 'mozilla.org'].includes(cleanDomain);
-  const isPilgrim = cleanDomain.includes('yatradham');
-  const isTravel = !isPilgrim && (cleanDomain.includes('booking') || cleanDomain.includes('airbnb') || cleanDomain.includes('expedia') || cleanDomain.includes('hotels') || cleanDomain.includes('tripadvisor'));
+  const isTravel = cleanDomain.includes('booking') || cleanDomain.includes('airbnb') || cleanDomain.includes('expedia') || cleanDomain.includes('hotels') || cleanDomain.includes('tripadvisor');
 
   let authority = 65;
-  let refDomains = 450;
-  let totalBacklinks = 8500;
-  let organicTraffic = 45000;
-  let organicKeywords = 2400;
+  let refDomains = Math.max(externalDomains.size * 12, 140 + (domainHash % 850));
+  let totalBacklinks = refDomains * Math.floor((domainHash % 15) + 8);
+  let organicTraffic = refDomains * Math.floor((domainHash % 30) + 14);
+  let organicKeywords = Math.floor(organicTraffic * 0.08);
   let competitors = [];
+  let isLive = false;
 
-  if (isMega) {
-    authority = 98;
-    refDomains = 1450000;
-    totalBacklinks = 54000000;
-    organicTraffic = 850000000;
-    organicKeywords = 12500000;
-    competitors = cleanDomain === 'wikipedia.org' ? [
-      { name: 'britannica.com', da: 92, trend: 'steady' },
-      { name: 'wiktionary.org', da: 89, trend: 'up' },
-      { name: 'archive.org', da: 94, trend: 'up' },
-      { name: 'citizendium.org', da: 68, trend: 'down' }
-    ] : [
-      { name: 'microsoft.com', da: 98, trend: 'up' },
-      { name: 'apple.com', da: 97, trend: 'steady' },
-      { name: 'amazon.com', da: 96, trend: 'up' },
-      { name: 'wikipedia.org', da: 95, trend: 'steady' }
-    ];
-  } else if (isTech) {
-    authority = 94;
-    refDomains = 520000;
-    totalBacklinks = 22000000;
-    organicTraffic = 68000000;
-    organicKeywords = 3800000;
-    competitors = [
-      { name: 'gitlab.com', da: 89, trend: 'up' },
-      { name: 'bitbucket.org', da: 86, trend: 'steady' },
-      { name: 'sourceforge.net', da: 85, trend: 'down' },
-      { name: 'codeberg.org', da: 74, trend: 'up' }
-    ];
-  } else if (isTravel) {
-    authority = 88;
-    refDomains = 112000;
-    totalBacklinks = 18400000;
-    organicTraffic = 45000000;
-    organicKeywords = 540000;
-    competitors = [
-      { name: 'booking.com', da: 92, trend: 'up' },
-      { name: 'expedia.com', da: 89, trend: 'up' },
-      { name: 'airbnb.com', da: 91, trend: 'steady' },
-      { name: 'tripadvisor.com', da: 93, trend: 'up' }
-    ];
-  } else if (isPilgrim) {
-    authority = 58;
-    refDomains = 840;
-    totalBacklinks = 14200;
-    organicTraffic = 418000;
-    organicKeywords = 18400;
-    competitors = [
-      { name: 'tripadvisor.in', da: 89, trend: 'up' },
-      { name: 'makemytrip.com', da: 78, trend: 'up' },
-      { name: 'holidify.com', da: 68, trend: 'steady' },
-      { name: 'goibibo.com', da: 72, trend: 'down' }
-    ];
-  } else {
-    const domainHash = cleanDomain.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-    const linkFactor = Math.min(30, internalLinks.size * 2);
-    authority = Math.min(85, Math.max(30, 35 + linkFactor + (domainHash % 25)));
-    refDomains = Math.max(externalDomains.size * 12, 120 + (domainHash % 1200));
-    totalBacklinks = refDomains * Math.floor((domainHash % 15) + 8);
-    organicTraffic = refDomains * Math.floor((domainHash % 30) + 12);
-    organicKeywords = Math.floor(organicTraffic * 0.08);
+  // 1. Live DataForSEO Integration if configured
+  const dfLogin = options.dataforseoLogin || process.env.DATAFORSEO_LOGIN;
+  const dfPass = options.dataforseoPassword || process.env.DATAFORSEO_PASSWORD;
 
-    competitors = [
-      { name: 'wikipedia.org', da: 95, trend: 'steady' },
-      { name: 'medium.com', da: 89, trend: 'up' },
-      { name: 'reddit.com', da: 91, trend: 'up' },
-      { name: 'quora.com', da: 82, trend: 'steady' }
-    ];
+  if (dfLogin && dfPass) {
+    try {
+      const auth = Buffer.from(`${dfLogin}:${dfPass}`).toString('base64');
+      const apiRes = await fetch('https://api.dataforseo.com/v3/backlinks/summary/live', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify([{ target: domain, internal_list_limit: 5 }]),
+        timeout: 8000
+      });
+      if (apiRes.ok) {
+        const json = await apiRes.json();
+        const item = json.tasks?.[0]?.result?.[0];
+        if (item) {
+          isLive = true;
+          authority = Math.round(item.rank || 65);
+          refDomains = item.referring_domains || refDomains;
+          totalBacklinks = item.backlinks || totalBacklinks;
+        }
+      }
+    } catch {}
+  }
+
+  if (!isLive) {
+    if (isMega) {
+      authority = 98;
+      refDomains = 1450000;
+      totalBacklinks = 54000000;
+      organicTraffic = 850000000;
+      organicKeywords = 12500000;
+      competitors = cleanDomain === 'wikipedia.org' ? [
+        { name: 'britannica.com', da: 92, trend: 'steady' },
+        { name: 'wiktionary.org', da: 89, trend: 'up' },
+        { name: 'archive.org', da: 94, trend: 'up' },
+        { name: 'citizendium.org', da: 68, trend: 'down' }
+      ] : [
+        { name: 'microsoft.com', da: 98, trend: 'up' },
+        { name: 'apple.com', da: 97, trend: 'steady' },
+        { name: 'amazon.com', da: 96, trend: 'up' },
+        { name: 'wikipedia.org', da: 95, trend: 'steady' }
+      ];
+    } else if (isTech) {
+      authority = 94;
+      refDomains = 520000;
+      totalBacklinks = 22000000;
+      organicTraffic = 68000000;
+      organicKeywords = 3800000;
+      competitors = [
+        { name: 'gitlab.com', da: 89, trend: 'up' },
+        { name: 'bitbucket.org', da: 86, trend: 'steady' },
+        { name: 'sourceforge.net', da: 85, trend: 'down' },
+        { name: 'codeberg.org', da: 74, trend: 'up' }
+      ];
+    } else if (isTravel) {
+      authority = 88;
+      refDomains = 112000;
+      totalBacklinks = 18400000;
+      organicTraffic = 45000000;
+      organicKeywords = 540000;
+      competitors = [
+        { name: 'booking.com', da: 92, trend: 'up' },
+        { name: 'expedia.com', da: 89, trend: 'up' },
+        { name: 'airbnb.com', da: 91, trend: 'steady' },
+        { name: 'tripadvisor.com', da: 93, trend: 'up' }
+      ];
+    } else {
+      const linkFactor = Math.min(30, internalLinks.size * 2);
+      authority = Math.min(85, Math.max(30, 35 + linkFactor + (domainHash % 25)));
+
+      // Discover real external peer domains from actual page links if present
+      const excluded = ['google.com', 'gstatic.com', 'googleapis.com', 'facebook.com', 'twitter.com', 'instagram.com', 'youtube.com', 'linkedin.com', 'schema.org', 'w3.org', 'cloudflare.com', 'jsdelivr.net', 'unpkg.com', 'github.com'];
+      const discoveredPeers = [...externalDomains].filter(d => !excluded.some(ex => d === ex || d.endsWith('.' + ex))).slice(0, 4);
+
+      if (discoveredPeers.length >= 3) {
+        competitors = discoveredPeers.map((p, idx) => ({
+          name: p,
+          da: Math.max(35, Math.min(92, authority + ((idx % 2 === 0 ? 1 : -1) * (5 + idx * 3)))),
+          trend: idx % 2 === 0 ? 'up' : 'steady'
+        }));
+      } else {
+        competitors = [
+          { name: `alternative-to-${cleanDomain.split('.')[0]}.com`, da: Math.min(85, authority + 6), trend: 'up' },
+          { name: `${cleanDomain.split('.')[0]}-guide.org`, da: Math.max(35, authority - 4), trend: 'steady' },
+          { name: `top-${cleanDomain.split('.')[0]}-solutions.io`, da: Math.min(82, authority + 3), trend: 'up' },
+          { name: `industry-index-${cleanDomain.split('.')[0]}.net`, da: Math.max(32, authority - 8), trend: 'steady' }
+        ];
+      }
+    }
   }
 
   let spamSignals = 0;
@@ -589,7 +627,11 @@ export async function analyzeDomainOverview(url) {
     organicKeywords,
     brokenBacklinks: Math.floor(totalLinks * 0.04),
     competitors,
-    provenance: 'Heuristic Domain Intelligence (Live DNS, HTTP, and Link Topology)'
+    isSimulated: !isLive,
+    dataStatus: isLive ? 'live' : 'heuristic',
+    provenance: isLive
+      ? 'Live DataForSEO Domain Authority & SERP Index'
+      : 'Heuristic Domain Intelligence (Live DNS, HTTP, and Link Topology — Connect DataForSEO in ⚙️ Settings for Live Metrics)'
   };
 }
 
@@ -642,17 +684,26 @@ export async function monitorBrand(brand) {
     sentimentScore,
     reach,
     shareOfVoice: sov,
-    mentions
+    mentions,
+    isSimulated: true,
+    dataStatus: 'simulated',
+    provenance: 'Google Suggest Search Sentiment Heuristics'
   };
 }
 
 /**
  * 7. AI Prompt Engine & SEO Copilot
+ * Supports Google Gemini (2.5/1.5 Flash) and OpenAI (gpt-4o-mini) REST APIs.
+ * When API keys are configured, generates real LLM analysis grounded in live crawled DOM context.
+ * When unconfigured, provides a transparent rule-based heuristic labeled honestly.
  */
-export async function handleAiPrompt(prompt, url = null) {
+export async function handleAiPrompt(prompt, url = null, options = {}) {
+  const startTime = Date.now();
   let pageContext = '';
   let derivedTopic = 'Your Domain';
   let targetDomain = 'example.com';
+  let rawCrawlData = {};
+
   if (url) {
     try {
       const u = new URL(url.startsWith('http') ? url : `https://${url}`);
@@ -662,33 +713,166 @@ export async function handleAiPrompt(prompt, url = null) {
       const $ = cheerio.load(html);
       const title = $('title').text().trim();
       const meta = $('meta[name="description"]').attr('content') || '';
-      const h1 = $('h1').first().text().trim();
+      const h1List = $('h1').map((_, el) => $(el).text().trim()).get().filter(Boolean);
+      const h2List = $('h2').map((_, el) => $(el).text().trim()).get().slice(0, 4);
+      const schemaCount = $('script[type="application/ld+json"]').length;
+      const imagesWithoutAlt = $('img:not([alt]), img[alt=""]').length;
+      const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
+      const wordCount = bodyText.split(' ').filter(Boolean).length;
+
       if (title) derivedTopic = title.replace(/[-|–|:].*$/, '').trim();
-      else if (h1) derivedTopic = h1;
-      pageContext = `Page Title: "${title}" | Meta: "${meta.substring(0, 100)}" | H1: "${h1}"`;
+      else if (h1List[0]) derivedTopic = h1List[0];
+
+      rawCrawlData = {
+        title,
+        meta,
+        h1List,
+        h2List,
+        schemaCount,
+        imagesWithoutAlt,
+        wordCount
+      };
+
+      pageContext = `Page Title: "${title}"\nMeta Description: "${meta}"\nH1 Tags: ${JSON.stringify(h1List)}\nPrimary H2s: ${JSON.stringify(h2List)}\nSchema Blocks: ${schemaCount}\nImages Missing Alt: ${imagesWithoutAlt}\nWord Count: ~${wordCount}`;
     } catch {}
   }
 
-  const p = (prompt || '').toLowerCase();
-  let response = '';
+  const geminiKey = options.geminiKey || options.apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  const openaiKey = options.openaiKey || process.env.OPENAI_API_KEY;
 
-  if (p.includes('meta') || p.includes('description') || p.includes('title')) {
-    response = pageContext
-      ? `Based on your audited page context (${pageContext}):\n\n1. Target Length: 150–160 characters for meta description, 50–60 characters for title.\n2. Title Structure: [Primary Keyword] – [High-Value Feature / USP] | [Brand Name].\n3. Meta Description Formula: [Action Verb] + [Primary Search Query] + [Unique Value Proposition] + [Clear CTA].\n4. Verified Snippet Example:\n   <title>${derivedTopic} – Official Guide & Complete Overview | ${targetDomain}</title>\n   <meta name="description" content="Explore verified features, services, and official updates for ${derivedTopic}. Learn how to get started and access official resources today."/>`
-      : `Recommended Meta Tag Strategy:\n• Title: 50–60 characters. Place primary target keyword first, followed by modifier and brand name.\n• Meta Description: 150–160 characters. Incorporate high-CTR triggers (Key Features, Free Access, Instant Verification).\n• Add OpenGraph og:title and og:description to preserve preview cards across social networks.`;
-  } else if (p.includes('keyword') || p.includes('content') || p.includes('cluster')) {
-    response = `Recommended Content Hub & Spoke Model:\n\n1. Pillar Page: "Comprehensive Guide to ${derivedTopic}" (High Search Intent Hub).\n2. Supporting Spokes (Sub-topics):\n   • "Key Features & Capabilities of ${derivedTopic}"\n   • "Best Practices & Implementation Guide for ${derivedTopic}"\n   • "Comparing Top Alternatives to ${derivedTopic}"\n   • "Frequently Asked Questions & Troubleshooting for ${derivedTopic}"\n3. Internal Linking: Every spoke page must link back to the primary pillar page using descriptive semantic anchor text.`;
-  } else if (p.includes('competitor') || p.includes('gap')) {
-    response = `Competitor Gap Remediation Plan:\n\n1. Identify Competitor Footprint: Analyze organic competitors ranking on page 1 for core commercial queries.\n2. Content Differentiator: Provide verified primary research, structured comparative tables, and interactive utility tools that competitors lack.\n3. Structured Data Edge: Inject FAQPage + Organization schema to secure rich SERP carousels above standard competitor organic links.`;
-  } else if (p.includes('backlink') || p.includes('link')) {
-    response = `Authority Backlink Blueprint:\n\n1. Industry Registries & Resource Hubs: Outreach to accredited directories and curated ecosystem resources in your domain.\n2. News Jacking & Digital PR: Release quarterly industry benchmark reports and case studies to earn tier-1 editorial citations.\n3. Disavow Scrapers: Export and submit the OmniSEO Google Disavow file to remove toxic link farms and scraping networks.\n4. Reclaim Unlinked Mentions: Monitor mentions of "${derivedTopic}" and request contextual hyperlinks to canonical landing pages.`;
-  } else if (p.includes('speed') || p.includes('cwv') || p.includes('lcp')) {
-    response = `Core Web Vitals Optimization Checklist:\n\n1. LCP (<2.5s): Preload the critical hero banner with <link rel="preload" as="image" href="..." fetchpriority="high"> and serve modern AVIF/WebP formats.\n2. CLS (<0.1): Add explicit width and height attributes to all <img> tags to avoid layout shifts.\n3. INP (<200ms): Defer non-critical analytics and chat widgets using defer or requestIdleCallback.`;
-  } else {
-    response = `OmniSEO Strategy Guidance:\n\nFocus on the convergence of Traditional SEO and AI Search (GEO):\n• Structure direct answer paragraphs (40–60 words) immediately beneath H2 tags for Perplexity and Google AI Overviews.\n• Ensure 100% of images have descriptive, localized alt tags.\n• Resolve internal keyword cannibalization via cross-page canonicals or 301 redirects.\n• Maintain strict schema validation for FAQPage, Organization, and WebPage entities.`;
+  // 1. Try Google Gemini API if key is available
+  if (geminiKey) {
+    try {
+      const systemInstruction = `You are an elite AI SEO Architect and Technical Search Strategist for OmniSEO OS.
+Provide concise, tactical, bullet-pointed recommendations based on the target page's real crawled context and the user's prompt.
+Include precise HTML/code snippets where relevant (such as meta tags, schema, or robots rules).
+Be direct, actionable, and mathematically grounded in modern search algorithms.`;
+
+      const promptPayload = {
+        contents: [
+          {
+            parts: [
+              {
+                text: `${systemInstruction}\n\nPAGE CONTEXT:\n${pageContext || `Target Domain: ${targetDomain}`}\n\nUSER PROMPT / TASK:\n${prompt}`
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 1024
+        }
+      };
+
+      // Try gemini-2.5-flash then fallback to gemini-1.5-flash
+      let geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(promptPayload),
+        timeout: 15000
+      });
+
+      if (!geminiRes.ok) {
+        geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(promptPayload),
+          timeout: 15000
+        });
+      }
+
+      if (geminiRes.ok) {
+        const geminiData = await geminiRes.json();
+        const generatedText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (generatedText) {
+          return {
+            response: generatedText,
+            model: 'Google Gemini 2.5 Flash',
+            isRealLlm: true,
+            latencyMs: Date.now() - startTime,
+            provenance: 'Live Generative AI (Google Gemini 2.5 Flash)'
+          };
+        }
+      }
+    } catch (llmErr) {
+      // Fall through to next provider or heuristic
+    }
   }
 
-  return { response };
+  // 2. Try OpenAI API if key is available
+  if (openaiKey) {
+    try {
+      const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an elite AI SEO Architect and Technical Search Strategist for OmniSEO OS. Provide concise, tactical, bullet-pointed recommendations based on the target page\'s crawled context and the user\'s prompt.'
+            },
+            {
+              role: 'user',
+              content: `PAGE CONTEXT:\n${pageContext || `Target Domain: ${targetDomain}`}\n\nUSER PROMPT / TASK:\n${prompt}`
+            }
+          ],
+          temperature: 0.3,
+          max_tokens: 1024
+        }),
+        timeout: 15000
+      });
+
+      if (openaiRes.ok) {
+        const openaiData = await openaiRes.json();
+        const generatedText = openaiData.choices?.[0]?.message?.content;
+        if (generatedText) {
+          return {
+            response: generatedText,
+            model: 'OpenAI GPT-4o-mini',
+            isRealLlm: true,
+            latencyMs: Date.now() - startTime,
+            provenance: 'Live Generative AI (OpenAI GPT-4o-mini)'
+          };
+        }
+      }
+    } catch (llmErr) {
+      // Fall through to heuristic
+    }
+  }
+
+  // 3. Fallback: Transparent Rule-Based Heuristic
+  const p = (prompt || '').toLowerCase();
+  let baseResponse = '';
+
+  if (p.includes('meta') || p.includes('description') || p.includes('title')) {
+    baseResponse = pageContext
+      ? `Based on your audited page context:\n${pageContext}\n\n1. Target Length: 150–160 characters for meta description, 50–60 characters for title.\n2. Title Formula: [Primary Keyword] – [High-Value Feature / USP] | [Brand Name].\n3. Meta Description Formula: [Action Verb] + [Primary Search Query] + [Unique Value Proposition] + [Clear CTA].\n4. Tailored Snippet Recommendation:\n   <title>${derivedTopic} – Verified Guide & Complete Overview | ${targetDomain}</title>\n   <meta name="description" content="Explore verified features, services, and official updates for ${derivedTopic}. Learn how to get started and access official resources today."/>`
+      : `Recommended Meta Tag Strategy:\n• Title: 50–60 characters. Place primary target keyword first, followed by modifier and brand name.\n• Meta Description: 150–160 characters. Incorporate high-CTR triggers (Key Features, Free Access, Instant Verification).\n• Add OpenGraph og:title and og:description to preserve preview cards across social networks.`;
+  } else if (p.includes('keyword') || p.includes('content') || p.includes('cluster')) {
+    baseResponse = `Recommended Content Hub & Spoke Model for ${derivedTopic}:\n\n1. Pillar Page: "Comprehensive Guide to ${derivedTopic}" (High Search Intent Hub).\n2. Supporting Spokes (Sub-topics):\n   • "Key Features & Capabilities of ${derivedTopic}"\n   • "Best Practices & Implementation Guide for ${derivedTopic}"\n   • "Comparing Top Alternatives to ${derivedTopic}"\n   • "Frequently Asked Questions & Troubleshooting for ${derivedTopic}"\n3. Internal Linking: Every spoke page must link back to the primary pillar page using descriptive semantic anchor text.`;
+  } else if (p.includes('competitor') || p.includes('gap')) {
+    baseResponse = `Competitor Gap Remediation Plan for ${targetDomain}:\n\n1. Identify Competitor Footprint: Analyze organic competitors ranking on page 1 for core commercial queries.\n2. Content Differentiator: Provide verified primary research, structured comparative tables, and interactive utility tools that competitors lack.\n3. Structured Data Edge: Inject FAQPage + Organization schema to secure rich SERP carousels above standard competitor organic links.`;
+  } else if (p.includes('backlink') || p.includes('link')) {
+    baseResponse = `Authority Backlink Blueprint for ${targetDomain}:\n\n1. Industry Registries & Resource Hubs: Outreach to accredited directories and curated ecosystem resources in your domain.\n2. News Jacking & Digital PR: Release quarterly industry benchmark reports and case studies to earn tier-1 editorial citations.\n3. Disavow Scrapers: Export and submit the OmniSEO Google Disavow file to remove toxic link farms and scraping networks.\n4. Reclaim Unlinked Mentions: Monitor mentions of "${derivedTopic}" and request contextual hyperlinks to canonical landing pages.`;
+  } else if (p.includes('speed') || p.includes('cwv') || p.includes('lcp')) {
+    baseResponse = `Core Web Vitals Optimization Checklist:\n\n1. LCP (<2.5s): Preload the critical hero banner with <link rel="preload" as="image" href="..." fetchpriority="high"> and serve modern AVIF/WebP formats.\n2. CLS (<0.1): Add explicit width and height attributes to all <img> tags to avoid layout shifts.\n3. INP (<200ms): Defer non-critical analytics and chat widgets using defer or requestIdleCallback.`;
+  } else {
+    baseResponse = `OmniSEO Strategy Guidance for ${targetDomain}:\n\nFocus on the convergence of Traditional SEO and AI Search (GEO):\n• Structure direct answer paragraphs (40–60 words) immediately beneath H2 tags for Perplexity and Google AI Overviews.\n• Ensure 100% of images have descriptive, localized alt tags.\n• Resolve internal keyword cannibalization via cross-page canonicals or 301 redirects.\n• Maintain strict schema validation for FAQPage, Organization, and WebPage entities.`;
+  }
+
+  const prefixedNotice = '⚡ [Rule-Based Heuristic — Connect Google Gemini or OpenAI API Key in ⚙️ Settings for Live Generative Reasoning]\n\n';
+
+  return {
+    response: `${prefixedNotice}${baseResponse}`,
+    model: 'Rule-Based Pattern Matcher (No API Key Configured)',
+    isRealLlm: false,
+    latencyMs: Date.now() - startTime,
+    provenance: 'Rule-Based Heuristic — Connect Gemini/OpenAI in ⚙️ Settings'
+  };
 }
 
 /**
@@ -743,7 +927,7 @@ export async function extractSavedKeywords(url) {
 /**
  * 9. Competitor Gap Intelligence Studio
  */
-export async function analyzeCompetitorGap(targetUrl, competitorDomain) {
+export async function analyzeCompetitorGap(targetUrl, competitorDomain, options = {}) {
   let targetHost = 'example.com';
   try {
     const u = new URL(targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`);
@@ -753,7 +937,6 @@ export async function analyzeCompetitorGap(targetUrl, competitorDomain) {
   const isMega = /google|wikipedia|github|microsoft|apple|amazon|youtube/i.test(targetHost);
   const isTech = /stack|gitlab|npm|vercel|dev\.to|medium/i.test(targetHost);
   const isTravel = /booking|airbnb|expedia|hotels|kayak/i.test(targetHost);
-  const isPilgrim = /yatradham/i.test(targetHost);
 
   let targetDA, targetTraffic, targetRefDomains;
   if (isMega) {
@@ -768,10 +951,6 @@ export async function analyzeCompetitorGap(targetUrl, competitorDomain) {
     targetDA = 88;
     targetTraffic = '45.0M';
     targetRefDomains = 38500;
-  } else if (isPilgrim) {
-    targetDA = 68;
-    targetTraffic = '418,138';
-    targetRefDomains = 840;
   } else {
     const hash = targetHost.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
     targetDA = 55 + (hash % 30);
@@ -783,7 +962,7 @@ export async function analyzeCompetitorGap(targetUrl, competitorDomain) {
   if (isMega) defaultComp = targetHost.includes('github') ? 'gitlab.com' : 'wikipedia.org';
   else if (isTech) defaultComp = 'github.com';
   else if (isTravel) defaultComp = 'booking.com';
-  else if (isPilgrim) defaultComp = 'tripadvisor.in';
+  else defaultComp = `competitor-${targetHost.replace(/\.[a-z]+$/, '')}.com`;
 
   const compHost = (competitorDomain || defaultComp).replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
 
@@ -957,7 +1136,10 @@ export async function analyzeCompetitorGap(targetUrl, competitorDomain) {
     untappedKeywords,
     sharedKeywords,
     backlinkGaps,
-    actionPlan
+    actionPlan,
+    isSimulated: true,
+    dataStatus: 'heuristic',
+    provenance: 'Heuristic Competitor Gap Matrix (Connect DataForSEO in ⚙️ Settings for live SERP competitor ranking)'
   };
 }
 

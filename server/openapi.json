@@ -1,0 +1,299 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "OmniSEO OS Universal API",
+    "version": "1.0.0",
+    "description": "Enterprise-grade autonomous SEO operating system API providing multi-page crawling, live Core Web Vitals, backlink intelligence, GEO/AEO AI search readiness, and generative SEO strategic copilot.",
+    "contact": {
+      "name": "OmniSEO OS Engineering Team",
+      "url": "https://universal-ai-seo-operating-system.onrender.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Active OmniSEO OS Instance"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "GooglePsiApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-psi-key",
+        "description": "Google PageSpeed Insights API Key"
+      },
+      "GeminiApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-gemini-key",
+        "description": "Google Gemini 2.5/1.5 Flash API Key"
+      },
+      "OpenAiApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-openai-key",
+        "description": "OpenAI GPT-4o-mini API Key"
+      },
+      "DataForSeoLogin": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-dataforseo-login",
+        "description": "DataForSEO API Login ID"
+      },
+      "DataForSeoPassword": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-dataforseo-password",
+        "description": "DataForSEO API Password / Token"
+      }
+    }
+  },
+  "paths": {
+    "/api/v1/plan": {
+      "post": {
+        "summary": "Plan Orchestrated Multi-Agent Execution",
+        "description": "Parses natural language queries and returns a structured multi-agent execution plan with required disciplines and entity detection.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": { "type": "string", "example": "Audit https://example.com and check Core Web Vitals" },
+                  "url": { "type": "string", "example": "https://example.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Execution plan generated successfully" },
+          "400": { "description": "Invalid input query or URL" }
+        }
+      }
+    },
+    "/api/v1/execute": {
+      "post": {
+        "summary": "Execute Unified Multi-Agent Audit",
+        "description": "Runs parallel specialized agents (Technical DOM, PageSpeed, Ahrefs, GEO/AEO, Trends, SERP) and returns a unified canonical audit model with line-level code fixes.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": { "type": "string" },
+                  "plan": { "type": "object" },
+                  "url": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Audit executed with complete canonical model and line-level recommendations" },
+          "400": { "description": "Target query or URL required" }
+        }
+      }
+    },
+    "/api/v1/audit": {
+      "post": {
+        "summary": "Multi-Page Deep Site Crawler",
+        "description": "Recursively crawls internal site architecture up to 20 pages with line-level code patch generation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["url"],
+                "properties": {
+                  "url": { "type": "string", "example": "https://example.com" },
+                  "maxPages": { "type": "integer", "default": 15, "maximum": 20 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Crawled internal page tree with identified issues" }
+        }
+      }
+    },
+    "/api/v1/backlinks": {
+      "post": {
+        "summary": "Backlink Intelligence & Disavow Generator",
+        "description": "Analyzes referring domains, domain authority, anchor text diversity, toxic link risk, and generates Google Disavow rules.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": { "type": "string", "example": "https://example.com" },
+                  "domain": { "type": "string", "example": "example.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Backlink profile and disavow rules payload" }
+        }
+      }
+    },
+    "/api/v1/ai-prompt": {
+      "post": {
+        "summary": "AI SEO Strategy Copilot",
+        "description": "Answers strategic SEO queries using live Google Gemini (2.5/1.5 Flash) or OpenAI (gpt-4o-mini) grounded in real crawled DOM context.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt": { "type": "string", "example": "Generate high-CTR meta tags and schema recommendations" },
+                  "url": { "type": "string", "example": "https://example.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Generative AI strategic advice" }
+        }
+      }
+    },
+    "/api/v1/domain": {
+      "post": {
+        "summary": "Domain Overview & Benchmark",
+        "description": "Returns domain rating, SSL status, network latency, and peer competitor benchmarks.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["url"],
+                "properties": {
+                  "url": { "type": "string", "example": "https://example.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Domain intelligence metrics" }
+        }
+      }
+    },
+    "/api/v1/competitor-gap": {
+      "post": {
+        "summary": "Competitor Authority & Keyword Gap Studio",
+        "description": "Discovers untapped keywords, DA deficits, and link gap opportunities with estimated INR CPC.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["targetUrl"],
+                "properties": {
+                  "targetUrl": { "type": "string", "example": "https://example.com" },
+                  "competitorDomain": { "type": "string", "example": "competitor.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Comparative competitor gap payload" }
+        }
+      }
+    },
+    "/api/v1/scrape": {
+      "post": {
+        "summary": "Universal Web Scraper Studio",
+        "description": "Transforms live web pages into clean LLM-optimized Markdown or structured JSON metadata.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["url"],
+                "properties": {
+                  "url": { "type": "string", "example": "https://example.com" },
+                  "mode": { "type": "string", "enum": ["markdown", "metadata", "selector", "html"], "default": "markdown" },
+                  "selector": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Extracted content and statistics" }
+        }
+      }
+    },
+    "/api/v1/robots-sitemap": {
+      "get": {
+        "summary": "Robots.txt & XML Sitemap Explorer",
+        "description": "Probes server root for robots.txt, evaluates AI bot permissions (GPTBot, ClaudeBot, PerplexityBot), and parses declared XML sitemaps.",
+        "parameters": [
+          { "name": "url", "in": "query", "required": true, "schema": { "type": "string" }, "example": "https://example.com" }
+        ],
+        "responses": {
+          "200": { "description": "Robots.txt directives and parsed sitemap URLs" }
+        }
+      }
+    },
+    "/api/v1/head-eeat": {
+      "post": {
+        "summary": "HTML <head> & E-E-A-T Quality Signals",
+        "description": "Comprehensive <head> tag linter and Google Search Quality Rater E-E-A-T trust signals evaluation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["url"],
+                "properties": {
+                  "url": { "type": "string", "example": "https://example.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Head completeness and E-E-A-T quality audit results" }
+        }
+      }
+    },
+    "/api/v1/settings": {
+      "get": {
+        "summary": "Get Configured API Keys Status",
+        "description": "Returns masked configuration status for Google PSI, Gemini, OpenAI, and DataForSEO.",
+        "responses": {
+          "200": { "description": "Status of configured credentials" }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "summary": "Service Health Check",
+        "description": "Returns operational status and active capability catalog.",
+        "responses": {
+          "200": { "description": "Service status" }
+        }
+      }
+    }
+  }
+}

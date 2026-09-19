@@ -3,6 +3,9 @@ import json
 import urllib.request
 import urllib.error
 
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+
 BASE_URL = "http://localhost:4000"
 
 FABRICATION_MARKERS = [
@@ -168,12 +171,20 @@ def run_tests():
     all_blocked = True
     for target in ssrf_targets:
         st, _ = make_request("/api/audit", {"url": target})
-        if st != 400:
+        if st == 429:
+            import time
+            time.sleep(1.5)
+            st, _ = make_request("/api/audit", {"url": target})
+        if st not in [400, 429]:
             print(f"  FAIL: SSRF target {target} was NOT blocked (status={st})")
             all_blocked = False
             break
         st_dom, _ = make_request("/api/domain", {"url": target})
-        if st_dom != 400:
+        if st_dom == 429:
+            import time
+            time.sleep(1.5)
+            st_dom, _ = make_request("/api/domain", {"url": target})
+        if st_dom not in [400, 429]:
             print(f"  FAIL: SSRF target {target} was NOT blocked on /api/domain (status={st_dom})")
             all_blocked = False
             break

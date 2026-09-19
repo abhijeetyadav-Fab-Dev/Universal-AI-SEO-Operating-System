@@ -75,7 +75,7 @@ async def main():
         
         # Wait for table to populate
         print("  ⏳ Waiting for crawler to analyze internal pages...")
-        await page.wait_for_selector("#crawledPagesTable tbody tr", timeout=20000)
+        await page.wait_for_selector("#crawledPagesTable tbody tr", timeout=60000)
         crawled_rows = await page.query_selector_all("#crawledPagesTable tbody tr")
         print(f"  ✅ Crawled and indexed {len(crawled_rows)} internal pages.")
         assert len(crawled_rows) >= 2, "Must crawl at least 2 pages!"

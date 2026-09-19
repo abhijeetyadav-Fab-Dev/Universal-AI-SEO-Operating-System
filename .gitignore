@@ -27,6 +27,8 @@ Thumbs.db
 .vscode/
 *.suo
 *.ntvs*
-*.njsproj
-*.sln
 *.sw?
+
+# Python Cache
+__pycache__/
+*.py[cod]

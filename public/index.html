@@ -308,6 +308,7 @@
           <span style="font-size:0.68rem; opacity:0.8; margin-left:2px;">▾</span>
         </div>
         <button class="header-nav-btn outline" onclick="openProvenanceModal()" style="border-color:rgba(16,185,129,0.4); color:#a7f3d0;" title="View Data Provenance: Live Ground-Truth vs Simulated Benchmarks">ℹ️ Data Provenance</button>
+        <button class="header-nav-btn outline" onclick="openApiSettingsModal()" style="border-color:rgba(56,189,248,0.4); color:#38bdf8;" title="Configure Live API Keys: Google PSI, Gemini, OpenAI, DataForSEO">⚙️ API Settings</button>
         <a href="/blog" class="header-nav-btn outline" style="text-decoration:none;" title="SEO Guides & Knowledge Base">📚 Guides</a>
         <button class="header-nav-btn outline" onclick="openEngineModal()">📊 Engine Matrix</button>
         <button class="header-nav-btn" onclick="document.getElementById('queryInput').focus(); document.getElementById('queryInput').scrollIntoView({behavior:'smooth'});">⚡ Quick Audit</button>
@@ -490,8 +491,14 @@
           <div class="panel">
             <div class="panel-title">
               <span>⚡ Core Web Vitals &amp; Performance Radar</span>
-              <span id="cwvPanelBadge" style="font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;">⚠️ Lab Fallback (PSI Key Unset)</span>
+              <span id="cwvPanelBadge" onclick="openApiSettingsModal()" style="cursor:pointer; font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;" title="Click to configure Google PageSpeed API key">⚠️ Key Required (Connect in ⚙️ Settings)</span>
             </div>
+            
+            <div id="cwvKeyPromptBox" style="display:none; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:6px; padding:8px 12px; margin-bottom:10px; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.75rem; color:#fde68a;">⚠️ Live Core Web Vitals requires free PSI key.</span>
+              <button onclick="openApiSettingsModal()" class="btn-line-tag" style="background:rgba(245,158,11,0.2); border:1px solid #f59e0b; color:#fff; cursor:pointer; font-size:0.7rem;">⚙️ Connect Key</button>
+            </div>
+
             <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:12px;">
               <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
                 <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
@@ -548,11 +555,11 @@
           <div class="panel">
             <div class="panel-title">
               <span>🤖 AI Search (GEO) Presence</span>
-              <span style="font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;" title="Simulated citation topology model based on domain authority and topic topology.">🧪 Simulated Model</span>
+              <span id="geoPanelBadge" style="font-size:0.7rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;" title="DOM schema grounding readiness and LLM entity probe">⚡ DOM Grounding &amp; Entity Audit</span>
             </div>
             <table class="data-table" id="geoTable">
               <thead>
-                <tr><th>AI Engine</th><th>Presence</th><th>Share</th></tr>
+                <tr><th>AI Engine</th><th>Presence Status</th><th>Citation Readiness</th></tr>
               </thead>
               <tbody></tbody>
             </table>
@@ -866,7 +873,7 @@
                 <option value="15" selected>Crawl 15 Pages</option>
                 <option value="20">Crawl 20 Pages</option>
               </select>
-              <button class="btn" style="padding:8px 16px; font-size:0.85rem;" onclick="triggerSiteAudit()">🚀 Start Deep Crawl</button>
+              <button class="btn" style="padding:8px 16px; font-size:0.85rem;" onclick="triggerSiteAudit(event)">🚀 Start Deep Crawl</button>
             </div>
           </div>
 
@@ -903,6 +910,7 @@
             <div style="display:flex; gap:8px; align-items:center;">
               <h4 style="color:#38bdf8; font-size:1.05rem;">🌐 Domain Overview &amp; Competitor Benchmarks</h4>
               <span style="font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-weight:700;">🧪 Simulated Topology Benchmark</span>
+              <button onclick="openApiSettingsModal()" style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.35); color:#38bdf8; font-size:0.72rem; border-radius:4px; padding:2px 8px; cursor:pointer; font-weight:600; transition:all 0.2s;">⚙️ Connect Live API</button>
             </div>
             <span style="font-size:0.75rem; color:var(--text-muted);">Heuristic domain metrics &amp; competitor link gaps</span>
           </div>
@@ -938,6 +946,7 @@
             <div style="display:flex; gap:8px; align-items:center;">
               <h4 style="color:#38bdf8; font-size:1.05rem;">📈 Search Console &amp; Target Keyword Rank Tracker</h4>
               <span style="font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-weight:700;">🧪 GSC Simulator (OAuth Disconnected)</span>
+              <button onclick="openApiSettingsModal()" style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.35); color:#38bdf8; font-size:0.72rem; border-radius:4px; padding:2px 8px; cursor:pointer; font-weight:600; transition:all 0.2s;">⚙️ Connect Live API</button>
             </div>
             <span style="font-size:0.75rem; color:var(--text-muted);">Connect Google Search Console via OAuth for verified live search data</span>
           </div>
@@ -993,6 +1002,7 @@
             <div style="display:flex; gap:8px; align-items:center;">
               <h4 style="color:#38bdf8; font-size:1.05rem;">🏷️ Brand Sentiment &amp; Omnichannel Presence</h4>
               <span style="font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-weight:700;">🧪 Simulated Mentions (Social API Disconnected)</span>
+              <button onclick="openApiSettingsModal()" style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.35); color:#38bdf8; font-size:0.72rem; border-radius:4px; padding:2px 8px; cursor:pointer; font-weight:600; transition:all 0.2s;">⚙️ Connect Live API</button>
             </div>
             <span style="font-size:0.75rem; color:var(--text-muted);">Connect Brand24 / Social APIs for live tracking</span>
           </div>
@@ -1200,9 +1210,10 @@
         <div id="tabAiCopilot" class="deep-tab-content" style="display:none;">
           <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
-              <h4 style="color:#a855f7; font-size:1rem; display:flex; align-items:center; gap:8px;">
+              <h4 style="color:#a855f7; font-size:1rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <span>🤖 OmniSEO AI Strategy Copilot &amp; Prompt Terminal</span>
-                <span style="font-size:0.7rem; color:#a855f7; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-weight:700;">⚡ Rule-Based Strategy Engine</span>
+                <span id="aiCopilotModelBadge" style="font-size:0.7rem; color:#a855f7; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-weight:700;">⚡ Rule-Based Strategy (Connect Gemini in Settings)</span>
+                <button onclick="openApiSettingsModal()" style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); color:#38bdf8; border-radius:4px; padding:2px 8px; cursor:pointer; font-size:0.72rem;">⚙️ Settings</button>
               </h4>
               <span style="font-size:0.75rem; color:var(--text-muted);">Contextualized recommendations grounded in crawled DOM &amp; keyword positions</span>
             </div>
@@ -1665,6 +1676,100 @@
     </div>
   </div>
 
+  <!-- Enterprise API Settings Modal -->
+  <div id="apiSettingsModal" class="modal-overlay" onclick="handleModalBackdropClick(event, 'apiSettingsModal')">
+    <div class="modal-container" style="max-width:780px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:36px; height:36px; border-radius:10px; background:rgba(56,189,248,0.2); border:1px solid rgba(56,189,248,0.4); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">
+            ⚙️
+          </div>
+          <div>
+            <h3 style="color:#fff; font-size:1.15rem; font-weight:800; margin-bottom:2px;">Enterprise API Settings</h3>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Connect live API providers for zero-simulation production audits</span>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('apiSettingsModal')">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding:22px; display:flex; flex-direction:column; gap:16px;">
+        <!-- Google PageSpeed Insights -->
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <strong style="color:#f8fafc; font-size:0.88rem;">⚡ Google PageSpeed Insights API</strong>
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;">(Free, 25,000 queries/day)</span>
+            </div>
+            <span id="psiStatusBadge" style="font-size:0.72rem; padding:2px 8px; border-radius:4px; font-weight:700; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">Unconfigured</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="password" id="inputPsiKey" class="command-input" placeholder="AIzaSy... (leave blank to use server environment default)" style="padding:8px 12px; font-size:0.82rem; font-family:'JetBrains Mono',monospace;">
+            <button class="btn outline" onclick="testApiKey('psi')" style="padding:8px 14px; font-size:0.78rem; white-space:nowrap;">Test Connection</button>
+          </div>
+          <div id="psiTestMsg" style="font-size:0.72rem; margin-top:6px; display:none;"></div>
+        </div>
+
+        <!-- Google Gemini API -->
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <strong style="color:#f8fafc; font-size:0.88rem;">✨ Google Gemini API (2.5 / 1.5 Flash)</strong>
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;">(Free tier on Google AI Studio)</span>
+            </div>
+            <span id="geminiStatusBadge" style="font-size:0.72rem; padding:2px 8px; border-radius:4px; font-weight:700; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">Unconfigured</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="password" id="inputGeminiKey" class="command-input" placeholder="AIzaSy... (powers live Generative AI Strategy Copilot)" style="padding:8px 12px; font-size:0.82rem; font-family:'JetBrains Mono',monospace;">
+            <button class="btn outline" onclick="testApiKey('gemini')" style="padding:8px 14px; font-size:0.78rem; white-space:nowrap;">Test Connection</button>
+          </div>
+          <div id="geminiTestMsg" style="font-size:0.72rem; margin-top:6px; display:none;"></div>
+        </div>
+
+        <!-- OpenAI API (gpt-4o-mini) -->
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <strong style="color:#f8fafc; font-size:0.88rem;">🤖 OpenAI API (gpt-4o-mini)</strong>
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;">(Alternative LLM copilot provider)</span>
+            </div>
+            <span id="openaiStatusBadge" style="font-size:0.72rem; padding:2px 8px; border-radius:4px; font-weight:700; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">Unconfigured</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="password" id="inputOpenaiKey" class="command-input" placeholder="sk-... (optional fallback)" style="padding:8px 12px; font-size:0.82rem; font-family:'JetBrains Mono',monospace;">
+            <button class="btn outline" onclick="testApiKey('openai')" style="padding:8px 14px; font-size:0.78rem; white-space:nowrap;">Test Connection</button>
+          </div>
+          <div id="openaiTestMsg" style="font-size:0.72rem; margin-top:6px; display:none;"></div>
+        </div>
+
+        <!-- DataForSEO Live Backlinks API -->
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <strong style="color:#f8fafc; font-size:0.88rem;">🔗 DataForSEO Live Backlinks Index</strong>
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;">(Live backlink index, ~$0.02/query)</span>
+            </div>
+            <span id="dataforseoStatusBadge" style="font-size:0.72rem; padding:2px 8px; border-radius:4px; font-weight:700; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">Unconfigured</span>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:8px;">
+            <input type="text" id="inputDataforseoLogin" class="command-input" placeholder="Login Email" style="padding:8px 12px; font-size:0.82rem;">
+            <input type="password" id="inputDataforseoPassword" class="command-input" placeholder="API Password / Key" style="padding:8px 12px; font-size:0.82rem; font-family:'JetBrains Mono',monospace;">
+            <button class="btn outline" onclick="testApiKey('dataforseo')" style="padding:8px 14px; font-size:0.78rem; white-space:nowrap;">Test Connection</button>
+          </div>
+          <div id="dataforseoTestMsg" style="font-size:0.72rem; margin-top:6px; display:none;"></div>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid var(--border);">
+          <button class="btn outline" onclick="clearAllApiSettings()" style="border-color:rgba(244,63,94,0.3); color:#fda4af; font-size:0.78rem;">Clear All Saved Keys</button>
+          <div style="display:flex; gap:10px;">
+            <button class="btn outline" onclick="closeModal('apiSettingsModal')" style="font-size:0.8rem;">Cancel</button>
+            <button class="btn" onclick="saveApiSettings()" style="background:var(--primary); font-size:0.82rem; font-weight:700;">💾 Save &amp; Apply Keys</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Data Provenance & Ground Truth Transparency Modal -->
   <div id="provenanceInfoModal" class="modal-overlay" onclick="handleModalBackdropClick(event, 'provenanceInfoModal')">
     <div class="modal-container" style="max-width:1050px;">
@@ -2006,6 +2111,138 @@
       `).join('');
     }
 
+    // ─── API SETTINGS MANAGER & BYOK CLIENT CONTROLLER ──────
+    function getApiHeaders() {
+      const saved = JSON.parse(localStorage.getItem('omniseo_api_keys') || '{}');
+      const headers = { 'Content-Type': 'application/json' };
+      if (saved.psiApiKey) headers['x-psi-key'] = saved.psiApiKey;
+      if (saved.geminiApiKey) headers['x-gemini-key'] = saved.geminiApiKey;
+      if (saved.openaiApiKey) headers['x-openai-key'] = saved.openaiApiKey;
+      if (saved.dataforseoLogin) headers['x-dataforseo-login'] = saved.dataforseoLogin;
+      if (saved.dataforseoPassword) headers['x-dataforseo-password'] = saved.dataforseoPassword;
+      return headers;
+    }
+
+    async function openApiSettingsModal() {
+      const modal = document.getElementById('apiSettingsModal');
+      if (modal) modal.classList.add('active');
+      await loadApiSettingsStatus();
+    }
+
+    async function loadApiSettingsStatus() {
+      const saved = JSON.parse(localStorage.getItem('omniseo_api_keys') || '{}');
+      if (saved.psiApiKey) document.getElementById('inputPsiKey').value = saved.psiApiKey;
+      if (saved.geminiApiKey) document.getElementById('inputGeminiKey').value = saved.geminiApiKey;
+      if (saved.openaiApiKey) document.getElementById('inputOpenaiKey').value = saved.openaiApiKey;
+      if (saved.dataforseoLogin) document.getElementById('inputDataforseoLogin').value = saved.dataforseoLogin;
+      if (saved.dataforseoPassword) document.getElementById('inputDataforseoPassword').value = saved.dataforseoPassword;
+
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data.success && data.settings) {
+          updateBadge('psiStatusBadge', data.settings.psi.configured || Boolean(saved.psiApiKey), data.settings.psi.maskedKey);
+          updateBadge('geminiStatusBadge', data.settings.gemini.configured || Boolean(saved.geminiApiKey), data.settings.gemini.maskedKey);
+          updateBadge('openaiStatusBadge', data.settings.openai.configured || Boolean(saved.openaiApiKey), data.settings.openai.maskedKey);
+          updateBadge('dataforseoStatusBadge', data.settings.dataforseo.configured || Boolean(saved.dataforseoLogin && saved.dataforseoPassword), data.settings.dataforseo.maskedLogin);
+        }
+      } catch {}
+    }
+
+    function updateBadge(badgeId, isConfigured, maskedVal) {
+      const el = document.getElementById(badgeId);
+      if (!el) return;
+      if (isConfigured) {
+        el.innerText = `● Configured ${maskedVal ? `(${maskedVal})` : ''}`;
+        el.style.background = 'rgba(16,185,129,0.15)';
+        el.style.color = '#10b981';
+        el.style.borderColor = 'rgba(16,185,129,0.3)';
+      } else {
+        el.innerText = '○ Unconfigured';
+        el.style.background = 'rgba(245,158,11,0.15)';
+        el.style.color = '#f59e0b';
+        el.style.borderColor = 'rgba(245,158,11,0.3)';
+      }
+    }
+
+    async function testApiKey(service) {
+      const msgEl = document.getElementById(`${service}TestMsg`);
+      if (msgEl) {
+        msgEl.style.display = 'block';
+        msgEl.style.color = '#93c5fd';
+        msgEl.innerText = `Testing ${service.toUpperCase()} connection...`;
+      }
+
+      const payload = { service };
+      if (service === 'psi') payload.apiKey = document.getElementById('inputPsiKey').value;
+      if (service === 'gemini') payload.apiKey = document.getElementById('inputGeminiKey').value;
+      if (service === 'openai') payload.apiKey = document.getElementById('inputOpenaiKey').value;
+      if (service === 'dataforseo') {
+        payload.login = document.getElementById('inputDataforseoLogin').value;
+        payload.password = document.getElementById('inputDataforseoPassword').value;
+      }
+
+      try {
+        const res = await fetch('/api/settings/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          msgEl.style.color = '#10b981';
+          msgEl.innerText = `✅ ${data.message} (${data.latencyMs}ms)`;
+          updateBadge(`${service}StatusBadge`, true);
+        } else {
+          msgEl.style.color = '#f43f5e';
+          msgEl.innerText = `❌ Error: ${data.error || 'Connection test failed'}`;
+        }
+      } catch (err) {
+        if (msgEl) {
+          msgEl.style.color = '#f43f5e';
+          msgEl.innerText = `❌ Network Error: ${err.message}`;
+        }
+      }
+    }
+
+    async function saveApiSettings() {
+      const settings = {
+        psiApiKey: document.getElementById('inputPsiKey').value.trim(),
+        geminiApiKey: document.getElementById('inputGeminiKey').value.trim(),
+        openaiApiKey: document.getElementById('inputOpenaiKey').value.trim(),
+        dataforseoLogin: document.getElementById('inputDataforseoLogin').value.trim(),
+        dataforseoPassword: document.getElementById('inputDataforseoPassword').value.trim()
+      };
+
+      localStorage.setItem('omniseo_api_keys', JSON.stringify(settings));
+
+      try {
+        const res = await fetch('/api/settings/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(settings)
+        });
+        const data = await res.json();
+        alert('✅ API settings successfully saved and active!');
+        closeModal('apiSettingsModal');
+      } catch {
+        alert('Saved to local browser storage.');
+        closeModal('apiSettingsModal');
+      }
+    }
+
+    function clearAllApiSettings() {
+      if (confirm('Clear all saved API keys?')) {
+        localStorage.removeItem('omniseo_api_keys');
+        document.getElementById('inputPsiKey').value = '';
+        document.getElementById('inputGeminiKey').value = '';
+        document.getElementById('inputOpenaiKey').value = '';
+        document.getElementById('inputDataforseoLogin').value = '';
+        document.getElementById('inputDataforseoPassword').value = '';
+        saveApiSettings();
+      }
+    }
+
     async function runExecution() {
       const query = document.getElementById('queryInput').value;
       document.getElementById('loading').style.display = 'block';
@@ -2014,7 +2251,7 @@
       try {
         const res = await fetch('/api/execute', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getApiHeaders(),
           body: JSON.stringify({ query, plan: currentPlan })
         });
         const data = await res.json();
@@ -2340,30 +2577,57 @@
 
       // GEO Table
       const geoTable = document.getElementById('geoTable').querySelector('tbody');
-      geoTable.innerHTML = (d.geoAeo?.citationsAnalysis || []).map(g => `
+      geoTable.innerHTML = (d.geoAeo?.citationsAnalysis || []).map(g => {
+        const readinessDisplay = g.citationShare || (g.citationReadiness ? `${g.citationReadiness} (${g.readinessScore}/100)` : '--');
+        const statusColor = (g.presenceStatus && (g.presenceStatus.includes('READY') || g.presenceStatus.includes('GROUNDED'))) ? 'var(--emerald)' : '#f59e0b';
+        return `
         <tr>
           <td><strong>${g.engine}</strong></td>
-          <td><span style="color:var(--emerald); font-size:0.8rem;">● ${g.presenceStatus}</span></td>
-          <td>${g.citationShare}</td>
+          <td><span style="color:${statusColor}; font-size:0.8rem;">● ${g.presenceStatus}</span></td>
+          <td><span style="font-weight:700; color:#f8fafc;">${readinessDisplay}</span></td>
         </tr>
-      `).join('');
+      `;
+      }).join('');
 
       // Populate Real-Time CWV Performance Radar in Sidebar Stack
       if (d.pageSpeed) {
         const isFallback = Boolean(d.pageSpeed.isFallback);
+        const isFromCache = Boolean(d.pageSpeed.fromCache);
+        const isUnavailable = d.pageSpeed.dataStatus === 'unavailable';
         const cwvBadge = document.getElementById('cwvPanelBadge');
+        const cwvPromptBox = document.getElementById('cwvKeyPromptBox');
+
+        if (cwvPromptBox) {
+          cwvPromptBox.style.display = isUnavailable ? 'flex' : 'none';
+        }
+
         if (cwvBadge) {
-          cwvBadge.innerText = isFallback ? '⚠️ Lab Fallback (PSI Key Unset)' : '⚡ Live Google PSI API';
-          cwvBadge.style.color = isFallback ? '#f59e0b' : '#10b981';
-          cwvBadge.style.background = isFallback ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)';
-          cwvBadge.style.borderColor = isFallback ? 'rgba(245,158,11,0.3)' : 'rgba(16,185,129,0.3)';
+          if (isUnavailable) {
+            cwvBadge.innerText = '⚠️ Key Required (Connect in ⚙️ Settings)';
+            cwvBadge.style.color = '#f59e0b';
+            cwvBadge.style.background = 'rgba(245,158,11,0.15)';
+            cwvBadge.style.borderColor = 'rgba(245,158,11,0.3)';
+          } else if (isFromCache) {
+            cwvBadge.innerText = `⚡ Live Google PSI (Cached ${d.pageSpeed.cachedAgeSec ? `${d.pageSpeed.cachedAgeSec}s ago` : ''})`;
+            cwvBadge.style.color = '#10b981';
+            cwvBadge.style.background = 'rgba(16,185,129,0.15)';
+            cwvBadge.style.borderColor = 'rgba(16,185,129,0.3)';
+          } else if (isFallback) {
+            cwvBadge.innerText = '⚠️ Lab Fallback (PSI Key Unset)';
+            cwvBadge.style.color = '#f59e0b';
+            cwvBadge.style.background = 'rgba(245,158,11,0.15)';
+            cwvBadge.style.borderColor = 'rgba(245,158,11,0.3)';
+          } else {
+            cwvBadge.innerText = '⚡ Live Google PSI API';
+            cwvBadge.style.color = '#10b981';
+            cwvBadge.style.background = 'rgba(16,185,129,0.15)';
+            cwvBadge.style.borderColor = 'rgba(16,185,129,0.3)';
+          }
         }
         const metricCwvBadge = document.getElementById('metricCwvBadge');
         if (metricCwvBadge) {
-          metricCwvBadge.innerText = isFallback ? '⚠️ Lab Benchmark' : '⚡ Live Google PSI';
-          metricCwvBadge.style.color = isFallback ? '#fde68a' : '#a7f3d0';
-          metricCwvBadge.style.background = isFallback ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)';
-          metricCwvBadge.style.borderColor = isFallback ? 'rgba(245,158,11,0.3)' : 'rgba(16,185,129,0.3)';
+          metricCwvBadge.innerText = isUnavailable ? '⚠️ Key Required' : (isFallback ? '⚠️ Lab Benchmark' : '⚡ Live Google PSI');
+          metricCwvBadge.style.color = (isUnavailable || isFallback) ? '#fde68a' : '#a7f3d0';
         }
 
         if (d.pageSpeed.cwvMetrics) {
@@ -2440,9 +2704,9 @@
 
       // Populate Backlink Snapshot in Sidebar Stack
       if (d.backlinks) {
-        if (document.getElementById('sideDrVal')) document.getElementById('sideDrVal').innerText = d.backlinks.domainRating !== undefined ? d.backlinks.domainRating : '--';
-        if (document.getElementById('sideRefDomVal')) document.getElementById('sideRefDomVal').innerText = d.backlinks.referringDomains !== undefined ? d.backlinks.referringDomains.toLocaleString() : '--';
-        if (document.getElementById('sideToxicVal')) document.getElementById('sideToxicVal').innerText = d.backlinks.toxicDomains ? d.backlinks.toxicDomains.length : 0;
+        if (document.getElementById('sideDrVal')) document.getElementById('sideDrVal').innerText = d.backlinks.domainRating !== undefined ? d.backlinks.domainRating : (d.backlinks.domainAuthority !== undefined ? d.backlinks.domainAuthority : '--');
+        if (document.getElementById('sideRefDomVal')) document.getElementById('sideRefDomVal').innerText = d.backlinks.referringDomainsCount !== undefined ? d.backlinks.referringDomainsCount.toLocaleString() : (d.backlinks.referringDomains !== undefined ? d.backlinks.referringDomains.toLocaleString() : '--');
+        if (document.getElementById('sideToxicVal')) document.getElementById('sideToxicVal').innerText = d.backlinks.toxicDomainsCount !== undefined ? d.backlinks.toxicDomainsCount : (d.backlinks.toxicDomains ? d.backlinks.toxicDomains.length : 0);
       }
 
       // Render Tab 1: Images List
@@ -2570,10 +2834,10 @@
       // Render Deep Backlinks Tab
       const bl = d.backlinks;
       if (bl) {
-        document.getElementById('blDomainRating').innerText = bl.domainAuthority || '58';
-        document.getElementById('blTotalBacklinks').innerText = (bl.totalBacklinks || 14200).toLocaleString();
-        document.getElementById('blRefDomains').innerText = (bl.referringDomainsCount || 840).toLocaleString();
-        document.getElementById('blToxicRisk').innerText = bl.toxicRisk || bl.toxicLinkRisk || 'LOW (1.8%)';
+        document.getElementById('blDomainRating').innerText = bl.domainAuthority !== undefined ? bl.domainAuthority : (bl.domainRating !== undefined ? bl.domainRating : '--');
+        document.getElementById('blTotalBacklinks').innerText = bl.totalBacklinks !== undefined ? bl.totalBacklinks.toLocaleString() : '--';
+        document.getElementById('blRefDomains').innerText = bl.referringDomainsCount !== undefined ? bl.referringDomainsCount.toLocaleString() : '--';
+        document.getElementById('blToxicRisk').innerText = bl.toxicRiskLevel ? `${bl.toxicRiskLevel} (${bl.toxicPercentage || 0}%)` : (bl.toxicRisk || 'LOW');
 
         // Anchor Distribution Bars
         const anchorBox = document.getElementById('anchorDistributionBars');
@@ -2706,6 +2970,7 @@
     }
 
     // Loads Domain Overview and Brand Mentions
+    // Loads Domain Overview and Brand Mentions
     async function loadDomainAndBrand(url) {
       if (!url) return;
       const domain = new URL(url).hostname;
@@ -2713,22 +2978,22 @@
       // 1. Domain Overview
       fetch('/api/domain', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getApiHeaders(),
         body: JSON.stringify({ url })
       }).then(r => r.json()).then(data => {
-        document.getElementById('domAuthority').innerText = `${data.authority || 58}/100`;
-        document.getElementById('domSSL').innerText = data.isSSL ? '✅ Valid TLS 1.3 / HTTPS' : '❌ Insecure HTTP';
-        document.getElementById('domTraffic').innerText = (data.organicTraffic || 24000).toLocaleString() + ' /mo';
-        document.getElementById('domSpamScore').innerText = data.spamScore || '1.8%';
+        document.getElementById('domAuthority').innerText = (data.authority !== undefined && data.authority !== null) ? `${data.authority}/100` : '--';
+        document.getElementById('domSSL').innerText = data.isSSL !== undefined ? (data.isSSL ? '✅ Valid TLS 1.3 / HTTPS' : '❌ Insecure HTTP') : '--';
+        document.getElementById('domTraffic').innerText = (data.organicTraffic !== undefined && data.organicTraffic !== null) ? `${Number(data.organicTraffic).toLocaleString()} /mo` : '--';
+        document.getElementById('domSpamScore').innerText = (data.spamScore !== undefined && data.spamScore !== null) ? `${data.spamScore}` : '--';
 
         const compTbody = document.getElementById('domainCompetitorsTable').querySelector('tbody');
         if (compTbody && data.competitors) {
           compTbody.innerHTML = data.competitors.map(c => `
             <tr>
-              <td><strong>${c.name}</strong></td>
-              <td><span style="color:#38bdf8; font-weight:700;">DA ${c.da}</span></td>
+              <td><strong>${escapeHtml(c.name)}</strong></td>
+              <td><span style="color:#38bdf8; font-weight:700;">DA ${escapeHtml(String(c.da))}</span></td>
               <td><span style="color:${c.trend === 'up' ? '#10b981' : '#f59e0b'}; font-weight:700;">${c.trend === 'up' ? '▲ Surging' : '▬ Steady'}</span></td>
-              <td><button class="btn-line-tag" style="background:rgba(59,130,246,0.2); border:1px solid #3b82f6; color:#93c5fd; cursor:pointer; font-weight:700;" onclick="openCompetitorGapModal('${c.name}')">⚔️ Analyze Gap ↗</button></td>
+              <td><button class="btn-line-tag" style="background:rgba(59,130,246,0.2); border:1px solid #3b82f6; color:#93c5fd; cursor:pointer; font-weight:700;" onclick="openCompetitorGapModal('${escapeHtml(c.name)}')">⚔️ Analyze Gap ↗</button></td>
             </tr>
           `).join('');
         }
@@ -2737,23 +3002,23 @@
       // 2. GSC & Rank Tracking
       fetch('/api/gsc', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getApiHeaders(),
         body: JSON.stringify({ url })
       }).then(r => r.json()).then(data => {
-        document.getElementById('gscClicks').innerText = (data.clicks || 14800).toLocaleString();
-        document.getElementById('gscImpressions').innerText = data.impressions ? (data.impressions > 1000 ? (data.impressions/1000).toFixed(1) + 'k' : data.impressions) : '192.4k';
-        document.getElementById('gscCtr').innerText = data.ctr || '7.69%';
-        document.getElementById('gscPosition').innerText = data.position || '4.2';
+        document.getElementById('gscClicks').innerText = (data.clicks !== undefined && data.clicks !== null) ? Number(data.clicks).toLocaleString() : '--';
+        document.getElementById('gscImpressions').innerText = (data.impressions !== undefined && data.impressions !== null) ? (data.impressions > 1000 ? (data.impressions/1000).toFixed(1) + 'k' : data.impressions) : '--';
+        document.getElementById('gscCtr').innerText = (data.ctr !== undefined && data.ctr !== null) ? `${data.ctr}` : '--';
+        document.getElementById('gscPosition').innerText = (data.position !== undefined && data.position !== null) ? `${data.position}` : '--';
 
         const qTbody = document.getElementById('gscQueriesTable').querySelector('tbody');
         if (qTbody && data.queries) {
           qTbody.innerHTML = data.queries.map(q => `
             <tr>
               <td><strong>${escapeHtml(q.q)}</strong></td>
-              <td>${q.c}</td>
-              <td>${q.i}</td>
-              <td>${q.ctr}</td>
-              <td style="color:#38bdf8; font-weight:700;">#${q.p}</td>
+              <td>${escapeHtml(String(q.c))}</td>
+              <td>${escapeHtml(String(q.i))}</td>
+              <td>${escapeHtml(String(q.ctr))}</td>
+              <td style="color:#38bdf8; font-weight:700;">#${escapeHtml(String(q.p))}</td>
             </tr>
           `).join('');
         }
@@ -2762,10 +3027,10 @@
         if (pTbody && data.pages) {
           pTbody.innerHTML = data.pages.map(p => `
             <tr>
-              <td style="word-break:break-all;"><a href="${p.url}" target="_blank" style="color:#93c5fd; text-decoration:none;">${escapeHtml(p.url)}</a></td>
-              <td>${p.c}</td>
-              <td>${p.i}</td>
-              <td>${p.ctr}</td>
+              <td style="word-break:break-all;"><a href="${escapeHtml(p.url)}" target="_blank" style="color:#93c5fd; text-decoration:none;">${escapeHtml(p.url)}</a></td>
+              <td>${escapeHtml(String(p.c))}</td>
+              <td>${escapeHtml(String(p.i))}</td>
+              <td>${escapeHtml(String(p.ctr))}</td>
             </tr>
           `).join('');
         }
@@ -2774,7 +3039,7 @@
       // 3. Rank Tracker
       fetch('/api/rank', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getApiHeaders(),
         body: JSON.stringify({ url })
       }).then(r => r.json()).then(data => {
         const rTbody = document.getElementById('rankTrackerTable').querySelector('tbody');
@@ -2782,11 +3047,11 @@
           rTbody.innerHTML = data.keywords.map(k => `
             <tr>
               <td><strong>${escapeHtml(k.kw)}</strong></td>
-              <td><span style="color:#38bdf8; font-weight:700;">#${k.currentPos}</span></td>
-              <td>#${k.prevPos}</td>
+              <td><span style="color:#38bdf8; font-weight:700;">#${escapeHtml(String(k.currentPos))}</span></td>
+              <td>#${escapeHtml(String(k.prevPos))}</td>
               <td><span style="color:${k.change >= 0 ? '#10b981' : '#f43f5e'}; font-weight:700;">${k.change >= 0 ? '+' + k.change : k.change}</span></td>
-              <td>${k.vol}</td>
-              <td><span style="color:${k.trend === 'up' ? '#10b981' : '#f59e0b'}; font-size:0.8rem;">● ${k.trend}</span></td>
+              <td>${escapeHtml(String(k.vol))}</td>
+              <td><span style="color:${k.trend === 'up' ? '#10b981' : '#f59e0b'}; font-size:0.8rem;">● ${escapeHtml(String(k.trend))}</span></td>
             </tr>
           `).join('');
         }
@@ -2796,21 +3061,21 @@
       const brandName = domain.split('.')[0];
       fetch('/api/brand', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getApiHeaders(),
         body: JSON.stringify({ brand: brandName })
       }).then(r => r.json()).then(data => {
-        document.getElementById('brandSentiment').innerText = data.sentiment || 'Positive (84%)';
-        document.getElementById('brandReach').innerText = data.reach || '2.4M';
-        document.getElementById('brandSov').innerText = data.shareOfVoice || '12.4%';
+        document.getElementById('brandSentiment').innerText = data.sentiment || '--';
+        document.getElementById('brandReach').innerText = data.reach || '--';
+        document.getElementById('brandSov').innerText = data.shareOfVoice || '--';
 
         const bTbody = document.getElementById('brandMentionsTable').querySelector('tbody');
         if (bTbody && data.mentions) {
           bTbody.innerHTML = data.mentions.map(m => `
             <tr>
-              <td><strong>${m.source}</strong></td>
-              <td><span style="color:${m.sentiment === 'Positive' ? '#10b981' : '#f59e0b'}; font-weight:700;">● ${m.sentiment}</span></td>
-              <td>${m.reach}</td>
-              <td>${m.date}</td>
+              <td><strong>${escapeHtml(m.source)}</strong></td>
+              <td><span style="color:${m.sentiment === 'Positive' ? '#10b981' : '#f59e0b'}; font-weight:700;">● ${escapeHtml(m.sentiment)}</span></td>
+              <td>${escapeHtml(String(m.reach))}</td>
+              <td>${escapeHtml(String(m.date))}</td>
             </tr>
           `).join('');
         }
@@ -2902,18 +3167,18 @@
     }
 
     // Trigger Multi-Page Site Audit
-    async function triggerSiteAudit() {
+    async function triggerSiteAudit(e) {
       const url = currentAuditResult?.canonicalModel?.targetUrl || 'https://example.com';
       const maxPages = parseInt(document.getElementById('crawlMaxPages').value, 10) || 15;
-      const btn = event.target;
-      const originalText = btn.innerText;
-      btn.innerText = '⏳ Crawling Site Architecture...';
-      btn.disabled = true;
+      const btn = (e && e.target) || (typeof window !== 'undefined' && window.event && window.event.target) || document.querySelector("button[onclick*='triggerSiteAudit']") || {};
+      const originalText = btn.innerText || 'Start Deep Crawl';
+      if (btn.innerText) btn.innerText = '⏳ Crawling Site Architecture...';
+      if (btn.disabled !== undefined) btn.disabled = true;
 
       try {
         const res = await fetch('/api/audit', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getApiHeaders(),
           body: JSON.stringify({ url, maxPages })
         });
         const data = await res.json();
@@ -3018,11 +3283,19 @@
         const url = currentAuditResult?.canonicalModel?.targetUrl || '';
         const res = await fetch('/api/ai-prompt', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getApiHeaders(),
           body: JSON.stringify({ prompt, url })
         });
         const data = await res.json();
         resBox.innerText = data.response;
+
+        const badge = document.getElementById('aiCopilotModelBadge');
+        if (badge && data.model) {
+          badge.innerText = data.isRealLlm ? `✨ ${data.model}` : `⚡ ${data.model}`;
+          badge.style.color = data.isRealLlm ? '#10b981' : '#a855f7';
+          badge.style.background = data.isRealLlm ? 'rgba(16,185,129,0.15)' : 'rgba(168,85,247,0.15)';
+          badge.style.borderColor = data.isRealLlm ? 'rgba(16,185,129,0.3)' : 'rgba(168,85,247,0.3)';
+        }
       } catch (err) {
         resBox.innerText = 'Failed to get response: ' + err.message;
       }

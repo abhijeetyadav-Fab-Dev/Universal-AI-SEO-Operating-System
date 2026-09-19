@@ -11,7 +11,7 @@ import { fetchGoogleTrendsAndVolume } from '../adapters/trends.js';
  * Computes transparent Priority Score:
  *   Priority Score = (Business Impact * Traffic Opportunity * Confidence) / Implementation Effort
  */
-export async function executeOrchestratedPlan(plan) {
+export async function executeOrchestratedPlan(plan, options = {}) {
   const startTime = Date.now();
 
   // Robust input normalization: handle arbitrary or missing plan structures safely
@@ -28,44 +28,37 @@ export async function executeOrchestratedPlan(plan) {
     targetUrl = `https://${targetUrl}`;
   }
 
-  let targetDomain = detectedEntities.targetDomain;
+  let targetDomain = detectedEntities.targetDomain || plan.targetDomain || plan.domain;
   if (!targetDomain) {
     try {
-      targetDomain = new URL(targetUrl).hostname;
+      targetDomain = new URL(targetUrl).hostname.replace(/^www\./, '');
     } catch {
       targetDomain = 'example.com';
     }
   }
 
-  // Support flexible agent lists
-  let agents = Array.isArray(executionPlan.agents) ? executionPlan.agents : [];
-  if (agents.length === 0 && Array.isArray(plan.agents)) {
-    agents = plan.agents.map(a => typeof a === 'string' ? { id: a, name: a } : a);
-  }
-  if (agents.length === 0) {
-    agents = [
-      { id: 'agent_technical_crawler', name: 'Technical Crawler & DOM Engine' },
-      { id: 'agent_psi_cwv', name: 'PageSpeed & Core Web Vitals Radar' },
-      { id: 'agent_serp_keyword', name: 'SERP & Keyword Intelligence' },
-      { id: 'agent_backlink', name: 'Backlink Authority Radar' },
-      { id: 'agent_google_trends', name: 'Google Trends & Search Volume' },
-      { id: 'agent_geo_aeo', name: 'GEO / AEO Engine' }
-    ];
-  }
+  const agents = Array.isArray(executionPlan.agents) ? executionPlan.agents : [
+    { id: 'agent_technical_crawler', name: 'Technical SEO Crawler' },
+    { id: 'agent_psi_cwv', name: 'Google PageSpeed Insights' },
+    { id: 'agent_serp_keyword', name: 'SERP & Intent Analyzer' },
+    { id: 'agent_backlink', name: 'Backlink Intelligence & Authority Profile' },
+    { id: 'agent_google_trends', name: 'Google Trends & Volume Engine' },
+    { id: 'agent_geo_aeo', name: 'GEO / AEO Engine' }
+  ];
 
   const agentResults = {};
   const executionPromises = [];
 
-  // 1. Run Technical Crawler first to gather real ground-truth page context
+  // 1. Crawl Technical SEO first so we have the REAL on-page context
   if (agents.some(a => a.id === 'agent_technical_crawler')) {
     try {
       agentResults.technical = await auditTechnical(targetUrl);
     } catch (err) {
-      agentResults.technical = { error: err.message };
+      agentResults.technical = { error: err.message, issues: [] };
     }
   }
 
-  // Derive real page context from the actual crawled HTML
+  // Extract real crawled page context for downstream agents
   const pageContext = {
     url: targetUrl,
     title: agentResults.technical?.seoMeta?.title || '',
@@ -76,10 +69,10 @@ export async function executeOrchestratedPlan(plan) {
     ? pageContext.title.replace(/[-|–|:].*$/, '').replace(/official|home|welcome/gi, '').trim()
     : targetDomain.replace(/^www\./, '').split('.')[0];
 
-  // 2. Execute other specialist agents using real on-page topic context
+  // 2. Execute other specialist agents using real on-page topic context & configured API keys
   if (agents.some(a => a.id === 'agent_psi_cwv')) {
     executionPromises.push(
-      fetchPageSpeed(targetUrl)
+      fetchPageSpeed(targetUrl, 'mobile', options.psiApiKey)
         .then(res => { agentResults.pageSpeed = res; })
         .catch(err => { agentResults.pageSpeed = { error: err.message }; })
     );
@@ -96,7 +89,7 @@ export async function executeOrchestratedPlan(plan) {
 
   if (agents.some(a => a.id === 'agent_backlink')) {
     executionPromises.push(
-      auditBacklinks(targetDomain, targetUrl)
+      auditBacklinks(targetDomain, targetUrl, options)
         .then(res => { agentResults.backlinks = res; })
         .catch(err => { agentResults.backlinks = { error: err.message }; })
     );
@@ -113,7 +106,11 @@ export async function executeOrchestratedPlan(plan) {
 
   if (agents.some(a => a.id === 'agent_geo_aeo')) {
     executionPromises.push(
-      auditGeoAeo(targetDomain, cleanDomainTopic)
+      auditGeoAeo(targetDomain, cleanDomainTopic, {
+        url: targetUrl,
+        geminiKey: options.geminiKey,
+        openaiKey: options.openaiKey
+      })
         .then(res => { agentResults.geoAeo = res; })
         .catch(err => { agentResults.geoAeo = { error: err.message }; })
     );
@@ -170,7 +167,9 @@ export async function executeOrchestratedPlan(plan) {
   }
 
   // 2. Core Web Vitals (Largest Contentful Paint)
-  const lcpDisplay = agentResults.pageSpeed?.cwvMetrics?.lcp?.displayValue || '2.8s';
+  const rawLcp = agentResults.pageSpeed?.cwvMetrics?.lcp?.displayValue;
+  const lcpDisplay = (rawLcp && rawLcp !== 'N/A') ? rawLcp : '2.8s (Estimated Benchmark)';
+  const lcpMs = agentResults.pageSpeed?.cwvMetrics?.lcp?.numericValueMs || 2800;
   const firstImg = agentResults.technical?.images?.detailedList?.[0];
   const heroAssetSrc = firstImg?.src || `https://${targetDomain}/hero-banner.webp`;
   const lcpLine = firstImg?.lineNumber || 1;
@@ -180,7 +179,9 @@ export async function executeOrchestratedPlan(plan) {
     discipline: 'CORE_WEB_VITALS',
     title: `Optimize Largest Contentful Paint (LCP: ${lcpDisplay})`,
     problem: `LCP is ${lcpDisplay} (exceeding Google's strict 2.5s threshold). Critical hero imagery or heading assets should be preloaded for instant rendering.`,
-    evidence: `Google PSI Mobile Lab Test: LCP = ${agentResults.pageSpeed?.cwvMetrics?.lcp?.numericValueMs || 2800}ms. Critical element render delay accounts for significant page load time.`,
+    evidence: agentResults.pageSpeed?.isFallback
+      ? `Estimated Benchmark: LCP ~${lcpMs}ms (Connect Google PSI key in Settings for live telemetry). Critical element render delay accounts for significant page load time.`
+      : `Google PSI Mobile Lab Test: LCP = ${lcpMs}ms. Critical element render delay accounts for significant page load time.`,
     targetUrl,
     selector: 'head > link[rel="preload"], header img, .hero-banner',
     lineNumber: lcpLine,
@@ -334,7 +335,7 @@ export async function executeOrchestratedPlan(plan) {
 
   // Calculate Overall Health Index
   let technicalScore = agentResults.technical?.score || 85;
-  let speedScore = agentResults.pageSpeed?.performanceScore || 80;
+  let speedScore = agentResults.pageSpeed?.performanceScore ?? 78;
   let overallHealth = Math.round((technicalScore * 0.5) + (speedScore * 0.3) + ((agentResults.geoAeo?.overallGeoScore || 75) * 0.2));
 
   return {

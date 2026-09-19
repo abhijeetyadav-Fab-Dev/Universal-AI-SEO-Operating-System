@@ -151,22 +151,19 @@ export async function auditHeadAndEeat(url) {
   const eeatChecks = [];
   let eeatScore = 0;
 
-  // Experience: First-hand proof, user reviews, visual amenities
-  const isPilgrim = url.includes('yatradham') || /kumbh|yatra|temple|dharamshala|ashram/i.test(html);
+  // Experience: First-hand proof, user reviews, visual amenities or product proof
   const hasReviews = html.includes('review') || html.includes('rating') || html.includes('testimonial') || $('[class*="review"], [class*="rating"]').length > 0;
-  const hasProductOrServiceProof = isPilgrim
-    ? (html.includes('dharamshala') || html.includes('room') || html.includes('bath') || html.includes('check-in'))
-    : (html.includes('feature') || html.includes('pricing') || html.includes('documentation') || html.includes('demo'));
+  const hasProductOrServiceProof = html.includes('feature') || html.includes('pricing') || html.includes('documentation') || html.includes('demo') || html.includes('room') || html.includes('product') || html.includes('service');
   const expScore = (hasReviews ? 12 : 5) + (hasProductOrServiceProof ? 13 : 5);
   eeatScore += expScore;
   eeatChecks.push({
     pillar: 'EXPERIENCE',
-    title: isPilgrim ? 'First-Hand Pilgrim & User Experience Proof' : 'First-Hand User Experience & Social Proof',
+    title: 'First-Hand User Experience & Social Proof',
     score: `${expScore}/25`,
     status: expScore >= 20 ? 'STRONG' : 'MODERATE',
     evidence: hasReviews
-      ? (isPilgrim ? 'Verified guest reviews, room ratings, and visual booking criteria detected.' : 'Verified user reviews, ratings, and implementation proof detected.')
-      : 'Limited review or testimonial evidence detected on page.'
+      ? 'Verified user reviews, client testimonials, and product usage proof detected.'
+      : 'Limited user review or experiential testimonial evidence detected on page.'
   });
 
   // Expertise: Author, Dates, Specific technical or topic accuracy
@@ -176,12 +173,12 @@ export async function auditHeadAndEeat(url) {
   eeatScore += expertScore;
   eeatChecks.push({
     pillar: 'EXPERTISE',
-    title: isPilgrim ? 'Domain Expertise & Up-to-Date Itinerary Accuracy' : 'Domain Expertise & Content Freshness',
+    title: 'Domain Expertise & Content Freshness',
     score: `${expertScore}/25`,
     status: expertScore >= 20 ? 'STRONG' : 'MODERATE',
     evidence: hasDates
-      ? (isPilgrim ? 'Verified event dates, schedules, and local itinerary details documented.' : 'Fresh publication dates, version updates, and domain expertise documented.')
-      : 'Generic descriptions without exact publication or update dates.'
+      ? 'Fresh publication dates, scheduled revisions, and verified domain expertise documented.'
+      : 'Generic descriptions without verified publication or update dates.'
   });
 
   // Authoritativeness: Organization schema, Press citations, External links

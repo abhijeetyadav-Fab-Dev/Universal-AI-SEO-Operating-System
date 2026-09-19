@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -24,6 +27,33 @@ import { auditHeadAndEeat } from './adapters/head_eeat.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ─── ACTIVE ENTERPRISE API SETTINGS STORE ─────────────────
+const activeApiSettings = {
+  psiApiKey: process.env.GOOGLE_PSI_API_KEY || process.env.PAGESPEED_API_KEY || '',
+  geminiApiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '',
+  openaiApiKey: process.env.OPENAI_API_KEY || '',
+  dataforseoLogin: process.env.DATAFORSEO_LOGIN || '',
+  dataforseoPassword: process.env.DATAFORSEO_PASSWORD || ''
+};
+
+export function maskKey(key) {
+  if (!key || typeof key !== 'string') return null;
+  const trimmed = key.trim();
+  if (trimmed.length <= 8) return '••••••••';
+  return `${trimmed.substring(0, 4)}••••${trimmed.substring(trimmed.length - 4)}`;
+}
+
+export function resolveRequestOptions(req) {
+  return {
+    psiApiKey: req.headers['x-psi-key'] || activeApiSettings.psiApiKey || '',
+    geminiKey: req.headers['x-gemini-key'] || activeApiSettings.geminiApiKey || '',
+    openaiKey: req.headers['x-openai-key'] || activeApiSettings.openaiApiKey || '',
+    dataforseoLogin: req.headers['x-dataforseo-login'] || activeApiSettings.dataforseoLogin || '',
+    dataforseoPassword: req.headers['x-dataforseo-password'] || activeApiSettings.dataforseoPassword || '',
+    dataforseoKey: req.headers['x-dataforseo-key'] || ''
+  };
+}
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -34,7 +64,7 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'self'; base-uri 'self'; form-action 'self';");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'self'; base-uri 'self'; form-action 'self';");
   next();
 });
 
@@ -49,20 +79,25 @@ function rateLimiter(req, res, next) {
   
   const clientIp = (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.socket?.remoteAddress || '127.0.0.1';
   const now = Date.now();
-  const isCrawlEndpoint = req.path === '/api/audit' || req.path === '/api/scrape';
+  const isCrawlEndpoint = req.path === '/api/audit' || req.path === '/api/scrape' || req.path === '/api/v1/audit' || req.path === '/api/v1/scrape';
   const limit = isCrawlEndpoint ? MAX_CRAWL_API_PER_MIN : MAX_GENERAL_API_PER_MIN;
 
   let clientRecord = rateLimitMap.get(clientIp);
   if (!clientRecord) {
-    clientRecord = { timestamps: [] };
+    clientRecord = { crawl: [], general: [] };
     rateLimitMap.set(clientIp, clientRecord);
   }
 
-  // Purge expired timestamps in window
-  clientRecord.timestamps = clientRecord.timestamps.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+  const bucket = isCrawlEndpoint ? clientRecord.crawl : clientRecord.general;
+  const filtered = bucket.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+  if (isCrawlEndpoint) {
+    clientRecord.crawl = filtered;
+  } else {
+    clientRecord.general = filtered;
+  }
 
-  if (clientRecord.timestamps.length >= limit) {
-    const oldest = clientRecord.timestamps[0];
+  if (filtered.length >= limit) {
+    const oldest = filtered[0];
     const retryAfterSec = Math.max(1, Math.ceil((RATE_LIMIT_WINDOW_MS - (now - oldest)) / 1000));
     res.setHeader('Retry-After', retryAfterSec);
     return res.status(429).json({
@@ -72,7 +107,7 @@ function rateLimiter(req, res, next) {
     });
   }
 
-  clientRecord.timestamps.push(now);
+  filtered.push(now);
   next();
 }
 
@@ -80,8 +115,9 @@ function rateLimiter(req, res, next) {
 setInterval(() => {
   const now = Date.now();
   for (const [ip, record] of rateLimitMap.entries()) {
-    record.timestamps = record.timestamps.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
-    if (record.timestamps.length === 0) {
+    record.crawl = record.crawl.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+    record.general = record.general.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+    if (record.crawl.length === 0 && record.general.length === 0) {
       rateLimitMap.delete(ip);
     }
   }
@@ -138,6 +174,61 @@ app.get('/blog/:slug', (req, res) => {
   });
 });
 
+// ─── OPENAPI 3.0 SPECIFICATION & INTERACTIVE DOCUMENTATION ──
+app.get(['/api/openapi.json', '/api/v1/openapi.json'], (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.sendFile(path.join(__dirname, 'openapi.json'));
+});
+
+app.get(['/api/docs', '/api/v1/docs'], (req, res) => {
+  res.type('html').send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniSEO OS — Enterprise API (v1) Reference</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <style>
+    body { margin: 0; background: #0b0f19; font-family: system-ui, -apple-system, sans-serif; color: #f1f5f9; }
+    .top-header { background: #020617; border-bottom: 1px solid #1e293b; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .top-header h1 { margin: 0; font-size: 1.1rem; color: #38bdf8; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+    .top-header a { color: #94a3b8; text-decoration: none; font-size: 0.85rem; padding: 6px 12px; border: 1px solid #334155; border-radius: 6px; transition: all 0.2s; }
+    .top-header a:hover { color: #f8fafc; border-color: #38bdf8; background: rgba(56,189,248,0.1); }
+    .swagger-ui { filter: invert(88%) hue-rotate(180deg); max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .swagger-ui .topbar { display: none; }
+    .swagger-ui img { filter: invert(100%) hue-rotate(180deg); }
+  </style>
+</head>
+<body>
+  <div class="top-header">
+    <h1>⚡ OmniSEO OS — Enterprise API (v1) Reference</h1>
+    <div style="display:flex; gap:12px;">
+      <a href="/api/v1/openapi.json" target="_blank">OpenAPI 3.0 Spec JSON ↗</a>
+      <a href="/">← Return to Dashboard</a>
+    </div>
+  </div>
+  <div id="swagger-ui"></div>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = () => {
+      window.ui = SwaggerUIBundle({
+        url: '/api/v1/openapi.json',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        layout: "BaseLayout"
+      });
+    };
+  </script>
+</body>
+</html>`);
+});
+
 export function isSafeUrl(rawUrl) {
   try {
     if (!rawUrl || typeof rawUrl !== 'string') return false;
@@ -175,8 +266,129 @@ export function isSafeUrl(rawUrl) {
   }
 }
 
+// ─── 0. ENTERPRISE API SETTINGS & CONNECTIVITY TESTING ──
+app.get(['/api/settings', '/api/v1/settings'], (req, res) => {
+  res.json({
+    success: true,
+    settings: {
+      psi: {
+        configured: Boolean(activeApiSettings.psiApiKey),
+        maskedKey: maskKey(activeApiSettings.psiApiKey)
+      },
+      gemini: {
+        configured: Boolean(activeApiSettings.geminiApiKey),
+        maskedKey: maskKey(activeApiSettings.geminiApiKey)
+      },
+      openai: {
+        configured: Boolean(activeApiSettings.openaiApiKey),
+        maskedKey: maskKey(activeApiSettings.openaiApiKey)
+      },
+      dataforseo: {
+        configured: Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword),
+        maskedLogin: maskKey(activeApiSettings.dataforseoLogin)
+      }
+    }
+  });
+});
+
+app.post(['/api/settings/save', '/api/v1/settings/save'], (req, res) => {
+  const { psiApiKey, geminiApiKey, openaiApiKey, dataforseoLogin, dataforseoPassword } = req.body || {};
+  if (psiApiKey !== undefined) activeApiSettings.psiApiKey = (psiApiKey || '').trim();
+  if (geminiApiKey !== undefined) activeApiSettings.geminiApiKey = (geminiApiKey || '').trim();
+  if (openaiApiKey !== undefined) activeApiSettings.openaiApiKey = (openaiApiKey || '').trim();
+  if (dataforseoLogin !== undefined) activeApiSettings.dataforseoLogin = (dataforseoLogin || '').trim();
+  if (dataforseoPassword !== undefined) activeApiSettings.dataforseoPassword = (dataforseoPassword || '').trim();
+
+  res.json({
+    success: true,
+    message: 'API settings saved to active session.',
+    settings: {
+      psi: { configured: Boolean(activeApiSettings.psiApiKey), maskedKey: maskKey(activeApiSettings.psiApiKey) },
+      gemini: { configured: Boolean(activeApiSettings.geminiApiKey), maskedKey: maskKey(activeApiSettings.geminiApiKey) },
+      openai: { configured: Boolean(activeApiSettings.openaiApiKey), maskedKey: maskKey(activeApiSettings.openaiApiKey) },
+      dataforseo: { configured: Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword), maskedLogin: maskKey(activeApiSettings.dataforseoLogin) }
+    }
+  });
+});
+
+app.post(['/api/settings/test', '/api/v1/settings/test'], async (req, res) => {
+  const { service, apiKey, login, password } = req.body || {};
+  if (!service) return res.status(400).json({ error: 'Service identifier is required.' });
+
+  const startTime = Date.now();
+  try {
+    if (service === 'psi') {
+      const keyToTest = apiKey || activeApiSettings.psiApiKey;
+      if (!keyToTest) return res.status(400).json({ error: 'No Google PSI API key provided to test.' });
+      const testUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://example.com&strategy=mobile&key=${encodeURIComponent(keyToTest)}`;
+      const testRes = await fetch(testUrl, { timeout: 15000 });
+      if (!testRes.ok) {
+        const errText = await testRes.text().catch(() => '');
+        return res.status(400).json({ success: false, error: `Google PSI API responded with status ${testRes.status}: ${errText.substring(0, 100)}` });
+      }
+      return res.json({ success: true, message: 'Google PageSpeed Insights API key verified successfully!', latencyMs: Date.now() - startTime });
+    }
+
+    if (service === 'gemini') {
+      const keyToTest = apiKey || activeApiSettings.geminiApiKey;
+      if (!keyToTest) return res.status(400).json({ error: 'No Google Gemini API key provided to test.' });
+      const testRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(keyToTest)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: 'Respond with OK' }] }] }),
+        timeout: 12000
+      });
+      if (!testRes.ok) {
+        const fbRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(keyToTest)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: 'Respond with OK' }] }] }),
+          timeout: 12000
+        });
+        if (!fbRes.ok) {
+          const errText = await fbRes.text().catch(() => '');
+          return res.status(400).json({ success: false, error: `Gemini API responded with status ${fbRes.status}: ${errText.substring(0, 100)}` });
+        }
+      }
+      return res.json({ success: true, message: 'Google Gemini Flash API key verified successfully!', latencyMs: Date.now() - startTime });
+    }
+
+    if (service === 'openai') {
+      const keyToTest = apiKey || activeApiSettings.openaiApiKey;
+      if (!keyToTest) return res.status(400).json({ error: 'No OpenAI API key provided to test.' });
+      const testRes = await fetch('https://api.openai.com/v1/models', {
+        headers: { 'Authorization': `Bearer ${keyToTest}` },
+        timeout: 10000
+      });
+      if (!testRes.ok) {
+        return res.status(400).json({ success: false, error: `OpenAI API responded with status ${testRes.status}` });
+      }
+      return res.json({ success: true, message: 'OpenAI API key verified successfully!', latencyMs: Date.now() - startTime });
+    }
+
+    if (service === 'dataforseo') {
+      const loginToTest = login || activeApiSettings.dataforseoLogin;
+      const passToTest = password || activeApiSettings.dataforseoPassword;
+      if (!loginToTest || !passToTest) return res.status(400).json({ error: 'Both login and password are required for DataForSEO.' });
+      const auth = Buffer.from(`${loginToTest}:${passToTest}`).toString('base64');
+      const testRes = await fetch('https://api.dataforseo.com/v3/appendix/user_data', {
+        headers: { 'Authorization': `Basic ${auth}` },
+        timeout: 10000
+      });
+      if (!testRes.ok) {
+        return res.status(400).json({ success: false, error: `DataForSEO returned status ${testRes.status} (Authentication Failed)` });
+      }
+      return res.json({ success: true, message: 'DataForSEO credentials verified successfully!', latencyMs: Date.now() - startTime });
+    }
+
+    return res.status(400).json({ error: `Unknown service: ${service}` });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ─── 1. CORE ORCHESTRATOR & PLANNER ENDPOINTS ────────────
-app.post('/api/plan', (req, res) => {
+app.post(['/api/plan', '/api/v1/plan'], (req, res) => {
   try {
     if (!req.body || typeof req.body !== 'object') {
       return res.status(400).json({ error: 'Request body must be a JSON object.' });
@@ -193,7 +405,7 @@ app.post('/api/plan', (req, res) => {
   }
 });
 
-app.post('/api/execute', async (req, res) => {
+app.post(['/api/execute', '/api/v1/execute'], async (req, res) => {
   try {
     if (!req.body || typeof req.body !== 'object') {
       return res.status(400).json({ error: 'Request body must be a JSON object.' });
@@ -213,7 +425,8 @@ app.post('/api/execute', async (req, res) => {
     if (url && !finalPlan.targetUrl) {
       finalPlan.targetUrl = url;
     }
-    const result = await executeOrchestratedPlan(finalPlan);
+    const options = resolveRequestOptions(req);
+    const result = await executeOrchestratedPlan(finalPlan, options);
     res.json({ success: true, result });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -223,7 +436,7 @@ app.post('/api/execute', async (req, res) => {
 // ─── 2. OPENSEO SUITE NATIVE API ENDPOINTS ───────────────
 
 // Multi-Page Site Audit (Crawls up to 20 pages)
-app.post('/api/audit', async (req, res) => {
+app.post(['/api/audit', '/api/v1/audit'], async (req, res) => {
   const startUrl = req.body?.url;
   if (!startUrl) return res.status(400).json({ error: 'URL is required for audit' });
   if (!isSafeUrl(startUrl)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
@@ -237,7 +450,7 @@ app.post('/api/audit', async (req, res) => {
 });
 
 // Deep Backlinks & Authority Inspection
-app.post('/api/backlinks', async (req, res) => {
+app.post(['/api/backlinks', '/api/v1/backlinks'], async (req, res) => {
   const target = req.body?.url || req.body?.domain;
   if (!target) return res.status(400).json({ error: 'URL or Domain is required' });
   if (!isSafeUrl(target)) return res.status(400).json({ error: 'Invalid or restricted domain target (SSRF protection).' });
@@ -251,7 +464,8 @@ app.post('/api/backlinks', async (req, res) => {
       url = `https://${target}`;
     }
 
-    const result = await auditBacklinks(domain, url);
+    const options = resolveRequestOptions(req);
+    const result = await auditBacklinks(domain, url, options);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: 'Backlink analysis failed: ' + err.message });
@@ -259,13 +473,14 @@ app.post('/api/backlinks', async (req, res) => {
 });
 
 // Google Search Console (GSC) Insights Simulation
-app.post('/api/gsc', async (req, res) => {
+app.post(['/api/gsc', '/api/v1/gsc'], async (req, res) => {
   const { url } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL is required' });
   if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
 
   try {
-    const data = await simulateGSC(url);
+    const options = resolveRequestOptions(req);
+    const data = await simulateGSC(url, options);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'GSC analysis failed: ' + err.message });
@@ -273,13 +488,14 @@ app.post('/api/gsc', async (req, res) => {
 });
 
 // Rank Tracker
-app.post('/api/rank', async (req, res) => {
+app.post(['/api/rank', '/api/v1/rank'], async (req, res) => {
   const { url } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL is required' });
   if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
 
   try {
-    const data = await trackRankings(url);
+    const options = resolveRequestOptions(req);
+    const data = await trackRankings(url, options);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Rank tracking failed: ' + err.message });
@@ -287,7 +503,7 @@ app.post('/api/rank', async (req, res) => {
 });
 
 // Keyword Research with INR CPC & Google Autocomplete
-app.post('/api/keywords', async (req, res) => {
+app.post(['/api/keywords', '/api/v1/keywords'], async (req, res) => {
   const { keyword } = req.body || {};
   if (!keyword) return res.status(400).json({ error: 'Keyword is required' });
 
@@ -300,13 +516,14 @@ app.post('/api/keywords', async (req, res) => {
 });
 
 // Domain Overview, Security, SSL & Competitor Benchmark
-app.post('/api/domain', async (req, res) => {
+app.post(['/api/domain', '/api/v1/domain'], async (req, res) => {
   const { url } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL is required' });
   if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted domain target (SSRF protection).' });
 
   try {
-    const data = await analyzeDomainOverview(url);
+    const options = resolveRequestOptions(req);
+    const data = await analyzeDomainOverview(url, options);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Domain analysis failed: ' + err.message });
@@ -314,12 +531,13 @@ app.post('/api/domain', async (req, res) => {
 });
 
 // Brand Reputation, Sentiment & Social Share of Voice
-app.post('/api/brand', async (req, res) => {
+app.post(['/api/brand', '/api/v1/brand'], async (req, res) => {
   const { brand } = req.body || {};
   if (!brand) return res.status(400).json({ error: 'Brand name is required' });
 
   try {
-    const data = await monitorBrand(brand);
+    const options = resolveRequestOptions(req);
+    const data = await monitorBrand(brand, options);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Brand scan failed: ' + err.message });
@@ -327,13 +545,14 @@ app.post('/api/brand', async (req, res) => {
 });
 
 // AI SEO Strategy Copilot & Prompt Terminal
-app.post('/api/ai-prompt', async (req, res) => {
+app.post(['/api/ai-prompt', '/api/v1/ai-prompt'], async (req, res) => {
   const { prompt, url } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
   if (url && !isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
 
   try {
-    const data = await handleAiPrompt(prompt, url);
+    const options = resolveRequestOptions(req);
+    const data = await handleAiPrompt(prompt, url, options);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'AI analysis failed: ' + err.message });
@@ -341,7 +560,7 @@ app.post('/api/ai-prompt', async (req, res) => {
 });
 
 // Saved Keywords & Content Bigram Extractor
-app.post('/api/saved-keywords', async (req, res) => {
+app.post(['/api/saved-keywords', '/api/v1/saved-keywords'], async (req, res) => {
   const { url } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL is required' });
   if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
@@ -357,7 +576,7 @@ app.post('/api/saved-keywords', async (req, res) => {
 // ─── 3. GITHUB SEO TOPIC ENHANCEMENTS ────────────────────
 
 // Google SERP Snippet Preview Simulator (Desktop & Mobile)
-app.post('/api/serp-preview', (req, res) => {
+app.post(['/api/serp-preview', '/api/v1/serp-preview'], (req, res) => {
   try {
     const { url, title, description } = req.body || {};
     const targetUrl = url || 'https://example.com';
@@ -388,9 +607,9 @@ app.post('/api/serp-preview', (req, res) => {
 });
 
 // Robots.txt & Sitemap.xml Auto-Detector
-app.get('/api/robots-sitemap', async (req, res) => {
+app.all(['/api/robots-sitemap', '/api/v1/robots-sitemap'], async (req, res) => {
   try {
-    const { url } = req.query;
+    const url = req.query.url || req.body?.url;
     if (!url) return res.status(400).json({ error: 'URL is required' });
     if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
     const parsed = new URL(url);
@@ -499,7 +718,7 @@ app.get('/api/robots-sitemap', async (req, res) => {
 });
 
 // Competitor Authority & Keyword Gap Studio
-app.post('/api/competitor-gap', async (req, res) => {
+app.post(['/api/competitor-gap', '/api/v1/competitor-gap'], async (req, res) => {
   const target = req.body?.targetUrl || req.body?.url;
   const competitor = req.body?.competitorDomain || req.body?.competitor || null;
   if (!target) return res.status(400).json({ success: false, error: 'URL is required' });
@@ -507,7 +726,8 @@ app.post('/api/competitor-gap', async (req, res) => {
   if (competitor && !isSafeUrl(competitor)) return res.status(400).json({ success: false, error: 'Invalid or restricted competitor domain (SSRF protection).' });
 
   try {
-    const raw = await analyzeCompetitorGap(target, competitor);
+    const options = resolveRequestOptions(req);
+    const raw = await analyzeCompetitorGap(target, competitor, options);
     const gapData = {
       targetHost: raw.targetHost,
       compHost: raw.compHost,
@@ -541,7 +761,9 @@ app.post('/api/competitor-gap', async (req, res) => {
         dr: b.dr,
         pitchAngle: b.pitchAngle
       })),
-      actionableSteps: (raw.actionPlan || []).map(a => `${a.action}: ${a.impact} (${a.urgency})`)
+      actionableSteps: (raw.actionPlan || []).map(a => `${a.action}: ${a.impact} (${a.urgency})`),
+      isSimulated: Boolean(raw.isSimulated),
+      provenance: raw.provenance
     };
     res.json({ success: true, gapData });
   } catch (err) {
@@ -550,7 +772,7 @@ app.post('/api/competitor-gap', async (req, res) => {
 });
 
 // Universal Multi-Engine Web Scraper
-app.post('/api/scrape', async (req, res) => {
+app.post(['/api/scrape', '/api/v1/scrape'], async (req, res) => {
   const { url, mode, selector } = req.body || {};
   if (!url) return res.status(400).json({ success: false, error: 'URL is required' });
   if (!isSafeUrl(url)) return res.status(400).json({ success: false, error: 'Invalid or restricted URL target (SSRF protection).' });
@@ -569,7 +791,7 @@ app.post('/api/scrape', async (req, res) => {
 });
 
 // HTML <head> Completeness & E-E-A-T Quality Signals (joshbuchea/HEAD & claude-seo)
-app.post('/api/head-eeat', async (req, res) => {
+app.post(['/api/head-eeat', '/api/v1/head-eeat'], async (req, res) => {
   const { url } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL is required' });
   if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
@@ -583,7 +805,7 @@ app.post('/api/head-eeat', async (req, res) => {
 });
 
 // ─── 4. SOURCE CODE LINE VIEWER & HEALTH ─────────────────
-app.get('/api/view-source', async (req, res) => {
+app.get(['/api/view-source', '/api/v1/view-source'], async (req, res) => {
   try {
     const { url, line } = req.query;
     if (!url) return res.status(400).send('URL query parameter required');
