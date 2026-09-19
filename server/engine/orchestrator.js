@@ -108,6 +108,10 @@ export async function executeOrchestratedPlan(plan, options = {}) {
     executionPromises.push(
       auditGeoAeo(targetDomain, cleanDomainTopic, {
         url: targetUrl,
+        openrouterKey: options.openrouterKey,
+        openrouterModel: options.openrouterModel,
+        nvidiaKey: options.nvidiaKey,
+        nvidiaModel: options.nvidiaModel,
         geminiKey: options.geminiKey,
         openaiKey: options.openaiKey
       })

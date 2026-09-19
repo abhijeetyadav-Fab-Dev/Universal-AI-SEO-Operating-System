@@ -144,27 +144,141 @@ export async function auditGeoAeo(domain, targetBrand, options = {}) {
   // 4. Live LLM Entity Recognition Probe (if Gemini or OpenAI key available)
   let liveLlmProbe = null;
   let isRealCitationProbe = false;
+  const openrouterKey = options.openrouterKey || process.env.OPENROUTER_API_KEY;
+  const openrouterModel = options.openrouterModel || process.env.OPENROUTER_MODEL || 'deepseek/deepseek-chat';
+  const nvidiaKey = options.nvidiaKey || process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY;
+  const nvidiaModel = options.nvidiaModel || process.env.NVIDIA_MODEL || 'meta/llama-3.3-70b-instruct';
   const geminiKey = options.geminiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  const openaiKey = options.openaiKey || process.env.OPENAI_API_KEY;
 
-  if (geminiKey) {
+  const probePrompt = `In 2 short sentences, state if the entity "${brand}" (domain: ${cleanDomain}) is recognized in your knowledge graph, what its primary product/service is, and its authority level.`;
+
+  // 1. Probe via OpenRouter
+  if (!liveLlmProbe && openrouterKey) {
     try {
-      const probePrompt = `In 2 short sentences, state if the entity "${brand}" (domain: ${cleanDomain}) is recognized in your knowledge graph, what its primary product/service is, and its authority level.`;
-      const probeRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+      const probeRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openrouterKey}`,
+          'HTTP-Referer': 'http://localhost:4000',
+          'X-Title': 'OmniSEO OS'
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: probePrompt }] }],
-          generationConfig: { maxOutputTokens: 150, temperature: 0.2 }
+          model: openrouterModel,
+          messages: [{ role: 'user', content: probePrompt }],
+          max_tokens: 150,
+          temperature: 0.2
         }),
         timeout: 10000
       });
-
       if (probeRes.ok) {
         const probeData = await probeRes.json();
-        const probeText = probeData.candidates?.[0]?.content?.parts?.[0]?.text;
+        const probeText = probeData.choices?.[0]?.message?.content;
         if (probeText) {
           liveLlmProbe = {
-            model: 'Google Gemini 2.5 Flash',
+            model: `OpenRouter (${openrouterModel})`,
+            probeText: probeText.trim(),
+            verifiedAt: new Date().toISOString()
+          };
+          isRealCitationProbe = true;
+        }
+      }
+    } catch {}
+  }
+
+  // 2. Probe via NVIDIA NIM
+  if (!liveLlmProbe && nvidiaKey) {
+    try {
+      const probeRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${nvidiaKey}`
+        },
+        body: JSON.stringify({
+          model: nvidiaModel,
+          messages: [{ role: 'user', content: probePrompt }],
+          max_tokens: 150,
+          temperature: 0.2
+        }),
+        timeout: 10000
+      });
+      if (probeRes.ok) {
+        const probeData = await probeRes.json();
+        const probeText = probeData.choices?.[0]?.message?.content;
+        if (probeText) {
+          liveLlmProbe = {
+            model: `NVIDIA NIM (${nvidiaModel})`,
+            probeText: probeText.trim(),
+            verifiedAt: new Date().toISOString()
+          };
+          isRealCitationProbe = true;
+        }
+      }
+    } catch {}
+  }
+
+  // 3. Probe via Google Gemini (with resilient multi-model fallback)
+  if (!liveLlmProbe && geminiKey) {
+    try {
+      const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-2.5-flash'];
+      for (const m of candidateModels) {
+        for (const ver of ['v1beta', 'v1']) {
+          try {
+            const probeRes = await fetch(`https://generativelanguage.googleapis.com/${ver}/models/${m}:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: probePrompt }] }],
+                generationConfig: { maxOutputTokens: 150, temperature: 0.2 }
+              }),
+              timeout: 8000
+            });
+
+            if (probeRes.ok) {
+              const probeData = await probeRes.json();
+              const probeText = probeData.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (probeText) {
+                liveLlmProbe = {
+                  model: `Google Gemini (${m})`,
+                  probeText: probeText.trim(),
+                  verifiedAt: new Date().toISOString()
+                };
+                isRealCitationProbe = true;
+                break;
+              }
+            }
+          } catch {}
+        }
+        if (liveLlmProbe) break;
+      }
+    } catch {}
+  }
+
+  // 4. Probe via OpenAI
+  if (!liveLlmProbe && openaiKey) {
+    try {
+      const probeRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: probePrompt }],
+          max_tokens: 150,
+          temperature: 0.2
+        }),
+        timeout: 10000
+      });
+      if (probeRes.ok) {
+        const probeData = await probeRes.json();
+        const probeText = probeData.choices?.[0]?.message?.content;
+        if (probeText) {
+          liveLlmProbe = {
+            model: 'OpenAI GPT-4o-mini',
             probeText: probeText.trim(),
             verifiedAt: new Date().toISOString()
           };

@@ -67,6 +67,9 @@ jobs:
       - name: Run IndexNow & Sitemap Streaming Parser Test
         run: node test/test_indexnow_sitemap.js
 
+      - name: Run OpenRouter, NVIDIA NIM & Gemini Multi-Model Test
+        run: node test/test_openrouter_nvidia.js
+
       - name: Run Model Context Protocol (MCP) Server Test
         run: node test/test_mcp.js
 

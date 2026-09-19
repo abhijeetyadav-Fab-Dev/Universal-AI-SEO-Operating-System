@@ -23,11 +23,23 @@
         "name": "x-psi-key",
         "description": "Google PageSpeed Insights API Key"
       },
+      "OpenRouterApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-openrouter-key",
+        "description": "OpenRouter API Key for DeepSeek, Llama 3.3, and free open models"
+      },
+      "NvidiaNimApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-nvidia-key",
+        "description": "NVIDIA NIM API Key for Llama 3.3, Nemotron, and DeepSeek-R1"
+      },
       "GeminiApiKey": {
         "type": "apiKey",
         "in": "header",
         "name": "x-gemini-key",
-        "description": "Google Gemini 2.5/1.5 Flash API Key"
+        "description": "Google Gemini 2.0/1.5 Flash API Key"
       },
       "OpenAiApiKey": {
         "type": "apiKey",

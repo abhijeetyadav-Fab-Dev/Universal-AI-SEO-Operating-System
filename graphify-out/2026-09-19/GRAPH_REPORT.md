@@ -1,11 +1,11 @@
 # Graph Report - OmniSEO-OS  (2026-09-19)
 
 ## Corpus Check
-- 41 files · ~85,434 words
+- 41 files · ~85,508 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 275 nodes · 547 edges · 25 communities (23 shown, 2 thin omitted)
+- 278 nodes · 550 edges · 25 communities (23 shown, 2 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 18 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
@@ -32,11 +32,11 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `handleToolCall()` - 18 edges
-2. `runTestSuite()` - 13 edges
-3. `auditBacklinks()` - 11 edges
-4. `runAllTests()` - 11 edges
-5. `runStorageTestSuite()` - 11 edges
-6. `scripts` - 10 edges
+2. `scripts` - 13 edges
+3. `runTestSuite()` - 13 edges
+4. `auditBacklinks()` - 11 edges
+5. `runAllTests()` - 11 edges
+6. `runStorageTestSuite()` - 11 edges
 7. `keywords` - 10 edges
 8. `queryHackerNewsMentions()` - 10 edges
 9. `queryWikipediaSummary()` - 10 edges
@@ -72,8 +72,8 @@ Cohesion: 0.18
 Nodes (11): cors, dotenv, express, dependencies, cheerio, cors, dotenv, express (+3 more)
 
 ### Community 3 - "package.json"
-Cohesion: 0.06
-Nodes (33): author, bugs, url, description, homepage, keywords, license, main (+25 more)
+Cohesion: 0.05
+Nodes (36): author, bugs, url, description, homepage, keywords, license, main (+28 more)
 
 ### Community 4 - "ui_smoke_test.js"
 Cohesion: 0.17
@@ -108,7 +108,7 @@ Cohesion: 0.31
 Nodes (10): cleanTagContent(), decompressIfNeeded(), detectOrphanPages(), extractRawUrls(), fetchAndParseSitemap(), generateIndexNowKey(), INDEXNOW_ENDPOINTS, normalizeUrl() (+2 more)
 
 ## Knowledge Gaps
-- **96 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+91 more)
+- **99 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+94 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -118,14 +118,14 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `generateExecutiveReportHtml()` connect `test_exporter.js` to `index.js`?**
   _High betweenness centrality (0.032) - this node is a cross-community bridge._
 - **Why does `exportToCsv()` connect `test_exporter.js` to `index.js`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
 - **Why does `handleToolCall()` connect `mcp.js` to `index.js`?**
-  _High betweenness centrality (0.018) - this node is a cross-community bridge._
+  _High betweenness centrality (0.017) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
-  _96 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _99 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `index.js` be split into smaller, more focused modules?**
   _Cohesion score 0.14453781512605043 - nodes in this community are weakly interconnected._
 - **Should `test_exporter.js` be split into smaller, more focused modules?**
   _Cohesion score 0.08275862068965517 - nodes in this community are weakly interconnected._
 - **Should `package.json` be split into smaller, more focused modules?**
-  _Cohesion score 0.058823529411764705 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05405405405405406 - nodes in this community are weakly interconnected._

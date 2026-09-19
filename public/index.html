@@ -317,7 +317,7 @@
           <span style="font-size:0.68rem; opacity:0.8; margin-left:2px;">▾</span>
         </div>
         <button class="header-nav-btn outline" onclick="openProvenanceModal()" style="border-color:rgba(16,185,129,0.4); color:#a7f3d0;" title="View Data Provenance: Live Ground-Truth vs Simulated Benchmarks">ℹ️ Data Provenance</button>
-        <button class="header-nav-btn outline" onclick="openApiSettingsModal()" style="border-color:rgba(56,189,248,0.4); color:#38bdf8;" title="Configure Live API Keys: Google PSI, Gemini, OpenAI, DataForSEO">⚙️ API Settings</button>
+        <button class="header-nav-btn outline" onclick="openApiSettingsModal()" style="border-color:rgba(56,189,248,0.4); color:#38bdf8;" title="Configure Live API Keys: OpenRouter, NVIDIA NIM, Gemini, PSI, DataForSEO">⚙️ API Settings</button>
         <a href="/blog" class="header-nav-btn outline" style="text-decoration:none;" title="SEO Guides & Knowledge Base">📚 Guides</a>
         <button class="header-nav-btn outline" onclick="openEngineModal()">📊 Engine Matrix</button>
         <button class="header-nav-btn" onclick="document.getElementById('queryInput').focus(); document.getElementById('queryInput').scrollIntoView({behavior:'smooth'});">⚡ Quick Audit</button>
@@ -1244,7 +1244,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
               <h4 style="color:#a855f7; font-size:1rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <span>🤖 OmniSEO AI Strategy Copilot &amp; Prompt Terminal</span>
-                <span id="aiCopilotModelBadge" style="font-size:0.7rem; color:#a855f7; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-weight:700;">⚡ Rule-Based Strategy (Connect Gemini in Settings)</span>
+                <span id="aiCopilotModelBadge" style="font-size:0.7rem; color:#a855f7; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-weight:700;">⚡ Rule-Based Strategy (Connect OpenRouter / NVIDIA in Settings)</span>
                 <button onclick="openApiSettingsModal()" style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); color:#38bdf8; border-radius:4px; padding:2px 8px; cursor:pointer; font-size:0.72rem;">⚙️ Settings</button>
               </h4>
               <span style="font-size:0.75rem; color:var(--text-muted);">Contextualized recommendations grounded in crawled DOM &amp; keyword positions</span>
@@ -1741,18 +1741,83 @@
           <div id="psiTestMsg" style="font-size:0.72rem; margin-top:6px; display:none;"></div>
         </div>
 
+        <!-- OpenRouter API (DeepSeek, Llama 3.3, Free Models) -->
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <strong style="color:#f8fafc; font-size:0.88rem;">🌐 OpenRouter API</strong>
+              <span style="font-size:0.75rem; color:#38bdf8; margin-left:8px; font-weight:600;">(Recommended: DeepSeek, Llama 3.3, Free Models)</span>
+            </div>
+            <span id="openrouterStatusBadge" style="font-size:0.72rem; padding:2px 8px; border-radius:4px; font-weight:700; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">Unconfigured</span>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr auto; gap:8px; margin-bottom:8px;">
+            <input type="password" id="inputOpenrouterKey" class="command-input" placeholder="sk-or-v1-... (from openrouter.ai/keys)" style="padding:8px 12px; font-size:0.82rem; font-family:'JetBrains Mono',monospace;">
+            <button class="btn outline" onclick="testApiKey('openrouter')" style="padding:8px 14px; font-size:0.78rem; white-space:nowrap; border-color:rgba(56,189,248,0.4); color:#38bdf8;">Test Connection</button>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:0.75rem; color:var(--text-muted); white-space:nowrap;">Model:</span>
+            <select id="selectOpenrouterModel" class="command-input" style="padding:6px 10px; font-size:0.78rem; font-family:'JetBrains Mono',monospace; flex:1;" onchange="onOpenrouterModelChange(this.value)">
+              <option value="deepseek/deepseek-chat">deepseek/deepseek-chat (DeepSeek-V3 - Blazing Fast &amp; Smart)</option>
+              <option value="deepseek/deepseek-r1">deepseek/deepseek-r1 (DeepSeek-R1 - Deep Reasoning)</option>
+              <option value="meta-llama/llama-3.3-70b-instruct:free">meta-llama/llama-3.3-70b-instruct:free (100% Free)</option>
+              <option value="google/gemini-2.0-flash-exp:free">google/gemini-2.0-flash-exp:free (100% Free)</option>
+              <option value="meta-llama/llama-3.3-70b-instruct">meta-llama/llama-3.3-70b-instruct (Llama 3.3 70B)</option>
+              <option value="openrouter/auto">openrouter/auto (Auto-route best price/perf)</option>
+              <option value="custom">-- Custom Model Name --</option>
+            </select>
+            <input type="text" id="inputOpenrouterModel" class="command-input" placeholder="provider/model-name" style="display:none; padding:6px 10px; font-size:0.78rem; font-family:'JetBrains Mono',monospace; width:170px;">
+          </div>
+          <div id="openrouterTestMsg" style="font-size:0.72rem; margin-top:6px; display:none;"></div>
+        </div>
+
+        <!-- NVIDIA NIM API (Llama 3.3, Nemotron, DeepSeek) -->
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <strong style="color:#f8fafc; font-size:0.88rem;">⚡ NVIDIA NIM API</strong>
+              <span style="font-size:0.75rem; color:#10b981; margin-left:8px; font-weight:600;">(1,000 Free Credits on build.nvidia.com)</span>
+            </div>
+            <span id="nvidiaStatusBadge" style="font-size:0.72rem; padding:2px 8px; border-radius:4px; font-weight:700; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">Unconfigured</span>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr auto; gap:8px; margin-bottom:8px;">
+            <input type="password" id="inputNvidiaKey" class="command-input" placeholder="nvapi-... (from build.nvidia.com)" style="padding:8px 12px; font-size:0.82rem; font-family:'JetBrains Mono',monospace;">
+            <button class="btn outline" onclick="testApiKey('nvidia')" style="padding:8px 14px; font-size:0.78rem; white-space:nowrap; border-color:rgba(16,185,129,0.4); color:#10b981;">Test Connection</button>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:0.75rem; color:var(--text-muted); white-space:nowrap;">Model:</span>
+            <select id="selectNvidiaModel" class="command-input" style="padding:6px 10px; font-size:0.78rem; font-family:'JetBrains Mono',monospace; flex:1;" onchange="onNvidiaModelChange(this.value)">
+              <option value="meta/llama-3.3-70b-instruct">meta/llama-3.3-70b-instruct (Meta Llama 3.3 70B)</option>
+              <option value="nvidia/llama-3.1-nemotron-70b-instruct">nvidia/llama-3.1-nemotron-70b-instruct (Nemotron 70B Reasoning)</option>
+              <option value="deepseek-ai/deepseek-r1">deepseek-ai/deepseek-r1 (DeepSeek-R1 on HGX)</option>
+              <option value="mistralai/mistral-large-2-instruct">mistralai/mistral-large-2-instruct (Mistral Large 2)</option>
+              <option value="custom">-- Custom Model Name --</option>
+            </select>
+            <input type="text" id="inputNvidiaModel" class="command-input" placeholder="meta/model-name" style="display:none; padding:6px 10px; font-size:0.78rem; font-family:'JetBrains Mono',monospace; width:170px;">
+          </div>
+          <div id="nvidiaTestMsg" style="font-size:0.72rem; margin-top:6px; display:none;"></div>
+        </div>
+
         <!-- Google Gemini API -->
         <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:14px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <div>
-              <strong style="color:#f8fafc; font-size:0.88rem;">✨ Google Gemini API (2.5 / 1.5 Flash)</strong>
+              <strong style="color:#f8fafc; font-size:0.88rem;">✨ Google Gemini API</strong>
               <span style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;">(Free tier on Google AI Studio)</span>
             </div>
             <span id="geminiStatusBadge" style="font-size:0.72rem; padding:2px 8px; border-radius:4px; font-weight:700; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">Unconfigured</span>
           </div>
-          <div style="display:flex; gap:8px;">
+          <div style="display:grid; grid-template-columns: 1fr auto; gap:8px; margin-bottom:8px;">
             <input type="password" id="inputGeminiKey" class="command-input" placeholder="AIzaSy... (powers live Generative AI Strategy Copilot)" style="padding:8px 12px; font-size:0.82rem; font-family:'JetBrains Mono',monospace;">
             <button class="btn outline" onclick="testApiKey('gemini')" style="padding:8px 14px; font-size:0.78rem; white-space:nowrap;">Test Connection</button>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:0.75rem; color:var(--text-muted); white-space:nowrap;">Model:</span>
+            <select id="selectGeminiModel" class="command-input" style="padding:6px 10px; font-size:0.78rem; font-family:'JetBrains Mono',monospace; flex:1;">
+              <option value="gemini-2.0-flash">gemini-2.0-flash (Recommended: Fast &amp; Reliable)</option>
+              <option value="gemini-1.5-flash-latest">gemini-1.5-flash-latest</option>
+              <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+              <option value="gemini-1.5-pro-latest">gemini-1.5-pro-latest</option>
+            </select>
           </div>
           <div id="geminiTestMsg" style="font-size:0.72rem; margin-top:6px; display:none;"></div>
         </div>
@@ -2178,11 +2243,50 @@
     }
 
     // ─── API SETTINGS MANAGER & BYOK CLIENT CONTROLLER ──────
+    function onOpenrouterModelChange(val) {
+      const customInput = document.getElementById('inputOpenrouterModel');
+      if (customInput) {
+        customInput.style.display = val === 'custom' ? 'block' : 'none';
+        if (val === 'custom') customInput.focus();
+      }
+    }
+
+    function onNvidiaModelChange(val) {
+      const customInput = document.getElementById('inputNvidiaModel');
+      if (customInput) {
+        customInput.style.display = val === 'custom' ? 'block' : 'none';
+        if (val === 'custom') customInput.focus();
+      }
+    }
+
+    function getSelectedOpenrouterModel() {
+      const sel = document.getElementById('selectOpenrouterModel');
+      const custom = document.getElementById('inputOpenrouterModel');
+      if (sel && sel.value === 'custom' && custom && custom.value.trim()) {
+        return custom.value.trim();
+      }
+      return sel ? sel.value : 'deepseek/deepseek-chat';
+    }
+
+    function getSelectedNvidiaModel() {
+      const sel = document.getElementById('selectNvidiaModel');
+      const custom = document.getElementById('inputNvidiaModel');
+      if (sel && sel.value === 'custom' && custom && custom.value.trim()) {
+        return custom.value.trim();
+      }
+      return sel ? sel.value : 'meta/llama-3.3-70b-instruct';
+    }
+
     function getApiHeaders() {
       const saved = JSON.parse(localStorage.getItem('omniseo_api_keys') || '{}');
       const headers = { 'Content-Type': 'application/json' };
       if (saved.psiApiKey) headers['x-psi-key'] = saved.psiApiKey;
+      if (saved.openrouterApiKey) headers['x-openrouter-key'] = saved.openrouterApiKey;
+      if (saved.openrouterModel) headers['x-openrouter-model'] = saved.openrouterModel;
+      if (saved.nvidiaApiKey) headers['x-nvidia-key'] = saved.nvidiaApiKey;
+      if (saved.nvidiaModel) headers['x-nvidia-model'] = saved.nvidiaModel;
       if (saved.geminiApiKey) headers['x-gemini-key'] = saved.geminiApiKey;
+      if (saved.geminiModel) headers['x-gemini-model'] = saved.geminiModel;
       if (saved.openaiApiKey) headers['x-openai-key'] = saved.openaiApiKey;
       if (saved.dataforseoLogin) headers['x-dataforseo-login'] = saved.dataforseoLogin;
       if (saved.dataforseoPassword) headers['x-dataforseo-password'] = saved.dataforseoPassword;
@@ -2198,7 +2302,50 @@
     async function loadApiSettingsStatus() {
       const saved = JSON.parse(localStorage.getItem('omniseo_api_keys') || '{}');
       if (saved.psiApiKey) document.getElementById('inputPsiKey').value = saved.psiApiKey;
+      if (saved.openrouterApiKey) document.getElementById('inputOpenrouterKey').value = saved.openrouterApiKey;
+      if (saved.openrouterModel) {
+        const sel = document.getElementById('selectOpenrouterModel');
+        const custom = document.getElementById('inputOpenrouterModel');
+        let matched = false;
+        if (sel) {
+          for (let opt of sel.options) {
+            if (opt.value === saved.openrouterModel) {
+              sel.value = saved.openrouterModel;
+              matched = true;
+              break;
+            }
+          }
+          if (!matched && custom) {
+            sel.value = 'custom';
+            custom.style.display = 'block';
+            custom.value = saved.openrouterModel;
+          }
+        }
+      }
+      if (saved.nvidiaApiKey) document.getElementById('inputNvidiaKey').value = saved.nvidiaApiKey;
+      if (saved.nvidiaModel) {
+        const sel = document.getElementById('selectNvidiaModel');
+        const custom = document.getElementById('inputNvidiaModel');
+        let matched = false;
+        if (sel) {
+          for (let opt of sel.options) {
+            if (opt.value === saved.nvidiaModel) {
+              sel.value = saved.nvidiaModel;
+              matched = true;
+              break;
+            }
+          }
+          if (!matched && custom) {
+            sel.value = 'custom';
+            custom.style.display = 'block';
+            custom.value = saved.nvidiaModel;
+          }
+        }
+      }
       if (saved.geminiApiKey) document.getElementById('inputGeminiKey').value = saved.geminiApiKey;
+      if (saved.geminiModel && document.getElementById('selectGeminiModel')) {
+        document.getElementById('selectGeminiModel').value = saved.geminiModel;
+      }
       if (saved.openaiApiKey) document.getElementById('inputOpenaiKey').value = saved.openaiApiKey;
       if (saved.dataforseoLogin) document.getElementById('inputDataforseoLogin').value = saved.dataforseoLogin;
       if (saved.dataforseoPassword) document.getElementById('inputDataforseoPassword').value = saved.dataforseoPassword;
@@ -2208,6 +2355,8 @@
         const data = await res.json();
         if (data.success && data.settings) {
           updateBadge('psiStatusBadge', data.settings.psi.configured || Boolean(saved.psiApiKey), data.settings.psi.maskedKey);
+          updateBadge('openrouterStatusBadge', data.settings.openrouter?.configured || Boolean(saved.openrouterApiKey), data.settings.openrouter?.maskedKey);
+          updateBadge('nvidiaStatusBadge', data.settings.nvidia?.configured || Boolean(saved.nvidiaApiKey), data.settings.nvidia?.maskedKey);
           updateBadge('geminiStatusBadge', data.settings.gemini.configured || Boolean(saved.geminiApiKey), data.settings.gemini.maskedKey);
           updateBadge('openaiStatusBadge', data.settings.openai.configured || Boolean(saved.openaiApiKey), data.settings.openai.maskedKey);
           updateBadge('dataforseoStatusBadge', data.settings.dataforseo.configured || Boolean(saved.dataforseoLogin && saved.dataforseoPassword), data.settings.dataforseo.maskedLogin);
@@ -2241,7 +2390,19 @@
 
       const payload = { service };
       if (service === 'psi') payload.apiKey = document.getElementById('inputPsiKey').value;
-      if (service === 'gemini') payload.apiKey = document.getElementById('inputGeminiKey').value;
+      if (service === 'openrouter') {
+        payload.apiKey = document.getElementById('inputOpenrouterKey').value;
+        payload.model = getSelectedOpenrouterModel();
+      }
+      if (service === 'nvidia') {
+        payload.apiKey = document.getElementById('inputNvidiaKey').value;
+        payload.model = getSelectedNvidiaModel();
+      }
+      if (service === 'gemini') {
+        payload.apiKey = document.getElementById('inputGeminiKey').value;
+        const gemSel = document.getElementById('selectGeminiModel');
+        if (gemSel) payload.model = gemSel.value;
+      }
       if (service === 'openai') payload.apiKey = document.getElementById('inputOpenaiKey').value;
       if (service === 'dataforseo') {
         payload.login = document.getElementById('inputDataforseoLogin').value;
@@ -2274,7 +2435,12 @@
     async function saveApiSettings() {
       const settings = {
         psiApiKey: document.getElementById('inputPsiKey').value.trim(),
+        openrouterApiKey: document.getElementById('inputOpenrouterKey').value.trim(),
+        openrouterModel: getSelectedOpenrouterModel(),
+        nvidiaApiKey: document.getElementById('inputNvidiaKey').value.trim(),
+        nvidiaModel: getSelectedNvidiaModel(),
         geminiApiKey: document.getElementById('inputGeminiKey').value.trim(),
+        geminiModel: document.getElementById('selectGeminiModel') ? document.getElementById('selectGeminiModel').value : 'gemini-2.0-flash',
         openaiApiKey: document.getElementById('inputOpenaiKey').value.trim(),
         dataforseoLogin: document.getElementById('inputDataforseoLogin').value.trim(),
         dataforseoPassword: document.getElementById('inputDataforseoPassword').value.trim()
@@ -2301,6 +2467,8 @@
       if (confirm('Clear all saved API keys?')) {
         localStorage.removeItem('omniseo_api_keys');
         document.getElementById('inputPsiKey').value = '';
+        document.getElementById('inputOpenrouterKey').value = '';
+        document.getElementById('inputNvidiaKey').value = '';
         document.getElementById('inputGeminiKey').value = '';
         document.getElementById('inputOpenaiKey').value = '';
         document.getElementById('inputDataforseoLogin').value = '';

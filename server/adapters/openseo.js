@@ -777,10 +777,111 @@ export async function handleAiPrompt(prompt, url = null, options = {}) {
     } catch {}
   }
 
+  const openrouterKey = options.openrouterKey || process.env.OPENROUTER_API_KEY;
+  const openrouterModel = options.openrouterModel || process.env.OPENROUTER_MODEL || 'deepseek/deepseek-chat';
+  const nvidiaKey = options.nvidiaKey || process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY;
+  const nvidiaModel = options.nvidiaModel || process.env.NVIDIA_MODEL || 'meta/llama-3.3-70b-instruct';
   const geminiKey = options.geminiKey || options.apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  const geminiModel = options.geminiModel || process.env.GEMINI_MODEL || 'gemini-2.0-flash';
   const openaiKey = options.openaiKey || process.env.OPENAI_API_KEY;
 
-  // 1. Try Google Gemini API if key is available
+  // 1. Try OpenRouter API if key is available (Supports DeepSeek, Llama 3.3, Free Models)
+  if (openrouterKey) {
+    try {
+      const openrouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openrouterKey}`,
+          'HTTP-Referer': 'http://localhost:4000',
+          'X-Title': 'OmniSEO OS'
+        },
+        body: JSON.stringify({
+          model: openrouterModel,
+          messages: [
+            {
+              role: 'system',
+              content: "You are an elite AI SEO Architect and Technical Search Strategist for OmniSEO OS. Provide concise, tactical, bullet-pointed recommendations based on the target page's crawled context and the user's prompt. Include precise HTML/code snippets where relevant."
+            },
+            {
+              role: 'user',
+              content: `PAGE CONTEXT:\n${pageContext || `Target Domain: ${targetDomain}`}\n\nUSER PROMPT / TASK:\n${prompt}`
+            }
+          ],
+          temperature: 0.3,
+          max_tokens: 1024
+        }),
+        timeout: 20000
+      });
+
+      if (openrouterRes.ok) {
+        const openrouterData = await openrouterRes.json();
+        const generatedText = openrouterData.choices?.[0]?.message?.content;
+        if (generatedText) {
+          return {
+            response: generatedText,
+            model: `OpenRouter (${openrouterModel})`,
+            isRealLlm: true,
+            dataStatus: 'measured',
+            isSimulated: false,
+            latencyMs: Date.now() - startTime,
+            provenance: `Live Generative AI (OpenRouter - ${openrouterModel})`
+          };
+        }
+      }
+    } catch (llmErr) {
+      // Fall through to next provider
+    }
+  }
+
+  // 2. Try NVIDIA NIM API if key is available (Llama-3.3, Nemotron, DeepSeek)
+  if (nvidiaKey) {
+    try {
+      const nvidiaRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${nvidiaKey}`
+        },
+        body: JSON.stringify({
+          model: nvidiaModel,
+          messages: [
+            {
+              role: 'system',
+              content: "You are an elite AI SEO Architect and Technical Search Strategist for OmniSEO OS. Provide concise, tactical, bullet-pointed recommendations based on the target page's crawled context and the user's prompt. Include precise HTML/code snippets where relevant."
+            },
+            {
+              role: 'user',
+              content: `PAGE CONTEXT:\n${pageContext || `Target Domain: ${targetDomain}`}\n\nUSER PROMPT / TASK:\n${prompt}`
+            }
+          ],
+          temperature: 0.2,
+          max_tokens: 1024
+        }),
+        timeout: 20000
+      });
+
+      if (nvidiaRes.ok) {
+        const nvidiaData = await nvidiaRes.json();
+        const generatedText = nvidiaData.choices?.[0]?.message?.content;
+        if (generatedText) {
+          return {
+            response: generatedText,
+            model: `NVIDIA NIM (${nvidiaModel})`,
+            isRealLlm: true,
+            dataStatus: 'measured',
+            isSimulated: false,
+            latencyMs: Date.now() - startTime,
+            provenance: `Live Generative AI (NVIDIA NIM - ${nvidiaModel})`
+          };
+        }
+      }
+    } catch (llmErr) {
+      // Fall through to next provider
+    }
+  }
+
+  // 3. Try Google Gemini API if key is available (with multi-model resilient fallback)
   if (geminiKey) {
     try {
       const systemInstruction = `You are an elite AI SEO Architect and Technical Search Strategist for OmniSEO OS.
@@ -804,35 +905,49 @@ Be direct, actionable, and mathematically grounded in modern search algorithms.`
         }
       };
 
-      // Try gemini-2.5-flash then fallback to gemini-1.5-flash
-      let geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(promptPayload),
-        timeout: 15000
-      });
+      // Resilient candidate list to prevent 404 model not found errors across API versions
+      const geminiCandidateModels = [
+        geminiModel,
+        'gemini-2.0-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-1.5-flash',
+        'gemini-2.5-flash',
+        'gemini-1.5-pro-latest'
+      ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
 
-      if (!geminiRes.ok) {
-        geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(promptPayload),
-          timeout: 15000
-        });
+      let geminiData = null;
+      let usedModel = null;
+
+      for (const modelCandidate of geminiCandidateModels) {
+        for (const apiVersion of ['v1beta', 'v1']) {
+          try {
+            const geminiRes = await fetch(`https://generativelanguage.googleapis.com/${apiVersion}/models/${modelCandidate}:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(promptPayload),
+              timeout: 15000
+            });
+            if (geminiRes.ok) {
+              geminiData = await geminiRes.json();
+              usedModel = modelCandidate;
+              break;
+            }
+          } catch {}
+        }
+        if (geminiData) break;
       }
 
-      if (geminiRes.ok) {
-        const geminiData = await geminiRes.json();
+      if (geminiData) {
         const generatedText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
         if (generatedText) {
           return {
             response: generatedText,
-            model: 'Google Gemini 2.5 Flash',
+            model: `Google Gemini (${usedModel})`,
             isRealLlm: true,
             dataStatus: 'measured',
             isSimulated: false,
             latencyMs: Date.now() - startTime,
-            provenance: 'Live Generative AI (Google Gemini 2.5 Flash)'
+            provenance: `Live Generative AI (Google Gemini - ${usedModel})`
           };
         }
       }
@@ -841,7 +956,7 @@ Be direct, actionable, and mathematically grounded in modern search algorithms.`
     }
   }
 
-  // 2. Try OpenAI API if key is available
+  // 4. Try OpenAI API if key is available
   if (openaiKey) {
     try {
       const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -888,7 +1003,7 @@ Be direct, actionable, and mathematically grounded in modern search algorithms.`
     }
   }
 
-  // 3. Fallback: Transparent Rule-Based Heuristic
+  // 5. Fallback: Transparent Rule-Based Heuristic
   const p = (prompt || '').toLowerCase();
   let baseResponse = '';
 
@@ -908,7 +1023,7 @@ Be direct, actionable, and mathematically grounded in modern search algorithms.`
     baseResponse = `OmniSEO Strategy Guidance for ${targetDomain}:\n\nFocus on the convergence of Traditional SEO and AI Search (GEO):\n• Structure direct answer paragraphs (40–60 words) immediately beneath H2 tags for Perplexity and Google AI Overviews.\n• Ensure 100% of images have descriptive, localized alt tags.\n• Resolve internal keyword cannibalization via cross-page canonicals or 301 redirects.\n• Maintain strict schema validation for FAQPage, Organization, and WebPage entities.`;
   }
 
-  const prefixedNotice = '⚡ [Rule-Based Heuristic — Connect Google Gemini or OpenAI API Key in ⚙️ Settings for Live Generative Reasoning]\n\n';
+  const prefixedNotice = '⚡ [Rule-Based Heuristic — Connect OpenRouter, NVIDIA NIM, Gemini, or OpenAI in ⚙️ Settings for Live Generative Reasoning]\n\n';
 
   return {
     response: `${prefixedNotice}${baseResponse}`,
@@ -917,7 +1032,7 @@ Be direct, actionable, and mathematically grounded in modern search algorithms.`
     dataStatus: 'simulated',
     isSimulated: true,
     latencyMs: Date.now() - startTime,
-    provenance: 'Rule-Based Heuristic — Connect Gemini/OpenAI in ⚙️ Settings'
+    provenance: 'Rule-Based Heuristic — Connect OpenRouter/NVIDIA/Gemini in ⚙️ Settings'
   };
 }
 

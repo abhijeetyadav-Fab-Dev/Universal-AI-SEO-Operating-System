@@ -71,7 +71,12 @@ const __dirname = path.dirname(__filename);
 const activeApiSettings = {
   psiApiKey: process.env.GOOGLE_PSI_API_KEY || process.env.PAGESPEED_API_KEY || '',
   geminiApiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '',
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
   openaiApiKey: process.env.OPENAI_API_KEY || '',
+  openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
+  openrouterModel: process.env.OPENROUTER_MODEL || 'deepseek/deepseek-chat',
+  nvidiaApiKey: process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY || '',
+  nvidiaModel: process.env.NVIDIA_MODEL || 'meta/llama-3.3-70b-instruct',
   dataforseoLogin: process.env.DATAFORSEO_LOGIN || '',
   dataforseoPassword: process.env.DATAFORSEO_PASSWORD || '',
   gscClientId: process.env.GSC_CLIENT_ID || '',
@@ -89,7 +94,12 @@ export function maskKey(key) {
 export function resolveRequestOptions(req) {
   return {
     psiApiKey: req.headers['x-psi-key'] || activeApiSettings.psiApiKey || '',
+    openrouterKey: req.headers['x-openrouter-key'] || activeApiSettings.openrouterApiKey || '',
+    openrouterModel: req.headers['x-openrouter-model'] || activeApiSettings.openrouterModel || 'deepseek/deepseek-chat',
+    nvidiaKey: req.headers['x-nvidia-key'] || activeApiSettings.nvidiaApiKey || '',
+    nvidiaModel: req.headers['x-nvidia-model'] || activeApiSettings.nvidiaModel || 'meta/llama-3.3-70b-instruct',
     geminiKey: req.headers['x-gemini-key'] || activeApiSettings.geminiApiKey || '',
+    geminiModel: req.headers['x-gemini-model'] || activeApiSettings.geminiModel || 'gemini-2.0-flash',
     openaiKey: req.headers['x-openai-key'] || activeApiSettings.openaiApiKey || '',
     dataforseoLogin: req.headers['x-dataforseo-login'] || activeApiSettings.dataforseoLogin || '',
     dataforseoPassword: req.headers['x-dataforseo-password'] || activeApiSettings.dataforseoPassword || '',
@@ -364,9 +374,20 @@ app.get(['/api/settings', '/api/v1/settings'], (req, res) => {
         configured: Boolean(activeApiSettings.psiApiKey),
         maskedKey: maskKey(activeApiSettings.psiApiKey)
       },
+      openrouter: {
+        configured: Boolean(activeApiSettings.openrouterApiKey),
+        maskedKey: maskKey(activeApiSettings.openrouterApiKey),
+        model: activeApiSettings.openrouterModel
+      },
+      nvidia: {
+        configured: Boolean(activeApiSettings.nvidiaApiKey),
+        maskedKey: maskKey(activeApiSettings.nvidiaApiKey),
+        model: activeApiSettings.nvidiaModel
+      },
       gemini: {
         configured: Boolean(activeApiSettings.geminiApiKey),
-        maskedKey: maskKey(activeApiSettings.geminiApiKey)
+        maskedKey: maskKey(activeApiSettings.geminiApiKey),
+        model: activeApiSettings.geminiModel
       },
       openai: {
         configured: Boolean(activeApiSettings.openaiApiKey),
@@ -386,9 +407,29 @@ app.get(['/api/settings', '/api/v1/settings'], (req, res) => {
 });
 
 app.post(['/api/settings/save', '/api/v1/settings/save'], (req, res) => {
-  const { psiApiKey, geminiApiKey, openaiApiKey, dataforseoLogin, dataforseoPassword, gscClientId, gscClientSecret, gscRedirectUri } = req.body || {};
+  const {
+    psiApiKey,
+    openrouterApiKey,
+    openrouterModel,
+    nvidiaApiKey,
+    nvidiaModel,
+    geminiApiKey,
+    geminiModel,
+    openaiApiKey,
+    dataforseoLogin,
+    dataforseoPassword,
+    gscClientId,
+    gscClientSecret,
+    gscRedirectUri
+  } = req.body || {};
+
   if (psiApiKey !== undefined) activeApiSettings.psiApiKey = (psiApiKey || '').trim();
+  if (openrouterApiKey !== undefined) activeApiSettings.openrouterApiKey = (openrouterApiKey || '').trim();
+  if (openrouterModel !== undefined) activeApiSettings.openrouterModel = (openrouterModel || '').trim() || 'deepseek/deepseek-chat';
+  if (nvidiaApiKey !== undefined) activeApiSettings.nvidiaApiKey = (nvidiaApiKey || '').trim();
+  if (nvidiaModel !== undefined) activeApiSettings.nvidiaModel = (nvidiaModel || '').trim() || 'meta/llama-3.3-70b-instruct';
   if (geminiApiKey !== undefined) activeApiSettings.geminiApiKey = (geminiApiKey || '').trim();
+  if (geminiModel !== undefined) activeApiSettings.geminiModel = (geminiModel || '').trim() || 'gemini-2.0-flash';
   if (openaiApiKey !== undefined) activeApiSettings.openaiApiKey = (openaiApiKey || '').trim();
   if (dataforseoLogin !== undefined) activeApiSettings.dataforseoLogin = (dataforseoLogin || '').trim();
   if (dataforseoPassword !== undefined) activeApiSettings.dataforseoPassword = (dataforseoPassword || '').trim();
@@ -401,7 +442,9 @@ app.post(['/api/settings/save', '/api/v1/settings/save'], (req, res) => {
     message: 'API settings saved to active session.',
     settings: {
       psi: { configured: Boolean(activeApiSettings.psiApiKey), maskedKey: maskKey(activeApiSettings.psiApiKey) },
-      gemini: { configured: Boolean(activeApiSettings.geminiApiKey), maskedKey: maskKey(activeApiSettings.geminiApiKey) },
+      openrouter: { configured: Boolean(activeApiSettings.openrouterApiKey), maskedKey: maskKey(activeApiSettings.openrouterApiKey), model: activeApiSettings.openrouterModel },
+      nvidia: { configured: Boolean(activeApiSettings.nvidiaApiKey), maskedKey: maskKey(activeApiSettings.nvidiaApiKey), model: activeApiSettings.nvidiaModel },
+      gemini: { configured: Boolean(activeApiSettings.geminiApiKey), maskedKey: maskKey(activeApiSettings.geminiApiKey), model: activeApiSettings.geminiModel },
       openai: { configured: Boolean(activeApiSettings.openaiApiKey), maskedKey: maskKey(activeApiSettings.openaiApiKey) },
       dataforseo: { configured: Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword), maskedLogin: maskKey(activeApiSettings.dataforseoLogin) },
       gsc: { configured: Boolean(activeApiSettings.gscClientId && activeApiSettings.gscClientSecret), maskedClientId: maskKey(activeApiSettings.gscClientId) }
@@ -410,7 +453,7 @@ app.post(['/api/settings/save', '/api/v1/settings/save'], (req, res) => {
 });
 
 app.post(['/api/settings/test', '/api/v1/settings/test'], async (req, res) => {
-  const { service, apiKey, login, password } = req.body || {};
+  const { service, apiKey, model, login, password } = req.body || {};
   if (!service) return res.status(400).json({ error: 'Service identifier is required.' });
 
   const startTime = Date.now();
@@ -438,28 +481,157 @@ app.post(['/api/settings/test', '/api/v1/settings/test'], async (req, res) => {
       return res.json({ success: true, message: 'Google PageSpeed Insights API key verified successfully!', latencyMs: Date.now() - startTime });
     }
 
+    if (service === 'openrouter') {
+      const keyToTest = apiKey || activeApiSettings.openrouterApiKey;
+      if (!keyToTest) return res.status(400).json({ error: 'No OpenRouter API key provided to test.' });
+      const modelToTest = model || activeApiSettings.openrouterModel || 'deepseek/deepseek-chat';
+
+      // 1. Try key info endpoint first
+      let keyInfo = null;
+      try {
+        const authRes = await fetch('https://openrouter.ai/api/v1/auth/key', {
+          headers: { 'Authorization': `Bearer ${keyToTest}` },
+          timeout: 10000
+        });
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          keyInfo = authData.data;
+        }
+      } catch {}
+
+      // 2. If auth endpoint didn't verify, try lightweight completions probe
+      if (!keyInfo) {
+        const compRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${keyToTest}`,
+            'HTTP-Referer': 'http://localhost:4000',
+            'X-Title': 'OmniSEO OS'
+          },
+          body: JSON.stringify({
+            model: modelToTest,
+            messages: [{ role: 'user', content: 'Respond with OK' }],
+            max_tokens: 5
+          }),
+          timeout: 15000
+        });
+
+        if (!compRes.ok) {
+          const errText = await compRes.text().catch(() => '');
+          return res.status(400).json({
+            success: false,
+            error: `OpenRouter API responded with status ${compRes.status}: ${errText.substring(0, 120)}`
+          });
+        }
+      }
+
+      return res.json({
+        success: true,
+        message: `OpenRouter API verified successfully! Model: ${modelToTest} (Account: ${keyInfo?.label || 'Active'})`,
+        latencyMs: Date.now() - startTime,
+        model: modelToTest
+      });
+    }
+
+    if (service === 'nvidia') {
+      const keyToTest = apiKey || activeApiSettings.nvidiaApiKey;
+      if (!keyToTest) return res.status(400).json({ error: 'No NVIDIA NIM API key provided to test.' });
+      const modelToTest = model || activeApiSettings.nvidiaModel || 'meta/llama-3.3-70b-instruct';
+
+      const testRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${keyToTest}`
+        },
+        body: JSON.stringify({
+          model: modelToTest,
+          messages: [{ role: 'user', content: 'Respond with OK' }],
+          max_tokens: 5
+        }),
+        timeout: 15000
+      });
+
+      if (!testRes.ok) {
+        // Also check if /v1/models responds
+        const modelsRes = await fetch('https://integrate.api.nvidia.com/v1/models', {
+          headers: { 'Authorization': `Bearer ${keyToTest}` },
+          timeout: 10000
+        });
+        if (!modelsRes.ok) {
+          const errText = await testRes.text().catch(() => '');
+          return res.status(400).json({
+            success: false,
+            error: `NVIDIA NIM API responded with status ${testRes.status}: ${errText.substring(0, 120)}`
+          });
+        }
+      }
+
+      return res.json({
+        success: true,
+        message: `NVIDIA NIM API verified successfully! Access to ${modelToTest} active.`,
+        latencyMs: Date.now() - startTime,
+        model: modelToTest
+      });
+    }
+
     if (service === 'gemini') {
       const keyToTest = apiKey || activeApiSettings.geminiApiKey;
       if (!keyToTest) return res.status(400).json({ error: 'No Google Gemini API key provided to test.' });
-      const testRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(keyToTest)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: 'Respond with OK' }] }] }),
-        timeout: 12000
-      });
-      if (!testRes.ok) {
-        const fbRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(keyToTest)}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: 'Respond with OK' }] }] }),
-          timeout: 12000
-        });
-        if (!fbRes.ok) {
-          const errText = await fbRes.text().catch(() => '');
-          return res.status(400).json({ success: false, error: `Gemini API responded with status ${fbRes.status}: ${errText.substring(0, 100)}` });
+      const requestedModel = model || activeApiSettings.geminiModel || 'gemini-2.0-flash';
+
+      // Multi-model resilient fallback loop to prevent 404s
+      const candidateModels = [
+        requestedModel,
+        'gemini-2.0-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-1.5-flash',
+        'gemini-2.5-flash',
+        'gemini-1.5-pro-latest'
+      ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
+
+      let verifiedModel = null;
+      let lastError = '';
+      let lastStatus = 404;
+
+      for (const candidate of candidateModels) {
+        for (const apiVersion of ['v1beta', 'v1']) {
+          try {
+            const testRes = await fetch(`https://generativelanguage.googleapis.com/${apiVersion}/models/${candidate}:generateContent?key=${encodeURIComponent(keyToTest)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: 'Respond with OK' }] }] }),
+              timeout: 10000
+            });
+            if (testRes.ok) {
+              verifiedModel = candidate;
+              break;
+            } else {
+              lastStatus = testRes.status;
+              lastError = await testRes.text().catch(() => '');
+            }
+          } catch (err) {
+            lastError = err.message;
+          }
         }
+        if (verifiedModel) break;
       }
-      return res.json({ success: true, message: 'Google Gemini Flash API key verified successfully!', latencyMs: Date.now() - startTime });
+
+      if (verifiedModel) {
+        activeApiSettings.geminiModel = verifiedModel;
+        return res.json({
+          success: true,
+          message: `Google Gemini API verified successfully! Connected via ${verifiedModel}`,
+          latencyMs: Date.now() - startTime,
+          workingModel: verifiedModel
+        });
+      }
+
+      return res.status(400).json({
+        success: false,
+        error: `Gemini API responded with status ${lastStatus}: ${lastError.substring(0, 120)}. Tip: Connect OpenRouter or NVIDIA NIM in Settings for instant free LLM access without Google Cloud project restrictions!`
+      });
     }
 
     if (service === 'openai') {
@@ -1341,7 +1513,19 @@ app.get('/api/inspect-page', async (req, res) => {
 // Live Provenance & Data Source Integrity Registry
 app.get(['/api/provenance', '/api/v1/provenance'], (req, res) => {
   const hasPsi = Boolean(activeApiSettings.psiApiKey);
-  const hasLlm = Boolean(activeApiSettings.geminiApiKey || activeApiSettings.openaiApiKey);
+  const hasLlm = Boolean(
+    activeApiSettings.openrouterApiKey ||
+    activeApiSettings.nvidiaApiKey ||
+    activeApiSettings.geminiApiKey ||
+    activeApiSettings.openaiApiKey
+  );
+
+  let activeLlmName = 'None';
+  if (activeApiSettings.openrouterApiKey) activeLlmName = `OpenRouter (${activeApiSettings.openrouterModel})`;
+  else if (activeApiSettings.nvidiaApiKey) activeLlmName = `NVIDIA NIM (${activeApiSettings.nvidiaModel})`;
+  else if (activeApiSettings.geminiApiKey) activeLlmName = `Google Gemini (${activeApiSettings.geminiModel})`;
+  else if (activeApiSettings.openaiApiKey) activeLlmName = 'OpenAI (gpt-4o-mini)';
+
   const hasDataForSeo = Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword);
   const hasGsc = Boolean(activeApiSettings.gscClientId && activeApiSettings.gscClientSecret) || isGscConfigured();
 
@@ -1377,13 +1561,13 @@ app.get(['/api/provenance', '/api/v1/provenance'], (req, res) => {
       brandSentiment: { dataStatus: 'simulated', provider: null, note: 'Google Suggest search sentiment heuristics' },
       geoAeo: {
         dataStatus: hasLlm ? 'measured' : 'simulated',
-        provider: hasLlm ? 'Live AI Search Entity Grounding Probe (Google Gemini / OpenAI)' : null,
-        note: hasLlm ? 'Live LLM entity grounding' : 'Connect Gemini/OpenAI in ⚙️ Settings for live LLM citation queries'
+        provider: hasLlm ? `Live AI Search Entity Grounding Probe (${activeLlmName})` : null,
+        note: hasLlm ? `Live LLM entity grounding via ${activeLlmName}` : 'Connect OpenRouter/NVIDIA/Gemini in ⚙️ Settings for live citation queries'
       },
       aiCopilot: {
         dataStatus: hasLlm ? 'measured' : 'simulated',
-        provider: hasLlm ? (activeApiSettings.geminiApiKey ? 'Google Gemini (live call)' : 'OpenAI (live call)') : null,
-        note: hasLlm ? 'Live generative reasoning' : 'Static template — connect Gemini/OpenAI in ⚙️ Settings'
+        provider: hasLlm ? activeLlmName : null,
+        note: hasLlm ? `Live generative reasoning via ${activeLlmName}` : 'Static template — connect OpenRouter/NVIDIA/Gemini in ⚙️ Settings'
       },
       openIntel: {
         dataStatus: 'measured',
