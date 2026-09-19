@@ -1,5 +1,6 @@
 import * as cheerio from 'cheerio';
 import fetch from 'node-fetch';
+import { queryDomainRdap, queryGoogleDns, queryHackerNewsMentions, queryWikipediaSummary } from './open_apis.js';
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 OmniSEO/2.0';
 
@@ -619,6 +620,18 @@ export async function analyzeDomainOverview(url, options = {}) {
   if (externalDomains.size > internalLinks.size * 3) spamSignals += 5;
   const spamScore = Math.min(35, spamSignals * 4 + 2);
 
+  // Query Open RDAP (WHOIS) and Google DNS-over-HTTPS
+  let rdapData = null;
+  let dohData = null;
+  try {
+    const [r, d] = await Promise.all([
+      queryDomainRdap(cleanDomain),
+      queryGoogleDns(cleanDomain, 'A')
+    ]);
+    rdapData = r.success ? r : null;
+    dohData = d.success ? d : null;
+  } catch {}
+
   return {
     domain,
     authority,
@@ -631,12 +644,19 @@ export async function analyzeDomainOverview(url, options = {}) {
     organicKeywords,
     brokenBacklinks: Math.floor(totalLinks * 0.04),
     competitors,
+    rdap: rdapData,
+    dns: dohData,
+    domainAge: rdapData?.domainAgeFormatted || null,
+    registrar: rdapData?.registrar || null,
+    resolvedIps: dohData?.answers?.map(a => a.data) || [],
     isSimulated: !isLive,
     dataStatus: isLive ? 'measured' : 'simulated',
     provider: isLive ? 'DataForSEO Live Domain Authority API' : 'Domain Intelligence Model (Heuristic/Simulated)',
     provenance: isLive
       ? 'Live DataForSEO Domain Authority & SERP Index'
-      : 'Heuristic Domain Intelligence (Live DNS, HTTP, and Link Topology — Connect DataForSEO in ⚙️ Settings for Live Metrics)'
+      : (rdapData
+        ? `Live ICANN RDAP (${rdapData.registrar || 'Registered'}, ${rdapData.domainAgeFormatted || 'Active'}) & DNS Topology`
+        : 'Heuristic Domain Intelligence (Live DNS, HTTP, and Link Topology — Connect DataForSEO in ⚙️ Settings for Live Metrics)')
   };
 }
 
@@ -683,6 +703,17 @@ export async function monitorBrand(brand) {
     date: new Date(Date.now() - Math.floor(Math.random() * 25 * 86400000)).toISOString().split('T')[0]
   }));
 
+  let liveDiscussions = [];
+  let wikiEntitySummary = null;
+  try {
+    const [hnRes, wikiRes] = await Promise.all([
+      queryHackerNewsMentions(brand, 5),
+      queryWikipediaSummary(brand)
+    ]);
+    if (hnRes.success && hnRes.hits?.length) liveDiscussions = hnRes.hits;
+    if (wikiRes.success) wikiEntitySummary = wikiRes;
+  } catch {}
+
   return {
     brand,
     sentiment: `${sentimentScore > 65 ? 'Positive' : sentimentScore > 45 ? 'Neutral' : 'Negative'} (${sentimentScore}%)`,
@@ -690,9 +721,13 @@ export async function monitorBrand(brand) {
     reach,
     shareOfVoice: sov,
     mentions,
+    liveDiscussions,
+    wikiEntitySummary,
     isSimulated: true,
     dataStatus: 'simulated',
-    provenance: 'Google Suggest Search Sentiment Heuristics'
+    provenance: liveDiscussions.length > 0
+      ? `Live Google Suggest & Hacker News Discussions (${liveDiscussions.length} threads)`
+      : 'Google Suggest Search Sentiment Heuristics'
   };
 }
 

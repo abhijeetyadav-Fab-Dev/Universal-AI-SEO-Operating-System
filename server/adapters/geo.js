@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
+import { queryWikidataEntity, queryWikipediaSummary } from './open_apis.js';
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
@@ -173,6 +174,23 @@ export async function auditGeoAeo(domain, targetBrand, options = {}) {
     } catch {}
   }
 
+  // 3b. Query Open Wikidata & Wikipedia Knowledge Graph APIs
+  let openKnowledgeGraph = null;
+  try {
+    const [wikiDataRes, wikiSumRes] = await Promise.all([
+      queryWikidataEntity(brand, 3),
+      queryWikipediaSummary(brand)
+    ]);
+    if (wikiDataRes.success && wikiDataRes.found) {
+      knowledgeGraphPresent = true;
+      openKnowledgeGraph = {
+        wikidata: wikiDataRes.primaryEntity,
+        wikipedia: wikiSumRes.success ? wikiSumRes : null,
+        source: 'Wikidata Knowledge Graph & Wikimedia REST API (Open, Zero-Auth)'
+      };
+    }
+  } catch {}
+
   const recommendations = [
     hasFaqSchema
       ? 'Maintain structured FAQPage JSON-LD schema with quarterly updates to protect direct answer carousels.'
@@ -209,6 +227,7 @@ export async function auditGeoAeo(domain, targetBrand, options = {}) {
       missingAttributes
     },
     citationsAnalysis,
+    openKnowledgeGraph,
     recommendations
   };
 }

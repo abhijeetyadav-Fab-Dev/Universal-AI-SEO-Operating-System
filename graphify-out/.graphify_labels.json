@@ -17,5 +17,7 @@
   "15": "verify_sidebar_layout.py",
   "16": "test_security_baseline.py",
   "17": "test_phase1_real_data.py",
-  "18": "test_phase2_enterprise_api.py"
+  "18": "test_phase2_enterprise_api.py",
+  "19": "open_apis.js",
+  "20": "probe_open_apis.js"
 }

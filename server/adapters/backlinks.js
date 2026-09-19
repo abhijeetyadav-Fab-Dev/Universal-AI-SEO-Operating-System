@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
+import { queryWikipediaBacklinks, queryHackerNewsMentions } from './open_apis.js';
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
@@ -167,6 +168,49 @@ export async function auditBacklinks(domain, targetUrl, options = {}) {
     }
   }
 
+  // 3b. Query Open Zero-Auth Backlink Endpoints (Wikipedia exturlusage & Hacker News Algolia)
+  let openBacklinks = { wikipedia: [], hackerNews: [] };
+  try {
+    const [wikiRes, hnRes] = await Promise.all([
+      queryWikipediaBacklinks(targetDomain, 6),
+      queryHackerNewsMentions(targetDomain, 6)
+    ]);
+    if (wikiRes.success && wikiRes.links.length > 0) {
+      openBacklinks.wikipedia = wikiRes.links;
+      for (const w of wikiRes.links) {
+        baselineReferringDomains.unshift({
+          domain: 'en.wikipedia.org',
+          authority: 98,
+          backlinkCount: 1,
+          type: 'EDITORIAL_WIKIPEDIA',
+          anchor: w.title,
+          targetUrl: w.targetUrl,
+          sourceUrl: w.articleUrl,
+          status: 'No-Follow',
+          isToxic: false,
+          isLiveDiscovered: true
+        });
+      }
+    }
+    if (hnRes.success && hnRes.hits.length > 0) {
+      openBacklinks.hackerNews = hnRes.hits;
+      for (const h of hnRes.hits) {
+        baselineReferringDomains.unshift({
+          domain: 'news.ycombinator.com',
+          authority: 92,
+          backlinkCount: h.points || 1,
+          type: 'TECH_COMMUNITY',
+          anchor: h.title,
+          targetUrl: h.url,
+          sourceUrl: h.hnUrl,
+          status: 'Do-Follow',
+          isToxic: false,
+          isLiveDiscovered: true
+        });
+      }
+    }
+  } catch {}
+
   const toxicCount = baselineReferringDomains.filter(d => d.isToxic).length;
   const toxicPercentage = parseFloat(((toxicCount / baselineReferringDomains.length) * 100).toFixed(1));
   const toxicRisk = toxicPercentage > 15 ? 'HIGH' : toxicPercentage > 5 ? 'MEDIUM' : 'LOW';
@@ -231,6 +275,8 @@ export async function auditBacklinks(domain, targetUrl, options = {}) {
     topReferringDomains: baselineReferringDomains,
     anchorDistribution,
     competitorLinkGaps,
+    openBacklinks,
+    openDiscoveredCount: openBacklinks.wikipedia.length + openBacklinks.hackerNews.length,
     disavowRules,
     disavowFileContent: disavowRules,
     disavowFilename: `disavow-${targetDomain}-${new Date().toISOString().split('T')[0]}.txt`

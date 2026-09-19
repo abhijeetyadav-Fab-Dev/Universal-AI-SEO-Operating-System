@@ -277,6 +277,41 @@
         }
       }
     },
+    "/api/v1/open-intel": {
+      "get": {
+        "summary": "Universal Open-API Intelligence Lookup",
+        "description": "Aggregates 7 zero-auth public endpoints in parallel: ICANN RDAP registry, Google DoH DNS, Wikipedia backlink citations, Hacker News discussions, Wikidata Knowledge Graph QID, Wikimedia Pageviews, and Datamuse Semantic LSI keywords.",
+        "parameters": [
+          { "name": "domain", "in": "query", "required": true, "schema": { "type": "string" }, "example": "wikipedia.org" }
+        ],
+        "responses": {
+          "200": { "description": "Consolidated open-web intelligence payload" },
+          "400": { "description": "Invalid domain or target parameter" }
+        }
+      },
+      "post": {
+        "summary": "Universal Open-API Intelligence Lookup (POST)",
+        "description": "Aggregates 7 zero-auth public endpoints in parallel via JSON request body.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["domain"],
+                "properties": {
+                  "domain": { "type": "string", "example": "wikipedia.org" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Consolidated open-web intelligence payload" },
+          "400": { "description": "Invalid domain or target parameter" }
+        }
+      }
+    },
     "/api/v1/settings": {
       "get": {
         "summary": "Get Configured API Keys Status",

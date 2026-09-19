@@ -941,6 +941,16 @@
               <div style="font-size:0.75rem; color:var(--text-muted);">Domain Authority</div>
               <div id="domAuthority" style="font-size:1.6rem; font-weight:800; color:#38bdf8;">--</div>
             </div>
+            <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:8px; border:1px solid rgba(56,189,248,0.25);">
+              <div style="font-size:0.75rem; color:#38bdf8; font-weight:700;">🌐 Domain Age (ICANN RDAP)</div>
+              <div id="domAge" style="font-size:1.3rem; font-weight:800; color:#fff;">--</div>
+              <div id="domRegistrar" style="font-size:0.72rem; color:var(--text-muted); margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Authoritative WHOIS</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:8px; border:1px solid rgba(16,185,129,0.25);">
+              <div style="font-size:0.75rem; color:#10b981; font-weight:700;">🛡️ Google DoH / DNS</div>
+              <div id="domDnsStatus" style="font-size:1.05rem; font-weight:700; color:#a7f3d0; margin-top:2px;">--</div>
+              <div id="domDnsIps" style="font-size:0.72rem; color:var(--text-muted); margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Authoritative IPs</div>
+            </div>
             <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:8px;">
               <div style="font-size:0.75rem; color:var(--text-muted);">SSL & Security</div>
               <div id="domSSL" style="font-size:1.2rem; font-weight:700; color:#10b981; margin-top:4px;">--</div>
@@ -2650,7 +2660,7 @@
 
       // GEO Table
       const geoTable = document.getElementById('geoTable').querySelector('tbody');
-      geoTable.innerHTML = (d.geoAeo?.citationsAnalysis || []).map(g => {
+      let geoRowsHtml = (d.geoAeo?.citationsAnalysis || []).map(g => {
         const readinessDisplay = g.citationShare || (g.citationReadiness ? `${g.citationReadiness} (${g.readinessScore}/100)` : '--');
         const statusColor = (g.presenceStatus && (g.presenceStatus.includes('READY') || g.presenceStatus.includes('GROUNDED'))) ? 'var(--emerald)' : '#f59e0b';
         return `
@@ -2661,6 +2671,18 @@
         </tr>
       `;
       }).join('');
+
+      if (d.geoAeo?.openKnowledgeGraph?.wikidata?.found) {
+        const primary = d.geoAeo.openKnowledgeGraph.wikidata.primaryEntity;
+        geoRowsHtml += `
+          <tr style="background:rgba(56,189,248,0.06); border-top:1px solid rgba(56,189,248,0.2);">
+            <td><strong>🌐 Wikidata Entity (${escapeHtml(primary.id)})</strong></td>
+            <td><span style="color:#38bdf8; font-weight:700; font-size:0.8rem;">● GROUNDED</span></td>
+            <td><a href="${primary.conceptUri}" target="_blank" style="color:#93c5fd; text-decoration:underline; font-size:0.75rem; font-weight:700;">${escapeHtml(primary.label)} ↗</a></td>
+          </tr>
+        `;
+      }
+      geoTable.innerHTML = geoRowsHtml;
 
       // Populate Real-Time CWV Performance Radar in Sidebar Stack
       if (d.pageSpeed) {
@@ -2940,18 +2962,41 @@
         const blTable = document.getElementById('backlinksTable');
         if (blTable && bl.topReferringDomains) {
           const blTbody = blTable.querySelector('tbody');
-          blTbody.innerHTML = bl.topReferringDomains.map(r => `
-            <tr style="${r.isToxic ? 'background:rgba(244,63,94,0.06);' : ''}">
-              <td><strong>${escapeHtml(r.domain)}</strong></td>
-              <td><span style="color:#38bdf8; font-weight:700;">DR ${r.authority}</span></td>
-              <td>${r.backlinkCount}</td>
-              <td><span style="background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-size:0.75rem;">${r.status || r.type}</span></td>
-              <td style="font-size:0.78rem; color:#cbd5e1;">"${escapeHtml(r.anchor || r.domain)}"</td>
-              <td>
-                ${r.isToxic ? `<span style="color:#f43f5e; font-weight:700; font-size:0.75rem;">⚠️ Toxic Farm</span>` : `<span style="color:#10b981; font-size:0.75rem;">✅ Clean</span>`}
-              </td>
-            </tr>
-          `).join('');
+          blTbody.innerHTML = bl.topReferringDomains.map(r => {
+            const isWiki = r.type === 'EDITORIAL_WIKIPEDIA';
+            const isHN = r.type === 'TECH_FORUM_COMMUNITY';
+            const citeUrl = r.articleUrl || r.hnUrl || r.url;
+
+            let typeBadge = `<span style="background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-size:0.75rem;">${escapeHtml(r.status || r.type || 'Referring')}</span>`;
+            if (isWiki) {
+              typeBadge = `<span style="background:rgba(56,189,248,0.2); color:#38bdf8; border:1px solid #38bdf8; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:700;">🌐 Wikipedia Citation</span>`;
+            } else if (isHN) {
+              typeBadge = `<span style="background:rgba(245,158,11,0.2); color:#fde68a; border:1px solid #f59e0b; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:700;">💬 Hacker News Story</span>`;
+            }
+
+            const domainDisplay = citeUrl 
+              ? `<a href="${citeUrl}" target="_blank" style="color:#93c5fd; text-decoration:none; font-weight:700;">${escapeHtml(r.domain)} ↗</a>`
+              : `<strong>${escapeHtml(r.domain)}</strong>`;
+
+            let spamDisplay = r.isToxic
+              ? `<span style="color:#f43f5e; font-weight:700; font-size:0.75rem;">⚠️ Toxic Farm</span>`
+              : `<span style="color:#10b981; font-size:0.75rem;">✅ Clean</span>`;
+
+            if (isWiki || isHN) {
+              spamDisplay = `<span style="color:#34d399; font-weight:700; font-size:0.75rem;">⭐ Verified Open-Web Citation</span>`;
+            }
+
+            return `
+              <tr style="${r.isToxic ? 'background:rgba(244,63,94,0.06);' : (isWiki || isHN ? 'background:rgba(56,189,248,0.05);' : '')}">
+                <td>${domainDisplay}</td>
+                <td><span style="color:#38bdf8; font-weight:700;">DR ${r.authority}</span></td>
+                <td>${r.backlinkCount}</td>
+                <td>${typeBadge}</td>
+                <td style="font-size:0.78rem; color:#cbd5e1;">"${escapeHtml(r.anchor || r.domain)}"</td>
+                <td>${spamDisplay}</td>
+              </tr>
+            `;
+          }).join('');
         }
 
         // Disavow File Card
@@ -3089,6 +3134,19 @@
         document.getElementById('domSSL').innerText = data.isSSL !== undefined ? (data.isSSL ? '✅ Valid TLS 1.3 / HTTPS' : '❌ Insecure HTTP') : '--';
         document.getElementById('domTraffic').innerText = (data.organicTraffic !== undefined && data.organicTraffic !== null) ? `${Number(data.organicTraffic).toLocaleString()} /mo` : '--';
         document.getElementById('domSpamScore').innerText = (data.spamScore !== undefined && data.spamScore !== null) ? `${data.spamScore}` : '--';
+
+        if (data.openIntel?.rdap) {
+          const domAgeEl = document.getElementById('domAge');
+          const domRegEl = document.getElementById('domRegistrar');
+          if (domAgeEl) domAgeEl.innerText = data.openIntel.rdap.domainAgeYears ? `${data.openIntel.rdap.domainAgeYears} yrs` : (data.openIntel.rdap.registrationDate ? data.openIntel.rdap.registrationDate.substring(0, 10) : 'Live RDAP');
+          if (domRegEl) domRegEl.innerText = data.openIntel.rdap.registrar || 'Authoritative WHOIS';
+        }
+        if (data.openIntel?.dns) {
+          const domDnsEl = document.getElementById('domDnsStatus');
+          const domDnsIpsEl = document.getElementById('domDnsIps');
+          if (domDnsEl) domDnsEl.innerText = data.openIntel.dns.dnssecValidated ? '🛡️ DNSSEC Validated' : '✅ Resolved A-Record';
+          if (domDnsIpsEl) domDnsIpsEl.innerText = (data.openIntel.dns.resolvedIps || []).slice(0, 2).join(', ') || 'Google DoH';
+        }
 
         const compTbody = document.getElementById('domainCompetitorsTable').querySelector('tbody');
         if (compTbody && data.competitors) {

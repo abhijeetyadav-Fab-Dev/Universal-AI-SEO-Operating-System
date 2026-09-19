@@ -25,6 +25,17 @@ import {
   universalWebScraper
 } from './adapters/openseo.js';
 import { auditHeadAndEeat } from './adapters/head_eeat.js';
+import {
+  queryWikipediaBacklinks,
+  queryHackerNewsMentions,
+  queryDomainRdap,
+  queryGoogleDns,
+  queryWikidataEntity,
+  queryWikipediaSummary,
+  queryWikimediaPageviews,
+  queryDatamuseLsiKeywords,
+  queryGoogleSuggest
+} from './adapters/open_apis.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -625,6 +636,63 @@ app.post(['/api/saved-keywords', '/api/v1/saved-keywords'], async (req, res) => 
   }
 });
 
+// Universal Open-API Intelligence Endpoint (Zero-Auth, Rate-Limit Friendly, Authoritative)
+app.all(['/api/open-intel', '/api/v1/open-intel'], async (req, res) => {
+  try {
+    const rawTarget = req.method === 'GET'
+      ? (req.query.domain || req.query.query || req.query.url)
+      : (req.body?.domain || req.body?.query || req.body?.url);
+
+    if (!rawTarget) {
+      return res.status(400).json({
+        success: false,
+        error: 'Target domain or query is required. Example: ?domain=example.com'
+      });
+    }
+
+    if (String(rawTarget).startsWith('http') && !isSafeUrl(rawTarget)) {
+      return res.status(400).json({ error: 'Invalid or restricted domain target (SSRF protection).' });
+    }
+
+    const domain = String(rawTarget).toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '').trim();
+    if (!domain || domain.length < 3) {
+      return res.status(400).json({ error: 'Invalid domain specified.' });
+    }
+
+    const startTime = Date.now();
+
+    // Concurrently query all 7 open zero-auth intelligence sources
+    const [rdap, dnsRes, wikiBacklinks, hnStories, wikidata, wikiSummary, datamuseWords] = await Promise.allSettled([
+      queryDomainRdap(domain),
+      queryGoogleDns(domain),
+      queryWikipediaBacklinks(domain, 10),
+      queryHackerNewsMentions(domain, 10),
+      queryWikidataEntity(domain, 5),
+      queryWikipediaSummary(domain),
+      queryDatamuseLsiKeywords(domain.split('.')[0] || domain, 10)
+    ]);
+
+    res.json({
+      success: true,
+      domain,
+      latencyMs: Date.now() - startTime,
+      dataStatus: 'measured',
+      provenance: 'Aggregated Live Open APIs (Zero-Auth Authoritative Endpoints)',
+      openEndpoints: {
+        icannRdap: rdap.status === 'fulfilled' ? rdap.value : { success: false, error: rdap.reason?.message },
+        googleDns: dnsRes.status === 'fulfilled' ? dnsRes.value : { success: false, error: dnsRes.reason?.message },
+        wikipediaBacklinks: wikiBacklinks.status === 'fulfilled' ? wikiBacklinks.value : { success: false, error: wikiBacklinks.reason?.message },
+        hackerNewsMentions: hnStories.status === 'fulfilled' ? hnStories.value : { success: false, error: hnStories.reason?.message },
+        wikidataKnowledgeGraph: wikidata.status === 'fulfilled' ? wikidata.value : { success: false, error: wikidata.reason?.message },
+        wikipediaSummary: wikiSummary.status === 'fulfilled' ? wikiSummary.value : { success: false, error: wikiSummary.reason?.message },
+        datamuseLsiKeywords: datamuseWords.status === 'fulfilled' ? datamuseWords.value : { success: false, error: datamuseWords.reason?.message }
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Open intelligence lookup failed: ' + err.message });
+  }
+});
+
 // ─── 3. GITHUB SEO TOPIC ENHANCEMENTS ────────────────────
 
 // Google SERP Snippet Preview Simulator (Desktop & Mobile)
@@ -1193,6 +1261,11 @@ app.get(['/api/provenance', '/api/v1/provenance'], (req, res) => {
         dataStatus: hasLlm ? 'measured' : 'simulated',
         provider: hasLlm ? (activeApiSettings.geminiApiKey ? 'Google Gemini (live call)' : 'OpenAI (live call)') : null,
         note: hasLlm ? 'Live generative reasoning' : 'Static template — connect Gemini/OpenAI in ⚙️ Settings'
+      },
+      openIntel: {
+        dataStatus: 'measured',
+        provider: 'Live Open APIs (ICANN RDAP, Google DoH, Wikipedia exturlusage, HackerNews Algolia, Wikidata wbsearchentities, Datamuse Semantic API, Google Suggest)',
+        note: 'Zero-auth authoritative public protocols integrated out of the box'
       }
     },
     generatedAt: new Date().toISOString()
@@ -1209,6 +1282,7 @@ app.get(['/api/health', '/api/v1/health'], (req, res) => {
     capabilities: [
       'Multi-Page Crawl (/api/audit)',
       'Backlinks & Disavow (/api/backlinks)',
+      'Open Intelligence Engine (/api/open-intel)',
       'GSC Insights Simulator (/api/gsc)',
       'Rank Tracking (/api/rank)',
       'Keyword Autocomplete & INR CPC (/api/keywords)',
