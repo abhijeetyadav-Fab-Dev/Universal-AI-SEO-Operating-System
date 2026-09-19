@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  omniseo-os:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: omniseo-os:latest
+    container_name: omniseo-os
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=production
+      - GOOGLE_PSI_API_KEY=${GOOGLE_PSI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - DATAFORSEO_LOGIN=${DATAFORSEO_LOGIN:-}
+      - DATAFORSEO_PASSWORD=${DATAFORSEO_PASSWORD:-}
+      - DATAFORSEO_API_KEY=${DATAFORSEO_API_KEY:-}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s

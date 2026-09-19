@@ -46,6 +46,19 @@
         "in": "header",
         "name": "x-dataforseo-password",
         "description": "DataForSEO API Password / Token"
+      },
+      "GoogleSearchConsoleOAuth": {
+        "type": "oauth2",
+        "description": "Google OAuth 2.0 Access Token with webmasters.readonly scope",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+            "tokenUrl": "https://oauth2.googleapis.com/token",
+            "scopes": {
+              "https://www.googleapis.com/auth/webmasters.readonly": "View Google Search Console data for verified sites"
+            }
+          }
+        }
       }
     }
   },
@@ -309,6 +322,51 @@
         "responses": {
           "200": { "description": "Consolidated open-web intelligence payload" },
           "400": { "description": "Invalid domain or target parameter" }
+        }
+      }
+    },
+    "/api/auth/gsc/url": {
+      "get": {
+        "summary": "Generate Google Search Console OAuth 2.0 Consent URL",
+        "description": "Returns Google consent URL requesting webmasters.readonly permissions.",
+        "responses": {
+          "200": { "description": "Consent URL generated successfully" }
+        }
+      }
+    },
+    "/api/auth/gsc/token": {
+      "post": {
+        "summary": "Exchange Authorization Code for Access & Refresh Tokens",
+        "description": "Exchanges one-time OAuth code for persistent tokens with mock fallback mode.",
+        "responses": {
+          "200": { "description": "Tokens exchanged successfully" }
+        }
+      }
+    },
+    "/api/auth/gsc/refresh": {
+      "post": {
+        "summary": "Refresh Expired GSC Access Token",
+        "description": "Refreshes expired OAuth access token using refresh_token.",
+        "responses": {
+          "200": { "description": "Token refreshed successfully" }
+        }
+      }
+    },
+    "/api/gsc/sites": {
+      "get": {
+        "summary": "List Verified Google Search Console Properties",
+        "description": "Retrieves verified domains, URL prefixes, and user permission levels.",
+        "responses": {
+          "200": { "description": "Verified properties listed successfully" }
+        }
+      }
+    },
+    "/api/gsc/query": {
+      "post": {
+        "summary": "Query Google Search Console Search Analytics",
+        "description": "Queries Search Console Analytics API and returns formatted queries, pages, clicks, impressions, CTR, and average position.",
+        "responses": {
+          "200": { "description": "Search analytics data returned successfully" }
         }
       }
     },

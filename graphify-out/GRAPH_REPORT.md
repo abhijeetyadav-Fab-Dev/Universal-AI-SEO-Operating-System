@@ -1,22 +1,22 @@
 # Graph Report - OmniSEO-OS  (2026-09-19)
 
 ## Corpus Check
-- 32 files · ~66,122 words
+- 41 files · ~85,508 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 165 nodes · 278 edges · 21 communities (19 shown, 2 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.5)
+- 278 nodes · 550 edges · 25 communities (23 shown, 2 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 18 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a885f2ee`
+- Built from commit: `1f90be76`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - index.js
-- orchestrator.js
+- test_exporter.js
 - dependencies
 - package.json
 - ui_smoke_test.js
@@ -25,52 +25,55 @@
 - test_audit_fixes.py
 - test_phase1_real_data.py
 - test_phase2_enterprise_api.py
-- open_apis.js
+- mcp.js
+- storage.js
+- gsc_real.js
+- indexnow_sitemap.js
 
 ## God Nodes (most connected - your core abstractions)
-1. `runTestSuite()` - 13 edges
-2. `keywords` - 10 edges
-3. `executeOrchestratedPlan()` - 10 edges
-4. `verifyAllOpenApis()` - 10 edges
-5. `auditBacklinks()` - 9 edges
-6. `OmniSEO-OS: Universal AI-Powered SEO Operating System` - 9 edges
-7. `queryHackerNewsMentions()` - 8 edges
-8. `queryWikipediaSummary()` - 8 edges
-9. `fetchHTML()` - 8 edges
-10. `analyzeDomainOverview()` - 8 edges
+1. `handleToolCall()` - 18 edges
+2. `scripts` - 13 edges
+3. `runTestSuite()` - 13 edges
+4. `auditBacklinks()` - 11 edges
+5. `runAllTests()` - 11 edges
+6. `runStorageTestSuite()` - 11 edges
+7. `keywords` - 10 edges
+8. `queryHackerNewsMentions()` - 10 edges
+9. `queryWikipediaSummary()` - 10 edges
+10. `saveAuditSnapshot()` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `runTestSuite()` --calls--> `auditBacklinks()`  [EXTRACTED]
   test/test_suite.js → server/adapters/backlinks.js
 - `runTestSuite()` --calls--> `executeOrchestratedPlan()`  [EXTRACTED]
   test/test_suite.js → server/engine/orchestrator.js
-- `runTestSuite()` --calls--> `auditHeadAndEeat()`  [EXTRACTED]
-  test/test_suite.js → server/adapters/head_eeat.js
-- `verifyAllOpenApis()` --calls--> `queryWikipediaBacklinks()`  [EXTRACTED]
-  test/test_open_apis.js → server/adapters/open_apis.js
-- `verifyAllOpenApis()` --calls--> `queryHackerNewsMentions()`  [EXTRACTED]
-  test/test_open_apis.js → server/adapters/open_apis.js
+- `runAllTests()` --calls--> `extractDomainFromSiteUrl()`  [EXTRACTED]
+  test/test_gsc_real.js → server/adapters/gsc_real.js
+- `runAllTests()` --calls--> `getDefaultDateRange()`  [EXTRACTED]
+  test/test_gsc_real.js → server/adapters/gsc_real.js
+- `runAllTests()` --calls--> `generateGoogleAuthUrl()`  [EXTRACTED]
+  test/test_gsc_real.js → server/adapters/gsc_real.js
 
 ## Import Cycles
 - None detected.
 
-## Communities (21 total, 2 thin omitted)
+## Communities (25 total, 2 thin omitted)
 
 ### Community 0 - "index.js"
-Cohesion: 0.15
-Nodes (26): auditHeadAndEeat(), analyzeCompetitorGap(), analyzeDomainOverview(), classifyIntent(), cpcForIntentINR(), crawlMultiPageSite(), diffForKeyword(), extractSavedKeywords() (+18 more)
+Cohesion: 0.14
+Nodes (27): auditHeadAndEeat(), analyzeCompetitorGap(), analyzeDomainOverview(), classifyIntent(), cpcForIntentINR(), crawlMultiPageSite(), diffForKeyword(), extractSavedKeywords() (+19 more)
 
-### Community 1 - "orchestrator.js"
-Cohesion: 0.24
-Nodes (7): auditBacklinks(), estimateDA(), auditTechnical(), fetchPageSpeed(), psiCache, analyzeKeywordsAndSERP(), executeOrchestratedPlan()
+### Community 1 - "test_exporter.js"
+Cohesion: 0.08
+Nodes (28): escapeCsvField(), escapeHtml(), exportToCsv(), generateExecutiveReportHtml(), getScoreTier(), RFC-4180, altLines, backlinkLines (+20 more)
 
 ### Community 2 - "dependencies"
 Cohesion: 0.18
-Nodes (11): cheerio, cors, dotenv, express, node-fetch, dependencies, cheerio, cors (+3 more)
+Nodes (11): cors, dotenv, express, dependencies, cheerio, cors, dotenv, express (+3 more)
 
 ### Community 3 - "package.json"
-Cohesion: 0.07
-Nodes (27): author, bugs, url, description, homepage, keywords, license, main (+19 more)
+Cohesion: 0.05
+Nodes (36): author, bugs, url, description, homepage, keywords, license, main (+28 more)
 
 ### Community 4 - "ui_smoke_test.js"
 Cohesion: 0.17
@@ -88,23 +91,41 @@ Nodes (3): 1. Ecosystem Overview (GitHub `seo` Topic), 2. Universal API Matrix (
 Cohesion: 0.83
 Nodes (3): make_request(), run_tests(), scan_for_markers()
 
-### Community 19 - "open_apis.js"
-Cohesion: 0.36
-Nodes (12): auditGeoAeo(), queryDatamuseLsiKeywords(), queryDomainRdap(), queryGoogleDns(), queryGoogleSuggest(), queryHackerNewsMentions(), queryWikidataEntity(), queryWikimediaPageviews() (+4 more)
+### Community 19 - "mcp.js"
+Cohesion: 0.13
+Nodes (32): auditBacklinks(), estimateDA(), auditTechnical(), auditGeoAeo(), queryDatamuseLsiKeywords(), queryDomainRdap(), queryGoogleDns(), queryGoogleSuggest() (+24 more)
+
+### Community 20 - "storage.js"
+Cohesion: 0.23
+Nodes (24): clearHistory(), compareSnapshots(), deleteSnapshot(), __dirname, ensureDbInitialized(), extractIssuesList(), extractSnapshotMetrics(), __filename (+16 more)
+
+### Community 21 - "gsc_real.js"
+Cohesion: 0.31
+Nodes (16): exchangeCodeForTokens(), extractDomainFromSiteUrl(), generateGoogleAuthUrl(), generateMockSearchAnalyticsData(), getDefaultDateRange(), GOOGLE_OAUTH_ENDPOINTS, GSC_SCOPES, isGscConfigured() (+8 more)
+
+### Community 22 - "indexnow_sitemap.js"
+Cohesion: 0.31
+Nodes (10): cleanTagContent(), decompressIfNeeded(), detectOrphanPages(), extractRawUrls(), fetchAndParseSitemap(), generateIndexNowKey(), INDEXNOW_ENDPOINTS, normalizeUrl() (+2 more)
 
 ## Knowledge Gaps
-- **56 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+51 more)
+- **99 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+94 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `dependencies` connect `dependencies` to `package.json`?**
-  _High betweenness centrality (0.024) - this node is a cross-community bridge._
-- **Why does `executeOrchestratedPlan()` connect `orchestrator.js` to `index.js`, `open_apis.js`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+- **Why does `generateExecutiveReportHtml()` connect `test_exporter.js` to `index.js`?**
+  _High betweenness centrality (0.032) - this node is a cross-community bridge._
+- **Why does `exportToCsv()` connect `test_exporter.js` to `index.js`?**
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
+- **Why does `handleToolCall()` connect `mcp.js` to `index.js`?**
+  _High betweenness centrality (0.017) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
-  _56 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _99 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `index.js` be split into smaller, more focused modules?**
+  _Cohesion score 0.14453781512605043 - nodes in this community are weakly interconnected._
+- **Should `test_exporter.js` be split into smaller, more focused modules?**
+  _Cohesion score 0.08275862068965517 - nodes in this community are weakly interconnected._
 - **Should `package.json` be split into smaller, more focused modules?**
-  _Cohesion score 0.07142857142857142 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05405405405405406 - nodes in this community are weakly interconnected._

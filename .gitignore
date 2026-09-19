@@ -32,3 +32,8 @@ Thumbs.db
 # Python Cache
 __pycache__/
 *.py[cod]
+
+# Persistent Storage DB
+data/*.json
+data/*.tmp
+!data/.gitkeep

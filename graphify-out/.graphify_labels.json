@@ -1,6 +1,6 @@
 {
   "0": "index.js",
-  "1": "orchestrator.js",
+  "1": "test_exporter.js",
   "2": "dependencies",
   "3": "package.json",
   "4": "ui_smoke_test.js",
@@ -18,6 +18,10 @@
   "16": "test_security_baseline.py",
   "17": "test_phase1_real_data.py",
   "18": "test_phase2_enterprise_api.py",
-  "19": "open_apis.js",
-  "20": "probe_open_apis.js"
+  "19": "mcp.js",
+  "20": "storage.js",
+  "21": "gsc_real.js",
+  "22": "indexnow_sitemap.js",
+  "23": "cheerio",
+  "24": "node-fetch"
 }

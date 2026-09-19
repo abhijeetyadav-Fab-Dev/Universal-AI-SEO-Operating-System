@@ -1,0 +1,85 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Node ${{ matrix.node-version }} Matrix Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Node.js Dependencies
+        run: npm ci
+
+      - name: Start OmniSEO-OS Server in Background
+        run: |
+          node server/index.js &
+          echo "SERVER_PID=$!" >> $GITHUB_ENV
+
+      - name: Wait for Server Healthcheck
+        run: |
+          for i in {1..30}; do
+            if curl -s -f http://localhost:4000/api/health > /dev/null 2>&1; then
+              echo "✅ Server is healthy and listening on port 4000!"
+              break
+            fi
+            echo "Waiting for server to become healthy (attempt $i/30)..."
+            sleep 1
+          done
+
+      - name: Run Core Test Suite
+        run: node test/test_suite.js
+
+      - name: Run Open Intelligence APIs Test
+        run: node test/test_open_apis.js
+
+      - name: Run Storage & History Engine Test
+        run: node test/test_storage.js
+
+      - name: Run Executive Exporter Test
+        run: node test/test_exporter.js
+
+      - name: Run Google Search Console Real OAuth Test
+        run: node test/test_gsc_real.js
+
+      - name: Run IndexNow & Sitemap Streaming Parser Test
+        run: node test/test_indexnow_sitemap.js
+
+      - name: Run Model Context Protocol (MCP) Server Test
+        run: node test/test_mcp.js
+
+      - name: Run Independent Audit Verification (Python)
+        run: python test/test_audit_fixes.py
+
+      - name: Run UI Smoke Test
+        run: node test/ui_smoke_test.js
+
+      - name: Stop Background Server
+        if: always()
+        run: |
+          if [ -n "$SERVER_PID" ]; then
+            echo "Terminating server process $SERVER_PID"
+            kill $SERVER_PID 2>/dev/null || true
+          fi

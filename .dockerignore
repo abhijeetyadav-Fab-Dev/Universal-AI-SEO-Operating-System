@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.git
+.github
+.env
+.env.local
+.DS_Store
+Thumbs.db
+test/
+*.png
+*.zip
+*.docx
+*.xlsx
+graphify-out/

@@ -36,6 +36,33 @@ import {
   queryDatamuseLsiKeywords,
   queryGoogleSuggest
 } from './adapters/open_apis.js';
+import {
+  saveAuditSnapshot,
+  getAuditHistory,
+  getProjectList,
+  getSnapshotById,
+  compareSnapshots,
+  deleteSnapshot,
+  clearHistory
+} from './adapters/storage.js';
+import {
+  generateGoogleAuthUrl,
+  exchangeCodeForTokens,
+  refreshAccessToken,
+  listVerifiedSites,
+  querySearchAnalytics,
+  isGscConfigured
+} from './adapters/gsc_real.js';
+import {
+  generateExecutiveReportHtml,
+  exportToCsv
+} from './adapters/exporter.js';
+import {
+  generateIndexNowKey,
+  submitToIndexNow,
+  fetchAndParseSitemap,
+  detectOrphanPages
+} from './adapters/indexnow_sitemap.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,7 +73,10 @@ const activeApiSettings = {
   geminiApiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '',
   openaiApiKey: process.env.OPENAI_API_KEY || '',
   dataforseoLogin: process.env.DATAFORSEO_LOGIN || '',
-  dataforseoPassword: process.env.DATAFORSEO_PASSWORD || ''
+  dataforseoPassword: process.env.DATAFORSEO_PASSWORD || '',
+  gscClientId: process.env.GSC_CLIENT_ID || '',
+  gscClientSecret: process.env.GSC_CLIENT_SECRET || '',
+  gscRedirectUri: process.env.GSC_REDIRECT_URI || ''
 };
 
 export function maskKey(key) {
@@ -345,18 +375,26 @@ app.get(['/api/settings', '/api/v1/settings'], (req, res) => {
       dataforseo: {
         configured: Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword),
         maskedLogin: maskKey(activeApiSettings.dataforseoLogin)
+      },
+      gsc: {
+        configured: Boolean(activeApiSettings.gscClientId && activeApiSettings.gscClientSecret),
+        maskedClientId: maskKey(activeApiSettings.gscClientId),
+        redirectUri: activeApiSettings.gscRedirectUri || 'http://localhost:4000/api/auth/gsc/callback'
       }
     }
   });
 });
 
 app.post(['/api/settings/save', '/api/v1/settings/save'], (req, res) => {
-  const { psiApiKey, geminiApiKey, openaiApiKey, dataforseoLogin, dataforseoPassword } = req.body || {};
+  const { psiApiKey, geminiApiKey, openaiApiKey, dataforseoLogin, dataforseoPassword, gscClientId, gscClientSecret, gscRedirectUri } = req.body || {};
   if (psiApiKey !== undefined) activeApiSettings.psiApiKey = (psiApiKey || '').trim();
   if (geminiApiKey !== undefined) activeApiSettings.geminiApiKey = (geminiApiKey || '').trim();
   if (openaiApiKey !== undefined) activeApiSettings.openaiApiKey = (openaiApiKey || '').trim();
   if (dataforseoLogin !== undefined) activeApiSettings.dataforseoLogin = (dataforseoLogin || '').trim();
   if (dataforseoPassword !== undefined) activeApiSettings.dataforseoPassword = (dataforseoPassword || '').trim();
+  if (gscClientId !== undefined) activeApiSettings.gscClientId = (gscClientId || '').trim();
+  if (gscClientSecret !== undefined) activeApiSettings.gscClientSecret = (gscClientSecret || '').trim();
+  if (gscRedirectUri !== undefined) activeApiSettings.gscRedirectUri = (gscRedirectUri || '').trim();
 
   res.json({
     success: true,
@@ -365,7 +403,8 @@ app.post(['/api/settings/save', '/api/v1/settings/save'], (req, res) => {
       psi: { configured: Boolean(activeApiSettings.psiApiKey), maskedKey: maskKey(activeApiSettings.psiApiKey) },
       gemini: { configured: Boolean(activeApiSettings.geminiApiKey), maskedKey: maskKey(activeApiSettings.geminiApiKey) },
       openai: { configured: Boolean(activeApiSettings.openaiApiKey), maskedKey: maskKey(activeApiSettings.openaiApiKey) },
-      dataforseo: { configured: Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword), maskedLogin: maskKey(activeApiSettings.dataforseoLogin) }
+      dataforseo: { configured: Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword), maskedLogin: maskKey(activeApiSettings.dataforseoLogin) },
+      gsc: { configured: Boolean(activeApiSettings.gscClientId && activeApiSettings.gscClientSecret), maskedClientId: maskKey(activeApiSettings.gscClientId) }
     }
   });
 });
@@ -376,6 +415,17 @@ app.post(['/api/settings/test', '/api/v1/settings/test'], async (req, res) => {
 
   const startTime = Date.now();
   try {
+    if (service === 'gsc') {
+      const clientIdToTest = apiKey || activeApiSettings.gscClientId || 'mock_test_client_id';
+      const authUrl = generateGoogleAuthUrl({ clientId: clientIdToTest });
+      return res.json({
+        success: true,
+        durationMs: Date.now() - startTime,
+        message: 'Google Search Console OAuth 2.0 URL generator verified successfully.',
+        authUrl
+      });
+    }
+
     if (service === 'psi') {
       const keyToTest = apiKey || activeApiSettings.psiApiKey;
       if (!keyToTest) return res.status(400).json({ error: 'No Google PSI API key provided to test.' });
@@ -535,13 +585,81 @@ app.post(['/api/backlinks', '/api/v1/backlinks'], async (req, res) => {
   }
 });
 
-// Google Search Console (GSC) Insights Simulation
+// ─── GOOGLE SEARCH CONSOLE (GSC) OAUTH 2.0 & API CONNECTOR ──
+app.get('/api/auth/gsc/url', (req, res) => {
+  try {
+    const { state, redirectUri } = req.query || {};
+    const authUrl = generateGoogleAuthUrl({
+      state,
+      redirectUri: redirectUri || activeApiSettings.gscRedirectUri
+    });
+    res.json({ success: true, authUrl });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/auth/gsc/token', async (req, res) => {
+  try {
+    const { code, redirectUri } = req.body || {};
+    if (!code) return res.status(400).json({ success: false, error: 'Authorization code is required' });
+    const tokens = await exchangeCodeForTokens({
+      code,
+      redirectUri: redirectUri || activeApiSettings.gscRedirectUri
+    });
+    res.json(tokens);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/auth/gsc/refresh', async (req, res) => {
+  try {
+    const { refreshToken } = req.body || {};
+    if (!refreshToken) return res.status(400).json({ success: false, error: 'Refresh token is required' });
+    const refreshed = await refreshAccessToken({ refreshToken });
+    res.json(refreshed);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/gsc/sites', async (req, res) => {
+  try {
+    const accessToken = req.headers['authorization']?.replace(/^Bearer\s+/i, '') || req.headers['x-gsc-token'] || req.query.accessToken;
+    if (!accessToken) return res.status(401).json({ success: false, error: 'Authorization token is required' });
+    const sites = await listVerifiedSites(accessToken);
+    res.json(sites);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/gsc/query', async (req, res) => {
+  try {
+    const accessToken = req.headers['authorization']?.replace(/^Bearer\s+/i, '') || req.headers['x-gsc-token'] || req.body?.accessToken;
+    const { siteUrl, startDate, endDate, dimensions, rowLimit } = req.body || {};
+    if (!siteUrl) return res.status(400).json({ success: false, error: 'siteUrl is required' });
+    const result = await querySearchAnalytics(accessToken, siteUrl, { startDate, endDate, dimensions, rowLimit });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Google Search Console (GSC) Unified Endpoint (Supports Live GSC OAuth Token or Simulation Fallback)
 app.post(['/api/gsc', '/api/v1/gsc'], async (req, res) => {
-  const { url } = req.body || {};
+  const { url, accessToken, startDate, endDate, dimensions, rowLimit } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL is required' });
   if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
 
+  const effectiveToken = accessToken || req.headers['x-gsc-token'] || req.headers['authorization']?.replace(/^Bearer\s+/i, '');
+
   try {
+    if (effectiveToken) {
+      const liveData = await querySearchAnalytics(effectiveToken, url, { startDate, endDate, dimensions, rowLimit });
+      return res.json(liveData);
+    }
     const options = resolveRequestOptions(req);
     const data = await simulateGSC(url, options);
     res.json(data);
@@ -1225,6 +1343,7 @@ app.get(['/api/provenance', '/api/v1/provenance'], (req, res) => {
   const hasPsi = Boolean(activeApiSettings.psiApiKey);
   const hasLlm = Boolean(activeApiSettings.geminiApiKey || activeApiSettings.openaiApiKey);
   const hasDataForSeo = Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword);
+  const hasGsc = Boolean(activeApiSettings.gscClientId && activeApiSettings.gscClientSecret) || isGscConfigured();
 
   res.json({
     note: 'Live provenance summary for the current deployment.',
@@ -1249,7 +1368,11 @@ app.get(['/api/provenance', '/api/v1/provenance'], (req, res) => {
       },
       trendsVolume: { dataStatus: 'simulated', provider: null, note: 'Connect Google Trends / DataForSEO in ⚙️ Settings' },
       serpKeywords: { dataStatus: 'simulated', provider: null, note: 'Connect DataForSEO in ⚙️ Settings for live SERP' },
-      gsc: { dataStatus: 'simulated', provider: null, note: 'Implement GSC OAuth for verified property data' },
+      gsc: {
+        dataStatus: hasGsc ? 'measured' : 'ready-for-oauth',
+        provider: hasGsc ? 'Google Search Console API v3 (OAuth 2.0)' : 'Google Search Console API Connector (Ready for OAuth / Mock Fallback)',
+        note: hasGsc ? 'Live GSC OAuth configured' : 'Connect GSC OAuth in ⚙️ Settings for verified property data'
+      },
       rankTracker: { dataStatus: 'simulated', provider: null, note: 'Connect DataForSEO in ⚙️ Settings for live SERP rank tracking' },
       brandSentiment: { dataStatus: 'simulated', provider: null, note: 'Google Suggest search sentiment heuristics' },
       geoAeo: {
@@ -1272,6 +1395,185 @@ app.get(['/api/provenance', '/api/v1/provenance'], (req, res) => {
   });
 });
 
+// ─── 4. STORAGE & AUDIT HISTORY ENGINE ─────────────────────
+
+// Save Audit Snapshot
+app.post(['/api/storage/snapshot', '/api/v1/storage/snapshot'], async (req, res) => {
+  try {
+    const { domain, auditResult } = req.body || {};
+    const result = await saveAuditSnapshot(domain, auditResult || req.body);
+    res.json({ success: true, snapshot: result });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save audit snapshot: ' + err.message });
+  }
+});
+
+// Get Audit History for a domain
+app.get(['/api/storage/history/:domain', '/api/v1/storage/history/:domain'], async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const history = await getAuditHistory(req.params.domain, limit);
+    res.json({ success: true, domain: req.params.domain, count: history.length, history });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve audit history: ' + err.message });
+  }
+});
+
+// Get Project List (all audited domains)
+app.get(['/api/storage/projects', '/api/v1/storage/projects'], async (req, res) => {
+  try {
+    const projects = await getProjectList();
+    res.json({ success: true, count: projects.length, projects });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve project list: ' + err.message });
+  }
+});
+
+// Get Specific Snapshot by ID
+app.get(['/api/storage/snapshot/:snapshotId', '/api/v1/storage/snapshot/:snapshotId'], async (req, res) => {
+  try {
+    const snapshot = await getSnapshotById(req.params.snapshotId);
+    if (!snapshot) {
+      return res.status(404).json({ error: `Snapshot with ID "${req.params.snapshotId}" not found.` });
+    }
+    res.json({ success: true, snapshot });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve snapshot: ' + err.message });
+  }
+});
+
+// Compare two snapshots
+app.post(['/api/storage/compare', '/api/v1/storage/compare'], async (req, res) => {
+  try {
+    const { snapshotId1, snapshotId2 } = req.body || {};
+    if (!snapshotId1 || !snapshotId2) {
+      return res.status(400).json({ error: 'Both snapshotId1 and snapshotId2 are required.' });
+    }
+    const comparison = await compareSnapshots(snapshotId1, snapshotId2);
+    res.json({ success: true, comparison });
+  } catch (err) {
+    res.status(400).json({ error: 'Comparison failed: ' + err.message });
+  }
+});
+
+// Delete specific snapshot
+app.delete(['/api/storage/snapshot/:snapshotId', '/api/v1/storage/snapshot/:snapshotId'], async (req, res) => {
+  try {
+    const deleted = await deleteSnapshot(req.params.snapshotId);
+    if (!deleted) {
+      return res.status(404).json({ error: `Snapshot with ID "${req.params.snapshotId}" not found.` });
+    }
+    res.json({ success: true, message: `Snapshot ${req.params.snapshotId} deleted.` });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete snapshot: ' + err.message });
+  }
+});
+
+// Clear history for domain
+app.delete(['/api/storage/history/:domain', '/api/v1/storage/history/:domain'], async (req, res) => {
+  try {
+    const result = await clearHistory(req.params.domain);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to clear history: ' + err.message });
+  }
+});
+
+// ─── 5. EXECUTIVE REPORT & BULK CSV EXPORT ENGINE ─────────
+
+// Generate Printable Executive Client HTML/PDF Report
+app.post(['/api/export/report', '/api/v1/export/report'], (req, res) => {
+  try {
+    const auditResult = req.body?.auditResult || req.body || {};
+    const html = generateExecutiveReportHtml(auditResult);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to generate executive report: ' + err.message });
+  }
+});
+
+// Bulk CSV Data Exporter (RFC 4180 compliant)
+app.post(['/api/export/csv', '/api/v1/export/csv'], (req, res) => {
+  try {
+    const { type, data } = req.body || {};
+    if (!type) {
+      return res.status(400).json({ error: 'Export "type" parameter is required (crawled_pages, missing_alts, issues, backlinks).' });
+    }
+    const csv = exportToCsv(type, data || []);
+    const filename = `omniseo-${type}-${Date.now()}.csv`;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csv);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// IndexNow Protocol Key Generator
+app.get(['/api/indexnow/key', '/api/v1/indexnow/key'], (req, res) => {
+  const key = generateIndexNowKey();
+  res.json({
+    success: true,
+    key,
+    length: key.length,
+    format: '32-character hex'
+  });
+});
+
+// IndexNow Batch URL Submission Dispatcher
+app.post(['/api/indexnow', '/api/v1/indexnow'], async (req, res) => {
+  try {
+    const { host, key, keyLocation, urlList, endpoint } = req.body || {};
+    if (!urlList || (Array.isArray(urlList) && urlList.length === 0)) {
+      return res.status(400).json({ success: false, error: 'urlList must contain at least one valid URL' });
+    }
+
+    const result = await submitToIndexNow({ host, key, keyLocation, urlList, endpoint });
+    res.status(result.status || 200).json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'IndexNow dispatch failed: ' + err.message });
+  }
+});
+
+// Streaming XML Sitemap Deep Parser & Sub-Sitemap Crawler
+app.all(['/api/sitemap/parse', '/api/v1/sitemap/parse'], async (req, res) => {
+  try {
+    const rawUrl = req.method === 'GET'
+      ? (req.query.url || req.query.sitemapUrl)
+      : (req.body?.url || req.body?.sitemapUrl);
+
+    if (!rawUrl) {
+      return res.status(400).json({ success: false, error: 'Target sitemap URL is required (e.g. ?url=https://example.com/sitemap.xml)' });
+    }
+
+    if (String(rawUrl).startsWith('http') && !isSafeUrl(rawUrl)) {
+      return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
+    }
+
+    const maxUrls = parseInt(req.query.maxUrls || req.body?.maxUrls || 5000, 10);
+    const parsed = await fetchAndParseSitemap(rawUrl, maxUrls);
+    res.json(parsed);
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Sitemap parsing failed: ' + err.message });
+  }
+});
+
+// Sitemap vs Link Graph Orphan & Unindexed Detector
+app.post(['/api/sitemap/orphans', '/api/v1/sitemap/orphans'], (req, res) => {
+  try {
+    const { crawledUrls, sitemapUrls } = req.body || {};
+    if (!crawledUrls && !sitemapUrls) {
+      return res.status(400).json({ success: false, error: 'Both crawledUrls and sitemapUrls must be provided.' });
+    }
+
+    const analysis = detectOrphanPages(crawledUrls || [], sitemapUrls || []);
+    res.json({ success: true, ...analysis });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Orphan analysis failed: ' + err.message });
+  }
+});
+
 // Health check endpoint
 app.get(['/api/health', '/api/v1/health'], (req, res) => {
   res.json({
@@ -1292,7 +1594,13 @@ app.get(['/api/health', '/api/v1/health'], (req, res) => {
       'Body Keyword Density (/api/saved-keywords)',
       'SERP Snippet Simulator (/api/serp-preview)',
       'Robots & Sitemap Prober (/api/robots-sitemap)',
-      'Data Integrity & Provenance (/api/provenance)'
+      'Data Integrity & Provenance (/api/provenance)',
+      'Audit History & Snapshot Persistence (/api/storage)',
+      'Executive HTML & PDF Report (/api/export/report)',
+      'Bulk CSV Data Export (/api/export/csv)',
+      'Live IndexNow Dispatcher (/api/indexnow)',
+      'Streaming XML Sitemap Deep Parser (/api/sitemap/parse)',
+      'Orphan Page Detector (/api/sitemap/orphans)'
     ]
   });
 });
