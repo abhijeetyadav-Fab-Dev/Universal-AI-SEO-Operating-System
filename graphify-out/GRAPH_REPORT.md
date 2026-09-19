@@ -1,16 +1,16 @@
 # Graph Report - OmniSEO-OS  (2026-09-19)
 
 ## Corpus Check
-- 42 files · ~88,420 words
+- 43 files · ~93,053 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 285 nodes · 558 edges · 25 communities (23 shown, 2 thin omitted)
+- 290 nodes · 575 edges · 26 communities (24 shown, 2 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 18 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0d740fdf`
+- Built from commit: `7ae65802`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -29,47 +29,48 @@
 - storage.js
 - gsc_real.js
 - indexnow_sitemap.js
+- orchestrator.js
 
 ## God Nodes (most connected - your core abstractions)
 1. `handleToolCall()` - 18 edges
-2. `scripts` - 14 edges
+2. `scripts` - 15 edges
 3. `runTestSuite()` - 13 edges
-4. `auditBacklinks()` - 11 edges
-5. `runAllTests()` - 11 edges
-6. `runStorageTestSuite()` - 11 edges
-7. `keywords` - 10 edges
-8. `queryHackerNewsMentions()` - 10 edges
-9. `queryWikipediaSummary()` - 10 edges
-10. `saveAuditSnapshot()` - 10 edges
+4. `executeOrchestratedPlan()` - 12 edges
+5. `auditBacklinks()` - 11 edges
+6. `runAllTests()` - 11 edges
+7. `runStorageTestSuite()` - 11 edges
+8. `keywords` - 10 edges
+9. `queryHackerNewsMentions()` - 10 edges
+10. `queryWikipediaSummary()` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `runTestSuite()` --calls--> `auditBacklinks()`  [EXTRACTED]
   test/test_suite.js → server/adapters/backlinks.js
+- `runTestSuite()` --calls--> `auditHeadAndEeat()`  [EXTRACTED]
+  test/test_suite.js → server/adapters/head_eeat.js
 - `runTestSuite()` --calls--> `executeOrchestratedPlan()`  [EXTRACTED]
   test/test_suite.js → server/engine/orchestrator.js
 - `runAllTests()` --calls--> `extractDomainFromSiteUrl()`  [EXTRACTED]
   test/test_gsc_real.js → server/adapters/gsc_real.js
 - `runAllTests()` --calls--> `getDefaultDateRange()`  [EXTRACTED]
   test/test_gsc_real.js → server/adapters/gsc_real.js
-- `runAllTests()` --calls--> `generateGoogleAuthUrl()`  [EXTRACTED]
-  test/test_gsc_real.js → server/adapters/gsc_real.js
 
 ## Import Cycles
 - None detected.
 
-## Communities (25 total, 2 thin omitted)
+## Communities (26 total, 2 thin omitted)
 
 ### Community 0 - "index.js"
-Cohesion: 0.11
-Nodes (29): auditHeadAndEeat(), analyzeCompetitorGap(), analyzeDomainOverview(), classifyIntent(), cpcForIntentINR(), crawlMultiPageSite(), diffForKeyword(), extractSavedKeywords() (+21 more)
+Cohesion: 0.12
+Nodes (28): analyzeCompetitorGap(), analyzeDomainOverview(), classifyIntent(), cpcForIntentINR(), crawlMultiPageSite(), diffForKeyword(), extractSavedKeywords(), fetchHTML() (+20 more)
 
 ### Community 1 - "test_exporter.js"
 Cohesion: 0.08
 Nodes (28): escapeCsvField(), escapeHtml(), exportToCsv(), generateExecutiveReportHtml(), getScoreTier(), RFC-4180, altLines, backlinkLines (+20 more)
 
 ### Community 2 - "scripts"
-Cohesion: 0.14
-Nodes (14): scripts, dev, mcp, start, test, test:all, test:exporter, test:gsc (+6 more)
+Cohesion: 0.13
+Nodes (15): scripts, dev, mcp, start, test, test:all, test:exporter, test:gsc (+7 more)
 
 ### Community 3 - "package.json"
 Cohesion: 0.06
@@ -92,8 +93,8 @@ Cohesion: 0.83
 Nodes (3): make_request(), run_tests(), scan_for_markers()
 
 ### Community 19 - "mcp.js"
-Cohesion: 0.13
-Nodes (32): auditBacklinks(), estimateDA(), auditTechnical(), auditGeoAeo(), queryDatamuseLsiKeywords(), queryDomainRdap(), queryGoogleDns(), queryGoogleSuggest() (+24 more)
+Cohesion: 0.17
+Nodes (27): auditBacklinks(), estimateDA(), auditGeoAeo(), queryDatamuseLsiKeywords(), queryDomainRdap(), queryGoogleDns(), queryGoogleSuggest(), queryHackerNewsMentions() (+19 more)
 
 ### Community 20 - "storage.js"
 Cohesion: 0.23
@@ -107,8 +108,12 @@ Nodes (16): exchangeCodeForTokens(), extractDomainFromSiteUrl(), generateGoogleA
 Cohesion: 0.31
 Nodes (10): cleanTagContent(), decompressIfNeeded(), detectOrphanPages(), extractRawUrls(), fetchAndParseSitemap(), generateIndexNowKey(), INDEXNOW_ENDPOINTS, normalizeUrl() (+2 more)
 
+### Community 25 - "orchestrator.js"
+Cohesion: 0.23
+Nodes (8): auditTechnical(), auditHeadAndEeat(), auditHelpfulContentGuardrail(), evaluateHelpfulContent(), fetchPageSpeed(), psiCache, analyzeKeywordsAndSERP(), executeOrchestratedPlan()
+
 ## Knowledge Gaps
-- **102 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+97 more)
+- **103 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+98 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -119,13 +124,13 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.031) - this node is a cross-community bridge._
 - **Why does `exportToCsv()` connect `test_exporter.js` to `index.js`?**
   _High betweenness centrality (0.029) - this node is a cross-community bridge._
-- **Why does `handleToolCall()` connect `mcp.js` to `index.js`?**
-  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+- **Why does `handleToolCall()` connect `mcp.js` to `index.js`, `orchestrator.js`?**
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
-  _102 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _103 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `index.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.11341463414634147 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11740890688259109 - nodes in this community are weakly interconnected._
 - **Should `test_exporter.js` be split into smaller, more focused modules?**
   _Cohesion score 0.08275862068965517 - nodes in this community are weakly interconnected._
 - **Should `scripts` be split into smaller, more focused modules?**
-  _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._

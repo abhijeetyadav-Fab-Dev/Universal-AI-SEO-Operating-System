@@ -222,7 +222,7 @@ export async function auditGeoAeo(domain, targetBrand, options = {}) {
   // 3. Probe via Google Gemini (with resilient multi-model fallback)
   if (!liveLlmProbe && geminiKey) {
     try {
-      const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-2.5-flash'];
+      const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-2.5-flash', 'gemini-pro', 'gemini-1.5-pro-latest'];
       for (const m of candidateModels) {
         for (const ver of ['v1beta', 'v1']) {
           try {

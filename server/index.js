@@ -24,7 +24,7 @@ import {
   analyzeCompetitorGap,
   universalWebScraper
 } from './adapters/openseo.js';
-import { auditHeadAndEeat } from './adapters/head_eeat.js';
+import { auditHeadAndEeat, evaluateHelpfulContent, auditHelpfulContentGuardrail } from './adapters/head_eeat.js';
 import {
   queryWikipediaBacklinks,
   queryHackerNewsMentions,
@@ -581,19 +581,49 @@ app.post(['/api/settings/test', '/api/v1/settings/test'], async (req, res) => {
       if (!keyToTest) return res.status(400).json({ error: 'No Google Gemini API key provided to test.' });
       const requestedModel = model || activeApiSettings.geminiModel || 'gemini-2.0-flash';
 
-      // Multi-model resilient fallback loop to prevent 404s
+      // 1. Query Google's ListModels endpoint to dynamically discover available models for this specific API key
+      let discoveredModels = [];
+      let listStatus = null;
+      let listErrBody = '';
+
+      for (const apiVersion of ['v1beta', 'v1']) {
+        try {
+          const listRes = await fetch(`https://generativelanguage.googleapis.com/${apiVersion}/models?key=${encodeURIComponent(keyToTest)}`, {
+            timeout: 10000
+          });
+          listStatus = listRes.status;
+          if (listRes.ok) {
+            const listData = await listRes.json();
+            if (Array.isArray(listData.models)) {
+              const usable = listData.models
+                .filter(m => !m.supportedGenerationMethods || m.supportedGenerationMethods.includes('generateContent'))
+                .map(m => m.name.replace(/^models\//, ''));
+              if (usable.length > 0) {
+                discoveredModels = usable;
+                break;
+              }
+            }
+          } else {
+            listErrBody = await listRes.text().catch(() => '');
+          }
+        } catch {}
+      }
+
+      // 2. Candidate models list (prioritizing discovered models, then requested, then common aliases)
       const candidateModels = [
+        ...discoveredModels,
         requestedModel,
         'gemini-2.0-flash',
         'gemini-1.5-flash-latest',
         'gemini-1.5-flash',
         'gemini-2.5-flash',
+        'gemini-pro',
         'gemini-1.5-pro-latest'
       ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
 
       let verifiedModel = null;
       let lastError = '';
-      let lastStatus = 404;
+      let lastStatus = listStatus || 404;
 
       for (const candidate of candidateModels) {
         for (const apiVersion of ['v1beta', 'v1']) {
@@ -628,9 +658,21 @@ app.post(['/api/settings/test', '/api/v1/settings/test'], async (req, res) => {
         });
       }
 
+      // 3. Clear actionable diagnosis
+      let diag = '';
+      if (lastStatus === 404 || listStatus === 404) {
+        diag = `Gemini API responded with status 404 (Model not found). This happens when: (1) Your Google Cloud project does not have the "Generative Language API" enabled, or (2) You pasted a Google PageSpeed (PSI) or Maps key instead of a Gemini AI Studio key. To get a real Gemini key, generate one free in 10s at https://aistudio.google.com/app/apikey. Or use OpenRouter / NVIDIA NIM for instant free access without Google Cloud project restrictions!`;
+      } else if (lastStatus === 403 || listStatus === 403) {
+        diag = `Gemini API responded with status 403 (Permission Denied). Enable "Generative Language API" in your Google Cloud Console, or generate a free key at https://aistudio.google.com/app/apikey. Tip: Connect OpenRouter or NVIDIA NIM in Settings for instant free LLM access!`;
+      } else if (lastStatus === 400) {
+        diag = `Gemini API responded with status 400 (Invalid API Key). Please double-check that you copied the complete API key from https://aistudio.google.com/app/apikey. Tip: Connect OpenRouter or NVIDIA NIM in Settings for instant free LLM access!`;
+      } else {
+        diag = `Gemini API responded with status ${lastStatus}: ${lastError.substring(0, 100)}. Tip: Connect OpenRouter or NVIDIA NIM in Settings for instant free LLM access!`;
+      }
+
       return res.status(400).json({
         success: false,
-        error: `Gemini API responded with status ${lastStatus}: ${lastError.substring(0, 120)}. Tip: Connect OpenRouter or NVIDIA NIM in Settings for instant free LLM access without Google Cloud project restrictions!`
+        error: diag
       });
     }
 
@@ -709,6 +751,94 @@ app.post(['/api/execute', '/api/v1/execute'], async (req, res) => {
     const options = resolveRequestOptions(req);
     const result = await executeOrchestratedPlan(finalPlan, options);
     res.json({ success: true, result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GOOGLE HELPFUL CONTENT SYSTEM & E-E-A-T GUARDRAIL ENDPOINTS ───
+app.get(['/api/guardrail/helpful-content', '/api/v1/guardrail/helpful-content'], async (req, res) => {
+  const targetUrl = req.query.url;
+  if (!targetUrl) return res.status(400).json({ error: 'URL query parameter "url" is required.' });
+  try {
+    await assertSafeUrl(targetUrl);
+  } catch (err) {
+    return res.status(400).json({ error: err.message || 'Invalid or restricted URL target (SSRF protection).' });
+  }
+
+  try {
+    const fullAudit = await auditHeadAndEeat(targetUrl);
+    res.json({
+      success: true,
+      url: targetUrl,
+      guardrail: fullAudit.helpfulContentGuardrail,
+      eeat: fullAudit.eeatAudit,
+      headCompleteness: fullAudit.headCompleteness,
+      contentMetrics: fullAudit.contentMetrics
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post(['/api/guardrail/helpful-content/evaluate', '/api/v1/guardrail/helpful-content/evaluate'], async (req, res) => {
+  const { url, html, content, title } = req.body || {};
+  if (!html && !content && !url) {
+    return res.status(400).json({ error: 'At least one of "url", "html", or "content" is required in request body.' });
+  }
+
+  try {
+    let targetHtml = html || '';
+    if (!targetHtml && content) {
+      targetHtml = `<!DOCTYPE html><html><head><title>${title || 'Draft Content'}</title></head><body><main><h1>${title || 'Draft Content'}</h1>${content}</main></body></html>`;
+    }
+
+    if (url && !targetHtml) {
+      await assertSafeUrl(url);
+    }
+
+    const fullAudit = await auditHeadAndEeat(url || 'https://example.com', targetHtml);
+    res.json({
+      success: true,
+      url: url || 'https://example.com',
+      guardrail: fullAudit.helpfulContentGuardrail,
+      eeat: fullAudit.eeatAudit,
+      contentMetrics: fullAudit.contentMetrics
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get(['/api/audit/eeat', '/api/v1/audit/eeat'], async (req, res) => {
+  const targetUrl = req.query.url;
+  if (!targetUrl) return res.status(400).json({ error: 'URL query parameter "url" is required.' });
+  try {
+    await assertSafeUrl(targetUrl);
+  } catch (err) {
+    return res.status(400).json({ error: err.message || 'Invalid or restricted URL target (SSRF protection).' });
+  }
+
+  try {
+    const auditData = await auditHeadAndEeat(targetUrl);
+    res.json({ success: true, ...auditData });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post(['/api/head-eeat', '/api/v1/head-eeat'], async (req, res) => {
+  const targetUrl = req.body?.url;
+  if (!targetUrl) return res.status(400).json({ error: 'URL is required' });
+  try {
+    await assertSafeUrl(targetUrl);
+  } catch (err) {
+    return res.status(400).json({ error: err.message || 'Invalid or restricted URL target (SSRF protection).' });
+  }
+
+  try {
+    const data = await auditHeadAndEeat(targetUrl);
+    res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

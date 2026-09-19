@@ -17,7 +17,8 @@
     "test:gsc": "node test/test_gsc_real.js",
     "test:indexnow": "node test/test_indexnow_sitemap.js",
     "test:llm": "node test/test_openrouter_nvidia.js",
-    "test:all": "node test/test_suite.js && node test/test_open_apis.js && node test/test_storage.js && node test/test_exporter.js && node test/test_gsc_real.js && node test/test_indexnow_sitemap.js && node test/test_openrouter_nvidia.js && node test/test_mcp.js && node test/ui_smoke_test.js"
+    "test:guardrail": "node test/test_helpful_content_guardrail.js",
+    "test:all": "node test/test_suite.js && node test/test_open_apis.js && node test/test_storage.js && node test/test_exporter.js && node test/test_gsc_real.js && node test/test_indexnow_sitemap.js && node test/test_openrouter_nvidia.js && node test/test_helpful_content_guardrail.js && node test/test_mcp.js && node test/ui_smoke_test.js"
   },
   "repository": {
     "type": "git",

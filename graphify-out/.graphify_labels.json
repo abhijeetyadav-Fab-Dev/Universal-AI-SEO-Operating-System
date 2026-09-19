@@ -23,5 +23,6 @@
   "21": "gsc_real.js",
   "22": "indexnow_sitemap.js",
   "23": "cheerio",
-  "24": "node-fetch"
+  "24": "node-fetch",
+  "25": "orchestrator.js"
 }

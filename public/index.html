@@ -700,7 +700,7 @@
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabGscRank')">📈 GSC & Rank Tracker</button>
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabBrand')">🏷️ Brand & Sentiment</button>
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabSerpSimulator')">📱 SERP & Social Preview</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabHeadEeat')">🛡️ &lt;head&gt; &amp; E-E-A-T Quality</button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabHeadEeat')">🛡️ Helpful Content &amp; E-E-A-T</button>
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabAiCopilot')">🤖 AI Strategy Copilot</button>
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabGuides')">📚 Guides & How-Tos</button>
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabScraper')">🕷️ Web Scraper Studio</button>
@@ -1199,6 +1199,61 @@
               <div style="font-size:0.75rem; color:var(--text-muted);">Content Readability</div>
               <div id="contentReadingGrade" style="font-size:1.1rem; font-weight:700; color:#fde68a; margin-top:4px;">--</div>
             </div>
+          </div>
+
+          <!-- Google Helpful Content System & E-E-A-T Guardrail Dashboard Card -->
+          <div style="background:rgba(2,6,23,0.75); border:1px solid rgba(16,185,129,0.35); border-radius:12px; padding:18px; margin-bottom:16px; box-shadow:0 4px 20px rgba(0,0,0,0.4);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+              <div>
+                <h4 style="color:#10b981; font-size:1.05rem; display:flex; align-items:center; gap:8px; margin:0 0 4px 0;">
+                  <span>🛡️ Google Helpful Content System &amp; E-E-A-T Guardrail</span>
+                  <a href="https://developers.google.com/search/docs/fundamentals/creating-helpful-content" target="_blank" style="font-size:0.7rem; color:#38bdf8; text-decoration:none; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); padding:2px 6px; border-radius:4px;">Official Standard ↗</a>
+                </h4>
+                <p style="font-size:0.78rem; color:var(--text-muted); margin:0;">Automated audit enforcing Google Search Central's People-First guidelines, "Who, How, Why" transparency, and anti-search-engine-first penalties:</p>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <span id="hcGuardrailBadge" class="btn-line-tag" style="background:rgba(16,185,129,0.2); color:#a7f3d0; font-size:0.85rem; padding:4px 12px;">Evaluating...</span>
+                <span id="hcOverallScore" style="font-size:1.6rem; font-weight:800; color:#10b981;">--/100</span>
+              </div>
+            </div>
+
+            <!-- 4 Dimensions Grid -->
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:10px; margin-bottom:14px;">
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:10px; border-radius:8px;">
+                <div style="font-size:0.72rem; color:var(--text-muted);">👤 Who (Authorship)</div>
+                <div id="hcWhoScore" style="font-size:1.25rem; font-weight:800; color:#38bdf8; margin-top:2px;">--/25</div>
+                <div style="font-size:0.68rem; color:var(--text-muted);">Bylines, credentials, Person schema</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:10px; border-radius:8px;">
+                <div style="font-size:0.72rem; color:var(--text-muted);">🔬 How (Methodology)</div>
+                <div id="hcHowScore" style="font-size:1.25rem; font-weight:800; color:#a78bfa; margin-top:2px;">--/25</div>
+                <div style="font-size:0.68rem; color:var(--text-muted);">Testing process, data tables, citations</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:10px; border-radius:8px;">
+                <div style="font-size:0.72rem; color:var(--text-muted);">🎯 Why (People-First)</div>
+                <div id="hcWhyScore" style="font-size:1.25rem; font-weight:800; color:#34d399; margin-top:2px;">--/25</div>
+                <div style="font-size:0.68rem; color:var(--text-muted);">Anti-stuffing, anti-clickbait, substance</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:10px; border-radius:8px;">
+                <div style="font-size:0.72rem; color:var(--text-muted);">🛡️ E-E-A-T &amp; Trust</div>
+                <div id="hcEeatScore" style="font-size:1.25rem; font-weight:800; color:#f59e0b; margin-top:2px;">--/25</div>
+                <div style="font-size:0.68rem; color:var(--text-muted);">Experience proof, HTTPS, legal policies</div>
+              </div>
+            </div>
+
+            <!-- Self-Assessment Question Table -->
+            <details style="margin-top:10px; cursor:pointer;" open>
+              <summary style="font-size:0.82rem; font-weight:700; color:#60a5fa; outline:none; user-select:none; margin-bottom:8px;">📋 Google Self-Assessment 8-Point Compliance Matrix (Click to Collapse/Expand)</summary>
+              <div style="max-height:260px; overflow-y:auto; margin-top:8px;">
+                <table class="data-table" id="hcSelfAssessmentTable">
+                  <thead><tr><th>Self-Assessment Dimension</th><th>Status</th><th>Evaluated Evidence</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </details>
+
+            <!-- Remediations & Anti-patterns Container -->
+            <div id="hcAlertsContainer" style="margin-top:12px; display:none;"></div>
           </div>
 
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
@@ -3442,6 +3497,66 @@
       stampPanel('tabHeadEeat', data.headCompleteness, null);
       const _heHost = document.querySelector('#tabHeadEeat .prov-stamp');
       if (_heHost && data.eeatAudit) _heHost.insertAdjacentHTML('beforeend', provPill(data.eeatAudit));
+
+      // Google Helpful Content System & E-E-A-T Guardrail Data
+      if (data.helpfulContentGuardrail) {
+        const hc = data.helpfulContentGuardrail;
+        const badgeEl = document.getElementById('hcGuardrailBadge');
+        if (badgeEl) {
+          badgeEl.innerText = hc.verdict === 'COMPLIANT_PEOPLE_FIRST' ? '✅ Compliant (People-First)' : (hc.verdict === 'NEEDS_IMPROVEMENT' ? '⚠️ Needs Improvement' : '❌ At Risk (Search-Engine-First)');
+          badgeEl.style.background = hc.verdict === 'COMPLIANT_PEOPLE_FIRST' ? 'rgba(16,185,129,0.2)' : (hc.verdict === 'NEEDS_IMPROVEMENT' ? 'rgba(245,158,11,0.2)' : 'rgba(244,63,94,0.2)');
+          badgeEl.style.color = hc.verdict === 'COMPLIANT_PEOPLE_FIRST' ? '#a7f3d0' : (hc.verdict === 'NEEDS_IMPROVEMENT' ? '#fde68a' : '#fda4af');
+        }
+
+        const scoreEl = document.getElementById('hcOverallScore');
+        if (scoreEl) {
+          scoreEl.innerText = `${hc.overallScore}/100`;
+          scoreEl.style.color = hc.overallScore >= 80 ? '#10b981' : (hc.overallScore >= 50 ? '#f59e0b' : '#f43f5e');
+        }
+
+        if (document.getElementById('hcWhoScore')) document.getElementById('hcWhoScore').innerText = `${hc.dimensions?.who?.score || 0}/25`;
+        if (document.getElementById('hcHowScore')) document.getElementById('hcHowScore').innerText = `${hc.dimensions?.how?.score || 0}/25`;
+        if (document.getElementById('hcWhyScore')) document.getElementById('hcWhyScore').innerText = `${hc.dimensions?.why?.score || 0}/25`;
+        if (document.getElementById('hcEeatScore')) document.getElementById('hcEeatScore').innerText = `${hc.dimensions?.eeat?.score || 0}/25`;
+
+        const saTbody = document.getElementById('hcSelfAssessmentTable')?.querySelector('tbody');
+        if (saTbody && hc.selfAssessment) {
+          saTbody.innerHTML = Object.entries(hc.selfAssessment).map(([key, val]) => `
+            <tr>
+              <td><strong style="color:#cbd5e1; font-size:0.78rem;">${key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}</strong></td>
+              <td>
+                <span class="btn-line-tag" style="background:${val.passed ? 'rgba(16,185,129,0.15)' : 'rgba(244,63,94,0.15)'}; color:${val.passed ? '#a7f3d0' : '#fda4af'};">
+                  ${val.passed ? '✅ Passed' : '⚠️ Attention'}
+                </span>
+              </td>
+              <td style="font-size:0.75rem; color:#94a3b8;">${escapeHtml(val.evidence)}</td>
+            </tr>
+          `).join('');
+        }
+
+        const alertsContainer = document.getElementById('hcAlertsContainer');
+        if (alertsContainer) {
+          const alerts = [];
+          if (Array.isArray(hc.antiPatterns) && hc.antiPatterns.length > 0) {
+            alerts.push(`<div style="background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.3); border-radius:6px; padding:8px 12px; margin-bottom:8px; font-size:0.78rem; color:#fda4af;">
+              <strong>⚠️ Search-Engine-First Penalties Detected:</strong>
+              <ul style="margin:4px 0 0 16px; padding:0;">
+                ${hc.antiPatterns.map(a => `<li>${escapeHtml(a.description)}</li>`).join('')}
+              </ul>
+            </div>`);
+          }
+          if (Array.isArray(hc.actionableRemediations) && hc.actionableRemediations.length > 0) {
+            alerts.push(`<div style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:6px; padding:8px 12px; font-size:0.78rem; color:#93c5fd;">
+              <strong>💡 Actionable Remediations for Google Helpful Content Compliance:</strong>
+              <ul style="margin:4px 0 0 16px; padding:0;">
+                ${hc.actionableRemediations.slice(0, 4).map(r => `<li>${escapeHtml(r)}</li>`).join('')}
+              </ul>
+            </div>`);
+          }
+          alertsContainer.innerHTML = alerts.join('');
+          alertsContainer.style.display = alerts.length > 0 ? 'block' : 'none';
+        }
+      }
 
       // KPI scores
       document.getElementById('headCompScore').innerText = `${data.headCompleteness?.score || 90}/100`;

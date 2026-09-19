@@ -785,6 +785,17 @@ export async function handleAiPrompt(prompt, url = null, options = {}) {
   const geminiModel = options.geminiModel || process.env.GEMINI_MODEL || 'gemini-2.0-flash';
   const openaiKey = options.openaiKey || process.env.OPENAI_API_KEY;
 
+  const HELPFUL_CONTENT_GUARDRAIL_SYSTEM_PROMPT = `You are an elite AI Search Architect and Technical Strategist for OmniSEO OS.
+MANDATORY GUARDRAIL (Google Helpful Content System & E-E-A-T):
+You must strictly comply with Google's official standard: https://developers.google.com/search/docs/fundamentals/creating-helpful-content
+1. PEOPLE-FIRST INTENT: Recommend strategies that solve real human user problems. Strictly prohibit search-engine-first anti-patterns (keyword quotas/stuffing, manufactured filler padding, and superficial aggregation).
+2. "WHO, HOW, WHY" TRANSPARENCY:
+   - "Who": Demand clear author attribution, credentials, and editorial transparency.
+   - "How": Advocate transparent methodologies, testing data, original benchmark tables, and clear disclosures.
+   - "Why": Ensure content is created solely to benefit human readers.
+3. GROUNDING IN E-E-A-T: Base all tactical recommendations on Experience, Expertise, Authoritativeness, and foundational Trustworthiness.
+Include precise HTML/code snippets where relevant (Schema.org Person/Article, canonicals, semantic tags). Be concise, actionable, and mathematically grounded.`;
+
   // 1. Try OpenRouter API if key is available (Supports DeepSeek, Llama 3.3, Free Models)
   if (openrouterKey) {
     try {
@@ -801,7 +812,7 @@ export async function handleAiPrompt(prompt, url = null, options = {}) {
           messages: [
             {
               role: 'system',
-              content: "You are an elite AI SEO Architect and Technical Search Strategist for OmniSEO OS. Provide concise, tactical, bullet-pointed recommendations based on the target page's crawled context and the user's prompt. Include precise HTML/code snippets where relevant."
+              content: HELPFUL_CONTENT_GUARDRAIL_SYSTEM_PROMPT
             },
             {
               role: 'user',
@@ -848,7 +859,7 @@ export async function handleAiPrompt(prompt, url = null, options = {}) {
           messages: [
             {
               role: 'system',
-              content: "You are an elite AI SEO Architect and Technical Search Strategist for OmniSEO OS. Provide concise, tactical, bullet-pointed recommendations based on the target page's crawled context and the user's prompt. Include precise HTML/code snippets where relevant."
+              content: HELPFUL_CONTENT_GUARDRAIL_SYSTEM_PROMPT
             },
             {
               role: 'user',
@@ -884,17 +895,12 @@ export async function handleAiPrompt(prompt, url = null, options = {}) {
   // 3. Try Google Gemini API if key is available (with multi-model resilient fallback)
   if (geminiKey) {
     try {
-      const systemInstruction = `You are an elite AI SEO Architect and Technical Search Strategist for OmniSEO OS.
-Provide concise, tactical, bullet-pointed recommendations based on the target page's real crawled context and the user's prompt.
-Include precise HTML/code snippets where relevant (such as meta tags, schema, or robots rules).
-Be direct, actionable, and mathematically grounded in modern search algorithms.`;
-
       const promptPayload = {
         contents: [
           {
             parts: [
               {
-                text: `${systemInstruction}\n\nPAGE CONTEXT:\n${pageContext || `Target Domain: ${targetDomain}`}\n\nUSER PROMPT / TASK:\n${prompt}`
+                text: `${HELPFUL_CONTENT_GUARDRAIL_SYSTEM_PROMPT}\n\nPAGE CONTEXT:\n${pageContext || `Target Domain: ${targetDomain}`}\n\nUSER PROMPT / TASK:\n${prompt}`
               }
             ]
           }
@@ -912,6 +918,7 @@ Be direct, actionable, and mathematically grounded in modern search algorithms.`
         'gemini-1.5-flash-latest',
         'gemini-1.5-flash',
         'gemini-2.5-flash',
+        'gemini-pro',
         'gemini-1.5-pro-latest'
       ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
 
@@ -970,7 +977,7 @@ Be direct, actionable, and mathematically grounded in modern search algorithms.`
           messages: [
             {
               role: 'system',
-              content: 'You are an elite AI SEO Architect and Technical Search Strategist for OmniSEO OS. Provide concise, tactical, bullet-pointed recommendations based on the target page\'s crawled context and the user\'s prompt.'
+              content: HELPFUL_CONTENT_GUARDRAIL_SYSTEM_PROMPT
             },
             {
               role: 'user',

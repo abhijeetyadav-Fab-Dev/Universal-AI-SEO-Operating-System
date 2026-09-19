@@ -4,6 +4,7 @@ import { analyzeKeywordsAndSERP } from '../adapters/serp.js';
 import { auditGeoAeo } from '../adapters/geo.js';
 import { auditBacklinks } from '../adapters/backlinks.js';
 import { fetchGoogleTrendsAndVolume } from '../adapters/trends.js';
+import { auditHeadAndEeat } from '../adapters/head_eeat.js';
 
 /**
  * Normalization & Prioritization Engine
@@ -43,7 +44,8 @@ export async function executeOrchestratedPlan(plan, options = {}) {
     { id: 'agent_serp_keyword', name: 'SERP & Intent Analyzer' },
     { id: 'agent_backlink', name: 'Backlink Intelligence & Authority Profile' },
     { id: 'agent_google_trends', name: 'Google Trends & Volume Engine' },
-    { id: 'agent_geo_aeo', name: 'GEO / AEO Engine' }
+    { id: 'agent_geo_aeo', name: 'GEO / AEO Engine' },
+    { id: 'agent_helpful_content', name: 'Google Helpful Content & E-E-A-T Guardrail' }
   ];
 
   const agentResults = {};
@@ -117,6 +119,14 @@ export async function executeOrchestratedPlan(plan, options = {}) {
       })
         .then(res => { agentResults.geoAeo = res; })
         .catch(err => { agentResults.geoAeo = { error: err.message }; })
+    );
+  }
+
+  if (agents.some(a => a.id === 'agent_helpful_content' || a.id === 'agent_eeat')) {
+    executionPromises.push(
+      auditHeadAndEeat(targetUrl)
+        .then(res => { agentResults.helpfulContent = res; })
+        .catch(err => { agentResults.helpfulContent = { error: err.message }; })
     );
   }
 
@@ -325,6 +335,41 @@ export async function executeOrchestratedPlan(plan, options = {}) {
     requiresHumanApproval: true
   });
 
+  // 6. Google Helpful Content & E-E-A-T Guardrail Audit
+  if (agentResults.helpfulContent?.helpfulContentGuardrail) {
+    const hc = agentResults.helpfulContent.helpfulContentGuardrail;
+    if (Array.isArray(hc.antiPatterns) && hc.antiPatterns.length > 0) {
+      for (const anti of hc.antiPatterns) {
+        rawRecommendations.push({
+          type: 'CONTENT_QUALITY',
+          discipline: 'HELPFUL_CONTENT_GUARDRAIL',
+          title: `Google Helpful Content: Resolve ${anti.type.replace(/_/g, ' ')}`,
+          problem: anti.description,
+          evidence: `Google Helpful Content System Self-Assessment (Score: ${hc.overallScore}/100) -> Status: ${hc.verdict}`,
+          targetUrl,
+          selector: 'body',
+          lineNumber: 1,
+          action: 'Align page structure with Google Helpful Content Guidelines',
+          actionSteps: [
+            'Audit content against Google Search Central Helpful Content self-assessment checklist.',
+            anti.description,
+            'Ensure page satisfies people-first search intent rather than gaming search engines.'
+          ],
+          beforeAfter: {
+            before: `Triggers Google Search-Engine-First penalty (${anti.type}).`,
+            after: 'Compliant with Google People-First content guidelines and high E-E-A-T trust signals.'
+          },
+          affectedEntities: [targetDomain],
+          impact: anti.severity === 'HIGH' ? 9 : 7,
+          trafficOpportunity: 8,
+          confidence: 0.95,
+          effort: 2,
+          requiresHumanApproval: false
+        });
+      }
+    }
+  }
+
   // Score & Sort Recommendations
   // Priority = (Impact * Opportunity * Confidence) / Effort
   const scoredRecommendations = rawRecommendations.map(rec => {
@@ -348,7 +393,8 @@ export async function executeOrchestratedPlan(plan, options = {}) {
     backlinks: agentResults.backlinks?.dataStatus || 'simulated',
     serp: agentResults.serp?.dataStatus || 'simulated',
     trends: agentResults.trends?.dataStatus || 'simulated',
-    geoAeo: agentResults.geoAeo?.dataStatus || 'simulated'
+    geoAeo: agentResults.geoAeo?.dataStatus || 'simulated',
+    helpfulContent: agentResults.helpfulContent?.dataStatus || 'measured'
   };
 
   return {
