@@ -212,6 +212,8 @@ export async function auditBacklinks(domain, targetUrl, options = {}) {
     provenance: isLiveApi
       ? 'Live DataForSEO Backlinks Index'
       : 'Crawled Hyperlinks & Heuristic Topology (Connect DataForSEO in ⚙️ Settings for Live Index)',
+    dataStatus: isLiveApi ? 'measured' : 'simulated',
+    isSimulated: !isLiveApi,
     isLiveApi,
     isConfigured: isLiveApi,
     domain: targetDomain,

@@ -187,6 +187,8 @@ export async function auditGeoAeo(domain, targetBrand, options = {}) {
 
   return {
     provider: 'OmniSEO GEO/AEO Benchmark Engine v2',
+    dataStatus: isRealCitationProbe ? 'measured' : 'simulated',
+    isSimulated: !isRealCitationProbe,
     provenance: isRealCitationProbe
       ? 'Live AI Search Entity Grounding Probe (Google Gemini 2.5 Flash)'
       : 'DOM Entity & Grounding Readiness Audit (Live Heuristic from Crawled HTML)',

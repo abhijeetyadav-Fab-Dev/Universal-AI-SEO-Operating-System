@@ -5,6 +5,8 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dns from 'dns/promises';
+import net from 'net';
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import { parseAndPlan } from './engine/planner.js';
@@ -229,6 +231,54 @@ app.get(['/api/docs', '/api/v1/docs'], (req, res) => {
 </html>`);
 });
 
+export function isBlockedIp(ip) {
+  if (!net.isIP(ip)) return true;
+  if (ip === '0.0.0.0' || ip === '::' || ip === '::1') return true;
+  const v6 = ip.toLowerCase();
+  if (v6.startsWith('fc') || v6.startsWith('fd')) return true;          // ULA fc00::/7
+  if (v6.startsWith('fe8') || v6.startsWith('fe9') || v6.startsWith('fea') || v6.startsWith('feb')) return true; // link-local
+  if (v6 === '127::1' || v6.startsWith('64:ff9b::') || v6.startsWith('100::')) return true; // NAT64 / TLA
+  const parts = ip.split('.').map(Number);
+  if (parts.length === 4) {
+    if (parts[0] === 0 || parts[0] === 10 || parts[0] === 127) return true;
+    if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) return true; // CGNAT
+    if (parts[0] === 169 && parts[1] === 254) return true;                  // link-local / cloud metadata
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+    if (parts[0] === 192 && parts[1] === 168) return true;
+    if (parts[0] === 198 && (parts[1] === 18 || parts[1] === 19)) return true; // benchmarking
+  }
+  return false;
+}
+
+export async function assertSafeUrl(target) {
+  let u;
+  try {
+    let urlToTest = String(target || '').trim();
+    if (!/^https?:\/\//i.test(urlToTest)) urlToTest = `https://${urlToTest}`;
+    u = new URL(urlToTest);
+  } catch {
+    throw new Error('Invalid or restricted URL target (SSRF protection).');
+  }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') throw new Error('Invalid or restricted URL target (SSRF protection).');
+  if (u.username || u.password) throw new Error('Invalid or restricted URL target (SSRF protection).');
+  const host = u.hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  if (host === 'localhost' || host === 'metadata.google.internal' || host === 'instance-data' || host.endsWith('.local') || host.endsWith('.internal') || host.endsWith('.lan')) {
+    throw new Error('Invalid or restricted URL target (SSRF protection).');
+  }
+  let ips;
+  if (net.isIP(host)) {
+    ips = [host];
+  } else {
+    try {
+      ips = (await dns.lookup(host, { all: true })).map(r => r.address);
+    } catch {
+      throw new Error('DNS resolution failed for target.');
+    }
+  }
+  if (!ips.length || ips.some(isBlockedIp)) throw new Error('Invalid or restricted URL target (SSRF protection).');
+  return u;
+}
+
 export function isSafeUrl(rawUrl) {
   try {
     if (!rawUrl || typeof rawUrl !== 'string') return false;
@@ -241,24 +291,22 @@ export function isSafeUrl(rawUrl) {
     if (!['http:', 'https:'].includes(parsed.protocol)) return false;
     if (parsed.username || parsed.password) return false;
 
-    const host = parsed.hostname.toLowerCase();
+    const host = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '');
     if (host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '0.0.0.0') return false;
     if (host === '169.254.169.254' || host === 'metadata.google.internal' || host === 'instance-data') return false;
+    if (host.endsWith('.local') || host.endsWith('.internal') || host.endsWith('.lan')) return false;
+
+    if (net.isIP(host)) {
+      if (isBlockedIp(host)) return false;
+    }
 
     const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
     const ipMatch = host.match(ipv4Regex);
     if (ipMatch) {
       const octets = ipMatch.slice(1, 5).map(Number);
       if (octets.some(o => o < 0 || o > 255)) return false;
-      if (octets[0] === 10) return false;
-      if (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) return false;
-      if (octets[0] === 192 && octets[1] === 168) return false;
-      if (octets[0] === 127) return false;
-      if (octets[0] === 169 && octets[1] === 254) return false;
-      if (octets[0] === 0) return false;
+      if (isBlockedIp(host)) return false;
     }
-    
-    if (host.endsWith('.local') || host.endsWith('.internal') || host.endsWith('.lan')) return false;
 
     return true;
   } catch {
@@ -439,7 +487,11 @@ app.post(['/api/execute', '/api/v1/execute'], async (req, res) => {
 app.post(['/api/audit', '/api/v1/audit'], async (req, res) => {
   const startUrl = req.body?.url;
   if (!startUrl) return res.status(400).json({ error: 'URL is required for audit' });
-  if (!isSafeUrl(startUrl)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
+  try {
+    await assertSafeUrl(startUrl);
+  } catch (err) {
+    return res.status(400).json({ error: err.message || 'Invalid or restricted URL target (SSRF protection).' });
+  }
 
   try {
     const results = await crawlMultiPageSite(startUrl, req.body.maxPages || 15);
@@ -611,9 +663,42 @@ app.all(['/api/robots-sitemap', '/api/v1/robots-sitemap'], async (req, res) => {
   try {
     const url = req.query.url || req.body?.url;
     if (!url) return res.status(400).json({ error: 'URL is required' });
-    if (!isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
+    try {
+      await assertSafeUrl(url);
+    } catch (e) {
+      return res.status(400).json({ error: e.message || 'Invalid or restricted URL target (SSRF protection).' });
+    }
     const parsed = new URL(url);
     const origin = parsed.origin;
+
+    // Live page check for live security radar metrics (measured)
+    let pageCheck = null;
+    try {
+      const pRes = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 OmniSEO-Probe/1.0' },
+        signal: AbortSignal.timeout(6000),
+        redirect: 'follow'
+      });
+      if (pRes.ok) {
+        const pHtml = await pRes.text();
+        const $p = cheerio.load(pHtml);
+        const canonical = $p('link[rel="canonical"]').attr('href') || null;
+        let selfCanonical = false;
+        if (canonical) {
+          try {
+            selfCanonical = new URL(canonical, url).href === new URL(url).href;
+          } catch {}
+        }
+        pageCheck = {
+          status: pRes.status,
+          isHttps: url.startsWith('https:'),
+          contentEncoding: pRes.headers.get('content-encoding') || null,
+          hsts: pRes.headers.get('strict-transport-security') || null,
+          canonical,
+          hasSelfCanonical: selfCanonical
+        };
+      }
+    } catch {}
 
     let robots = { status: 'Not Found', exists: false, content: '', aiBots: [], disallowCount: 0, allowCount: 0, sitemapsDeclared: [] };
     let sitemap = { status: 'Not Found', exists: false, content: '', urlCount: 0, urls: [] };
@@ -698,7 +783,7 @@ app.all(['/api/robots-sitemap', '/api/v1/robots-sitemap'], async (req, res) => {
           const lastmod = $(el).find('lastmod').text().trim() || '2026-09-01';
           const priority = $(el).find('priority').text().trim() || '0.5';
           const changefreq = $(el).find('changefreq').text().trim() || 'weekly';
-          if (loc) parsedUrls.push({ loc, lastmod, priority, changefreq });
+          if (loc) parsedUrls.push({ url: loc, loc, lastmod, priority, changefreq });
         });
 
         sitemap = {
@@ -711,7 +796,15 @@ app.all(['/api/robots-sitemap', '/api/v1/robots-sitemap'], async (req, res) => {
       }
     } catch {}
 
-    res.json({ origin, robots, sitemap });
+    res.json({
+      origin,
+      robots,
+      sitemap,
+      pageCheck,
+      dataStatus: 'measured',
+      isSimulated: false,
+      provider: 'Live fetch of target robots.txt, sitemap & page headers'
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1059,10 +1152,58 @@ app.get('/api/inspect-page', async (req, res) => {
   }
 });
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
+// Live Provenance & Data Source Integrity Registry
+app.get(['/api/provenance', '/api/v1/provenance'], (req, res) => {
+  const hasPsi = Boolean(activeApiSettings.psiApiKey);
+  const hasLlm = Boolean(activeApiSettings.geminiApiKey || activeApiSettings.openaiApiKey);
+  const hasDataForSeo = Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword);
+
   res.json({
-    status: 'UP',
+    note: 'Live provenance summary for the current deployment.',
+    modules: {
+      technicalCrawl: { dataStatus: 'measured', provider: 'Built-in SSRF-safe crawler (server-side)' },
+      robotsSitemap: { dataStatus: 'measured', provider: 'Live fetch of target robots.txt / XML sitemap & page headers' },
+      headLint: { dataStatus: 'measured', provider: 'Built-in <head> linter (server-side)' },
+      eeat: { dataStatus: 'heuristic', provider: 'Static heuristics over crawled content (NOT a provider API)' },
+      scrape: { dataStatus: 'measured', provider: 'Built-in HTML→markdown scraper' },
+      pageSpeed: {
+        dataStatus: hasPsi ? 'measured' : 'measured-or-unavailable',
+        provider: 'Google PageSpeed Insights API v5' + (hasPsi ? ' (API key active)' : ' (no API key configured — expect occasional rate-limit unavailability; NO fake fallback)')
+      },
+      backlinks: {
+        dataStatus: hasDataForSeo ? 'measured' : 'simulated',
+        provider: hasDataForSeo ? 'DataForSEO Live Backlinks API' : null,
+        note: hasDataForSeo ? 'Live DataForSEO backlink index' : 'Connect DataForSEO in ⚙️ Settings for live metrics'
+      },
+      domainAuthority: {
+        dataStatus: hasDataForSeo ? 'measured' : 'simulated',
+        provider: hasDataForSeo ? 'DataForSEO Live Domain Authority API' : null
+      },
+      trendsVolume: { dataStatus: 'simulated', provider: null, note: 'Connect Google Trends / DataForSEO in ⚙️ Settings' },
+      serpKeywords: { dataStatus: 'simulated', provider: null, note: 'Connect DataForSEO in ⚙️ Settings for live SERP' },
+      gsc: { dataStatus: 'simulated', provider: null, note: 'Implement GSC OAuth for verified property data' },
+      rankTracker: { dataStatus: 'simulated', provider: null, note: 'Connect DataForSEO in ⚙️ Settings for live SERP rank tracking' },
+      brandSentiment: { dataStatus: 'simulated', provider: null, note: 'Google Suggest search sentiment heuristics' },
+      geoAeo: {
+        dataStatus: hasLlm ? 'measured' : 'simulated',
+        provider: hasLlm ? 'Live AI Search Entity Grounding Probe (Google Gemini / OpenAI)' : null,
+        note: hasLlm ? 'Live LLM entity grounding' : 'Connect Gemini/OpenAI in ⚙️ Settings for live LLM citation queries'
+      },
+      aiCopilot: {
+        dataStatus: hasLlm ? 'measured' : 'simulated',
+        provider: hasLlm ? (activeApiSettings.geminiApiKey ? 'Google Gemini (live call)' : 'OpenAI (live call)') : null,
+        note: hasLlm ? 'Live generative reasoning' : 'Static template — connect Gemini/OpenAI in ⚙️ Settings'
+      }
+    },
+    generatedAt: new Date().toISOString()
+  });
+});
+
+// Health check endpoint
+app.get(['/api/health', '/api/v1/health'], (req, res) => {
+  res.json({
+    status: 'ok',
+    state: 'UP',
     service: 'OmniSEO-OS Universal Engine',
     version: '2.0.0',
     capabilities: [
@@ -1076,7 +1217,8 @@ app.get('/api/health', (req, res) => {
       'AI Strategy Copilot (/api/ai-prompt)',
       'Body Keyword Density (/api/saved-keywords)',
       'SERP Snippet Simulator (/api/serp-preview)',
-      'Robots & Sitemap Prober (/api/robots-sitemap)'
+      'Robots & Sitemap Prober (/api/robots-sitemap)',
+      'Data Integrity & Provenance (/api/provenance)'
     ]
   });
 });

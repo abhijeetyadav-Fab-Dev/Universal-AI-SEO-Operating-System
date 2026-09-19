@@ -65,6 +65,9 @@ export async function crawlMultiPageSite(startUrl, maxPages = 15) {
   const results = {
     startUrl,
     domain,
+    dataStatus: 'measured',
+    isSimulated: false,
+    provider: 'Built-in SSRF-safe multi-page crawler',
     pagesCrawled: 0,
     avgResponseTime: 0,
     issuesFound: 0,
@@ -346,6 +349,7 @@ export async function simulateGSC(url) {
   return {
     provider: 'Google Search Console Intelligence Simulator',
     provenance: 'Simulated Search Model (Connect GSC OAuth for Verified Property Data)',
+    dataStatus: 'simulated',
     isSimulated: true,
     clicks: totalClicks,
     impressions: totalImpr,
@@ -628,7 +632,8 @@ export async function analyzeDomainOverview(url, options = {}) {
     brokenBacklinks: Math.floor(totalLinks * 0.04),
     competitors,
     isSimulated: !isLive,
-    dataStatus: isLive ? 'live' : 'heuristic',
+    dataStatus: isLive ? 'measured' : 'simulated',
+    provider: isLive ? 'DataForSEO Live Domain Authority API' : 'Domain Intelligence Model (Heuristic/Simulated)',
     provenance: isLive
       ? 'Live DataForSEO Domain Authority & SERP Index'
       : 'Heuristic Domain Intelligence (Live DNS, HTTP, and Link Topology — Connect DataForSEO in ⚙️ Settings for Live Metrics)'
@@ -789,6 +794,8 @@ Be direct, actionable, and mathematically grounded in modern search algorithms.`
             response: generatedText,
             model: 'Google Gemini 2.5 Flash',
             isRealLlm: true,
+            dataStatus: 'measured',
+            isSimulated: false,
             latencyMs: Date.now() - startTime,
             provenance: 'Live Generative AI (Google Gemini 2.5 Flash)'
           };
@@ -834,6 +841,8 @@ Be direct, actionable, and mathematically grounded in modern search algorithms.`
             response: generatedText,
             model: 'OpenAI GPT-4o-mini',
             isRealLlm: true,
+            dataStatus: 'measured',
+            isSimulated: false,
             latencyMs: Date.now() - startTime,
             provenance: 'Live Generative AI (OpenAI GPT-4o-mini)'
           };
@@ -870,6 +879,8 @@ Be direct, actionable, and mathematically grounded in modern search algorithms.`
     response: `${prefixedNotice}${baseResponse}`,
     model: 'Rule-Based Pattern Matcher (No API Key Configured)',
     isRealLlm: false,
+    dataStatus: 'simulated',
+    isSimulated: true,
     latencyMs: Date.now() - startTime,
     provenance: 'Rule-Based Heuristic — Connect Gemini/OpenAI in ⚙️ Settings'
   };

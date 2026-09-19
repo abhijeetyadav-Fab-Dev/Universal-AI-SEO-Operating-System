@@ -15,5 +15,7 @@
   "13": "test_new_features.py",
   "14": "verify_header_ui.py",
   "15": "verify_sidebar_layout.py",
-  "16": "test_security_baseline.py"
+  "16": "test_security_baseline.py",
+  "17": "test_phase1_real_data.py",
+  "18": "test_phase2_enterprise_api.py"
 }

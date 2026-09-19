@@ -279,7 +279,16 @@
       .results-section, .panel { box-shadow: none !important; border: 1px solid #ddd !important; background: #fff !important; color: #000 !important; }
       .deep-tab-content { display: block !important; margin-bottom: 24px !important; }
     }
-  </style>
+  /* === FIXED: provenance / data-integrity layer === */
+.prov{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:0.04em;white-space:nowrap;line-height:1.5;}
+.prov-measured{background:rgba(16,185,129,0.14);color:#34d399;border:1px solid rgba(16,185,129,0.45);}
+.prov-heuristic{background:rgba(59,130,246,0.14);color:#93c5fd;border:1px solid rgba(59,130,246,0.45);}
+.prov-simulated{background:rgba(245,158,11,0.16);color:#fde68a;border:1px solid rgba(245,158,11,0.55);}
+.prov-unavailable{background:rgba(148,163,184,0.14);color:#cbd5e1;border:1px solid rgba(148,163,184,0.5);}
+.prov-note{font-size:0.66rem;color:#94a3b8;line-height:1.4;}
+.prov-banner{background:rgba(245,158,11,0.08);border:1px dashed rgba(245,158,11,0.5);color:#fde68a;border-radius:8px;padding:8px 12px;font-size:0.72rem;margin:0 0 12px 0;display:none;line-height:1.5;}
+.prov-legend{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:8px 12px;margin-bottom:16px;}
+</style>
 </head>
 <body>
   <header>
@@ -392,6 +401,15 @@
         </div>
       </div>
 
+      <!-- FIXED: data-integrity legend (was missing entirely — simulated data was indistinguishable) -->
+      <div class="prov-legend">
+        <span style="font-size:0.68rem;color:#94a3b8;font-weight:800;letter-spacing:0.05em;">DATA INTEGRITY:</span>
+        <span class="prov prov-measured" title="Fetched/measured live from the target or a real API">● MEASURED — live data</span>
+        <span class="prov prov-heuristic" title="Computed by us from real crawled content (not a provider API)">◐ HEURISTIC — computed from crawled content</span>
+        <span class="prov prov-simulated" title="Demo data. No provider connected. Do not act on these numbers.">◌ SIMULATED — demo data, NOT from any provider</span>
+        <span class="prov prov-unavailable" title="Data source unreachable — we refuse to substitute fake numbers">○ UNAVAILABLE — no data (nothing faked)</span>
+      </div>
+
       <!-- High-Level Metric Tiles -->
       <div class="metrics-row">
         <div class="metric-card">
@@ -400,7 +418,7 @@
             <span style="font-size:0.65rem; padding:1px 6px; border-radius:3px; background:rgba(59,130,246,0.15); color:#93c5fd; border:1px solid rgba(59,130,246,0.3); font-weight:700;">⚡ Multi-Modal</span>
           </div>
           <div class="metric-val" id="valHealth" style="color:var(--emerald);">--</div>
-          <div class="metric-sub">Across All Modalities</div>
+          <div class="metric-sub" title="Blend of measured + simulated modules — see Data Integrity legend">Blend — see integrity legend</div>
         </div>
         <div class="metric-card">
           <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
@@ -424,13 +442,13 @@
             <span style="font-size:0.65rem; padding:1px 6px; border-radius:3px; background:rgba(245,158,11,0.15); color:#fde68a; border:1px solid rgba(245,158,11,0.3); font-weight:700;" title="Topology citation model; connect LLM API for live testing">🧪 Heuristic Model</span>
           </div>
           <div class="metric-val" id="valGeoScore">--</div>
-          <div class="metric-sub">Perplexity &amp; LLM Citations</div>
+          <div class="metric-sub" title="Simulated until real LLM citation queries are connected">Simulated until LLM connected</div>
         </div>
       </div>
 
       <div class="grid-2">
         <!-- Left Column: Prioritized Actions Inbox -->
-        <div class="panel" style="align-self: start;">
+        <div class="panel" id="panelInbox" style="align-self: start;">
           <div class="panel-title">
             <span>🎯 Evidence-Based Priority Inbox</span>
             <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">Sorted by (Impact × Opp × Conf) / Effort</span>
@@ -441,7 +459,7 @@
         <!-- Right Column: Multi-Widget Real-Time Intelligence Sidebar Stack -->
         <div class="sidebar-stack" style="display:flex; flex-direction:column; gap:20px; align-self: start;">
           <!-- Widget 1: Technical & On-Page Summary -->
-          <div class="panel">
+          <div class="panel" id="panelOnpage">
             <div class="panel-title">
               <span>🔍 On-Page Signal Inspection</span>
               <div style="display:flex; gap:6px; align-items:center;">
@@ -488,11 +506,15 @@
           </div>
 
           <!-- Widget 2: Core Web Vitals & Real-Time Performance Radar -->
-          <div class="panel">
+          <div class="panel" id="panelCwv">
             <div class="panel-title">
               <span>⚡ Core Web Vitals &amp; Performance Radar</span>
-              <span id="cwvPanelBadge" onclick="openApiSettingsModal()" style="cursor:pointer; font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;" title="Click to configure Google PageSpeed API key">⚠️ Key Required (Connect in ⚙️ Settings)</span>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <span id="cwvProviderTag" style="font-size:0.75rem; color:#94a3b8; font-family:'JetBrains Mono',monospace;">Awaiting PageSpeed run…</span>
+                <span id="cwvPanelBadge" onclick="openApiSettingsModal()" style="cursor:pointer; font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;" title="Click to configure Google PageSpeed API key">⚠️ Key Required (Connect in ⚙️ Settings)</span>
+              </div>
             </div>
+            <div id="cwvUnavailableBanner" class="prov-banner"></div>
             
             <div id="cwvKeyPromptBox" style="display:none; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:6px; padding:8px 12px; margin-bottom:10px; justify-content:space-between; align-items:center;">
               <span style="font-size:0.75rem; color:#fde68a;">⚠️ Live Core Web Vitals requires free PSI key.</span>
@@ -552,10 +574,10 @@
           </div>
 
           <!-- Widget 3: AI Search (GEO) Presence -->
-          <div class="panel">
+          <div class="panel" id="panelGeo">
             <div class="panel-title">
               <span>🤖 AI Search (GEO) Presence</span>
-              <span id="geoPanelBadge" style="font-size:0.7rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;" title="DOM schema grounding readiness and LLM entity probe">⚡ DOM Grounding &amp; Entity Audit</span>
+              <span id="geoPanelBadge" style="font-size:0.75rem; color:#f59e0b; font-family:'JetBrains Mono',monospace;">No LLM provider connected</span>
             </div>
             <table class="data-table" id="geoTable">
               <thead>
@@ -566,7 +588,7 @@
           </div>
 
           <!-- Widget 4: Google Trends & Search Volume Engine -->
-          <div class="panel">
+          <div class="panel" id="panelTrends">
             <div class="panel-title">
               <span>📈 Google Trends &amp; Keyword Search Volume</span>
               <div style="display:flex; gap:6px; align-items:center;">
@@ -600,7 +622,7 @@
           </div>
 
           <!-- Widget 5: Security, Infrastructure & Crawlability Radar -->
-          <div class="panel">
+          <div class="panel" id="panelSecurity">
             <div class="panel-title">
               <span>🛡️ Security &amp; Technical Infrastructure Radar</span>
               <span style="font-size:0.7rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;">⚡ Live TLS &amp; Network Probe</span>
@@ -608,22 +630,22 @@
             <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:12px;">
               <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
                 <div style="font-size:0.7rem; color:var(--text-muted);">SSL / TLS Security</div>
-                <div id="radarSslStatus" style="font-size:0.85rem; font-weight:700; color:#10b981; margin-top:4px;">🔒 TLS 1.3 Active</div>
+                <div id="radarSslStatus" style="font-size:0.85rem; font-weight:700; color:#94a3b8; margin-top:4px;">🔒 Awaiting probe…</div>
                 <span style="font-size:0.65rem; color:#64748b;">HSTS Enforced</span>
               </div>
               <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
                 <div style="font-size:0.7rem; color:var(--text-muted);">Compression</div>
-                <div id="radarCompression" style="font-size:0.85rem; font-weight:700; color:#38bdf8; margin-top:4px;">⚡ Brotli / Gzip</div>
+                <div id="radarCompression" style="font-size:0.85rem; font-weight:700; color:#94a3b8; margin-top:4px;">⚡ Awaiting probe…</div>
                 <span style="font-size:0.65rem; color:#64748b;">Fast TTFB Transfer</span>
               </div>
               <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
                 <div style="font-size:0.7rem; color:var(--text-muted);">Crawl Directives</div>
-                <div id="radarRobots" style="font-size:0.85rem; font-weight:700; color:#34d399; margin-top:4px;">🤖 AI Firewall Live</div>
+                <div id="radarRobots" style="font-size:0.85rem; font-weight:700; color:#94a3b8; margin-top:4px;">🤖 Awaiting probe…</div>
                 <span style="font-size:0.65rem; color:#64748b;">Robots.txt &amp; Sitemap Valid</span>
               </div>
               <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
                 <div style="font-size:0.7rem; color:var(--text-muted);">Canonical Integrity</div>
-                <div id="radarCanonical" style="font-size:0.85rem; font-weight:700; color:#10b981; margin-top:4px;">✅ Self-Canonical</div>
+                <div id="radarCanonical" style="font-size:0.85rem; font-weight:700; color:#94a3b8; margin-top:4px;">✅ Awaiting probe…</div>
                 <span style="font-size:0.65rem; color:#64748b;">Zero index collisions</span>
               </div>
             </div>
@@ -634,10 +656,10 @@
           </div>
 
           <!-- Widget 6: Authority & Backlink Health Snapshot -->
-          <div class="panel">
+          <div class="panel" id="panelBacklinks">
             <div class="panel-title">
               <span>🔗 Authority &amp; Backlink Health Snapshot</span>
-              <span style="font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;" title="Heuristic estimation based on domain topology. Connect Ahrefs/Semrush API for live link index.">🧪 Simulated Benchmark</span>
+              <span style="font-size:0.75rem; color:#f59e0b; font-family:'JetBrains Mono',monospace;">No provider — demo profile</span>
             </div>
             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:12px;">
               <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; text-align:center;">
@@ -837,7 +859,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <div>
                 <strong style="color:#fda4af; font-size:0.9rem;">🛡️ Google Search Console Disavow Generator</strong>
-                <p style="font-size:0.75rem; color:var(--text-muted);">Identified low-quality link farms and scraper domains ready for Disavow Tool upload:</p>
+                <p style="font-size:0.75rem; color:#fde68a;">⚠️ Rules below are generated from SIMULATED link data on this deployment — verify with a real backlink provider before uploading to Google.</p>
               </div>
               <div style="display:flex; gap:8px;">
                 <button id="btnCopyDisavow" style="background:#f43f5e; color:#fff; border:none; border-radius:6px; padding:6px 14px; font-weight:700; cursor:pointer; font-size:0.78rem;">📋 Copy Disavow Rules</button>
@@ -1047,7 +1069,7 @@
               <div class="serp-card" id="serpCardContainer">
                 <div class="serp-url" id="serpCardUrl">
                   <span style="display:inline-block; width:18px; height:18px; background:#f1f3f4; border-radius:50%; text-align:center; font-size:10px; line-height:18px;">🌐</span>
-                  <span id="serpCardBreadcrumb">example.com › audit-target</span>
+                  <span id="serpCardBreadcrumb">domain › /path (fills from measured audit)</span>
                 </div>
                 <div class="serp-title" id="serpCardTitle">Live Google SERP Snippet Preview — Run Audit to Inspect</div>
                 <div class="serp-rating" id="serpCardRating" style="display:none;"></div>
@@ -1942,6 +1964,31 @@
     // Bulletproof Code Snippet Registry
     window.codeSnippets = {};
     let currentAuditResult = null;
+
+    // ===== FIXED: provenance helpers (honesty layer) =====
+    function provPill(mod, fallbackStatus){
+      const status = (mod && mod.dataStatus) || fallbackStatus || 'simulated';
+      const cls = status==='measured' ? 'prov-measured' : status==='unavailable' ? 'prov-unavailable' : status==='heuristic' ? 'prov-heuristic' : 'prov-simulated';
+      const label = status==='measured'
+        ? '● MEASURED' + (mod && mod.provider ? ' — ' + String(mod.provider).split(' (')[0] : '')
+        : status==='unavailable' ? '○ UNAVAILABLE — no data, nothing simulated'
+        : status==='heuristic' ? '◐ HEURISTIC — computed from crawled content'
+        : '◌ SIMULATED — demo data, not from any provider';
+      const tip = escapeHtml((mod && (mod.provenance || mod.error || '')) || '') + (mod && mod.note ? ' | ' + escapeHtml(mod.note) : '');
+      return `<span class="prov ${cls}" title="${tip}">${label}</span>`;
+    }
+    function stampPanel(panelId, mod, noteText){
+      const panel = document.getElementById(panelId);
+      if (!panel || !mod) return;
+      let host = panel.querySelector(':scope > .prov-stamp');
+      if (!host) {
+        host = document.createElement('div');
+        host.className = 'prov-stamp';
+        host.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:2px 0 8px 0;';
+        panel.insertBefore(host, panel.firstChild);
+      }
+      host.innerHTML = provPill(mod) + (noteText ? `<span class="prov-note">${noteText}</span>` : '');
+    }
     let currentPlan = null;
 
     function registerSnippet(code) {
@@ -2047,6 +2094,15 @@
           md += `**Recommended Production Code:**\n\`\`\`html\n${r.fixDiff}\n\`\`\`\n\n`;
         }
       });
+
+      // FIXED: export now discloses data provenance per module
+      md += `\n---\n\n## 📡 Data Sources & Provenance\n\n| Module | Status | Source / note |\n|---|---|---|\n`;
+      const _dp = currentAuditResult?.detailedPayloads || {};
+      for (const [k, v] of Object.entries(_dp)) {
+        const src = (v && (v.provider || v.provenance || (v.isSimulated ? 'simulated — no provider connected' : ''))) || '—';
+        md += `| ${k} | **${v?.dataStatus || 'unknown'}** | ${String(src).replace(/\|/g, '/').slice(0, 140)} |\n`;
+      }
+      md += `\n> Generated ${new Date().toISOString()} · measured = live data · heuristic = computed from crawled content · simulated = demo data (do not act on) · unavailable = no data collected (nothing faked)\n\n`;
 
       const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
       const a = document.createElement('a');
@@ -2276,13 +2332,30 @@
       const c = result.canonicalModel;
       const d = result.detailedPayloads;
 
-      // Metric Tiles
+      // Metric Tiles (FIXED: provenance-aware; PSI unavailable no longer shows fake score)
       document.getElementById('valHealth').innerText = `${c.overallHealth}/100`;
-      document.getElementById('valTechScore').innerText = `${d.technical?.score || 'N/A'}/100`;
-      document.getElementById('valTechStatus').innerText = `Response: ${d.technical?.responseTimeMs || 0}ms`;
-      document.getElementById('valSpeedScore').innerText = `${d.pageSpeed?.performanceScore || 'N/A'}/100`;
-      document.getElementById('valSpeedLcp').innerText = `LCP: ${d.pageSpeed?.cwvMetrics?.lcp?.displayValue || 'N/A'}`;
-      document.getElementById('valGeoScore').innerText = `${d.geoAeo?.overallGeoScore || 'N/A'}/100`;
+      const techIssueCount = (d.technical?.issues || []).length;
+      document.getElementById('valTechScore').innerText = d.technical?.dataStatus === 'measured' ? `${Math.max(0, 100 - techIssueCount * 3)}/100` : 'N/A';
+      document.getElementById('valTechStatus').innerText = d.technical?.dataStatus === 'measured' ? `Response: ${d.technical?.responseTimeMs || 0}ms · ${techIssueCount} real issues` : 'Crawl failed';
+      const _psi = d.pageSpeed;
+      const _psiTag = document.getElementById('cwvProviderTag');
+      if (_psi?.dataStatus === 'unavailable') {
+        document.getElementById('valSpeedScore').innerText = '—';
+        document.getElementById('valSpeedLcp').innerText = 'PSI unavailable — no fake numbers';
+        if (_psiTag) { _psiTag.innerText = 'PSI: unavailable'; _psiTag.style.color = '#94a3b8'; }
+      } else {
+        document.getElementById('valSpeedScore').innerText = `${_psi?.performanceScore ?? 'N/A'}/100`;
+        document.getElementById('valSpeedLcp').innerText = `LCP: ${_psi?.cwvMetrics?.lcp?.displayValue || 'N/A'}`;
+        if (_psiTag) { _psiTag.innerText = _psi.provider || 'PageSpeed'; _psiTag.style.color = '#34d399'; }
+      }
+      document.getElementById('valGeoScore').innerText = d.geoAeo?.overallGeoScore || 'N/A';
+      // FIXED: stamp provenance on every dashboard panel
+      stampPanel('panelGeo', d.geoAeo, 'Connect LLM citation queries for measured GEO data.');
+      stampPanel('panelTrends', d.trends, 'No trends provider connected — volume/CPC are demo figures.');
+      stampPanel('panelBacklinks', d.backlinks, 'No backlink provider connected — do not act on these figures.');
+      stampPanel('panelCwv', _psi, _psi?.dataStatus === 'unavailable' ? 'PageSpeed API rate-limited/unreachable. The original build showed invented LCP/CLS here; the fixed build refuses.' : null);
+      stampPanel('panelOnpage', d.technical);
+      stampPanel('panelInbox', d.technical, 'Recommendations generated only from measured crawl findings.');
 
       // Render Priority Inbox Recommendations
       const recList = document.getElementById('recList');
@@ -2630,7 +2703,14 @@
           metricCwvBadge.style.color = (isUnavailable || isFallback) ? '#fde68a' : '#a7f3d0';
         }
 
-        if (d.pageSpeed.cwvMetrics) {
+        if (d.pageSpeed.dataStatus === 'unavailable') {
+          // FIXED: PSI unavailable -> explicit UNAVAILABLE state, never simulated numbers
+          ['cwvLcpVal','cwvClsVal','cwvInpVal','cwvFcpVal'].forEach(id => { const el = document.getElementById(id); if (el) el.innerText = '—'; });
+          ['cwvLcpStatus','cwvClsStatus','cwvInpStatus','cwvFcpStatus'].forEach(id => { const el = document.getElementById(id); if (el) { el.innerText = 'UNAVAILABLE'; el.style.color = '#94a3b8'; } });
+          ['cwvLcpBar','cwvClsBar','cwvInpBar','cwvFcpBar'].forEach(id => { const el = document.getElementById(id); if (el) el.style.background = '#475569'; });
+          const cb = document.getElementById('cwvUnavailableBanner');
+          if (cb) { cb.style.display = 'block'; cb.innerText = '⚠️ ' + (d.pageSpeed.error || 'PageSpeed API unavailable') + ' — the fixed build does not substitute simulated CWV numbers. Set PSI_API_KEY on the server for reliable data.'; }
+        } else if (d.pageSpeed.cwvMetrics) {
           const m = d.pageSpeed.cwvMetrics;
           // LCP
           if (m.lcp) {
@@ -2834,6 +2914,7 @@
       // Render Deep Backlinks Tab
       const bl = d.backlinks;
       if (bl) {
+        stampPanel('tabBacklinks', bl, 'Provider not connected — do not upload the disavow file based on this data.');
         document.getElementById('blDomainRating').innerText = bl.domainAuthority !== undefined ? bl.domainAuthority : (bl.domainRating !== undefined ? bl.domainRating : '--');
         document.getElementById('blTotalBacklinks').innerText = bl.totalBacklinks !== undefined ? bl.totalBacklinks.toLocaleString() : '--';
         document.getElementById('blRefDomains').innerText = bl.referringDomainsCount !== undefined ? bl.referringDomainsCount.toLocaleString() : '--';
@@ -2916,18 +2997,32 @@
         const robPre = document.getElementById('robotsPreview');
         if (robPre) robPre.innerText = data.robots.content || 'No robots.txt found on server root.';
 
-        // Update AI Bot Firewall Matrix
-        if (data.robots && data.robots.aiBotRules) {
-          for (const [bot, status] of Object.entries(data.robots.aiBotRules)) {
-            const el = document.getElementById(`bot-${bot}`);
+        // Update AI Bot Firewall Matrix (FIXED: server returns aiBots[] — original field name aiBotRules never matched, so chips were frozen on "Allowed")
+        if (data.robots && Array.isArray(data.robots.aiBots)) {
+          const noRobots = !data.robots.exists;
+          for (const b of data.robots.aiBots) {
+            const el = document.getElementById(`bot-${b.name}`);
             if (el) {
-              const isAllowed = status === 'Allowed';
-              el.innerText = status;
-              el.style.background = isAllowed ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)';
-              el.style.color = isAllowed ? '#a7f3d0' : '#fda4af';
+              const label = noRobots ? 'Unknown (no robots.txt)' : (b.allowed ? 'Allowed' : 'Blocked');
+              el.innerText = label;
+              el.style.background = noRobots ? 'rgba(148,163,184,0.15)' : (b.allowed ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)');
+              el.style.color = noRobots ? '#cbd5e1' : (b.allowed ? '#a7f3d0' : '#fda4af');
             }
           }
         }
+        // FIXED: radar chips now come from live data (were hardcoded "TLS 1.3 Active / Brotli / AI Firewall Live" before any probe)
+        if (data.pageCheck) {
+          const pc = data.pageCheck;
+          const ssl = document.getElementById('radarSslStatus');
+          if (ssl) { ssl.innerText = pc.isHttps ? '🔒 HTTPS active' : '❌ HTTP only'; ssl.style.color = pc.isHttps ? '#10b981' : '#f43f5e'; }
+          const comp = document.getElementById('radarCompression');
+          if (comp) { comp.innerText = pc.contentEncoding ? `⚡ ${pc.contentEncoding}` : '⚠️ No compression header'; comp.style.color = pc.contentEncoding ? '#38bdf8' : '#f59e0b'; }
+          const rob = document.getElementById('radarRobots');
+          if (rob) { rob.innerText = data.robots.exists ? `🤖 robots.txt live` : '🤖 No robots.txt'; rob.style.color = data.robots.exists ? '#34d399' : '#f59e0b'; }
+          const can = document.getElementById('radarCanonical');
+          if (can) { can.innerText = pc.hasSelfCanonical ? '✅ Self-Canonical' : (pc.canonical ? '↪ Canonical: ' + pc.canonical.slice(0, 40) : '❌ No canonical tag'); can.style.color = pc.hasSelfCanonical ? '#10b981' : '#f59e0b'; }
+        }
+        stampPanel('panelSecurity', data, 'Live fetch of target robots.txt, sitemap & page headers (measured).');
 
         // Update Declared Sitemaps
         const declaredBox = document.getElementById('robotsDeclaredSitemaps');
@@ -2952,7 +3047,7 @@
           sTbody.innerHTML = (data.sitemap.urls || []).slice(0, 25).map(u => `
             <tr>
               <td style="word-break:break-all; font-size:0.75rem;">
-                <a href="${u.loc}" target="_blank" style="color:#93c5fd; text-decoration:none;">${escapeHtml(u.loc)} ↗</a>
+                <a href="${u.url || u.loc}" target="_blank" style="color:#93c5fd; text-decoration:none;">${escapeHtml(u.url || u.loc)} ↗</a>
               </td>
               <td><span class="btn-line-tag" style="background:rgba(59,130,246,0.15); color:#93c5fd; font-size:0.7rem;">${u.priority || '0.8'}</span></td>
               <td style="font-size:0.72rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace;">${u.lastmod || 'Recent'}</td>
@@ -2966,6 +3061,14 @@
         }
       } catch (e) {
         console.error('Robots/Sitemap probe failed:', e);
+        // FIXED: probe failure no longer leaves chips frozen on optimistic claims
+        [['radarSslStatus','❌ Probe failed — unknown'],['radarCompression','⚠️ Probe failed — unknown'],['radarRobots','🤖 Probe failed — unknown'],['radarCanonical','❌ Probe failed — unknown']].forEach(([id, txt]) => {
+          const el = document.getElementById(id); if (el) { el.innerText = txt; el.style.color = '#94a3b8'; }
+        });
+        ['bot-GPTBot','bot-ClaudeBot','bot-PerplexityBot','bot-Google-Extended','bot-CCBot','bot-Bytespider'].forEach(id => {
+          const el = document.getElementById(id); if (el) { el.innerText = 'Unknown'; el.style.background = 'rgba(148,163,184,0.15)'; el.style.color = '#cbd5e1'; }
+        });
+        stampPanel('panelSecurity', { dataStatus: 'unavailable', error: String(e && e.message || e) }, 'Probe failed — showing unknown instead of assumed values.');
       }
     }
 
@@ -2981,6 +3084,7 @@
         headers: getApiHeaders(),
         body: JSON.stringify({ url })
       }).then(r => r.json()).then(data => {
+        stampPanel('tabDomain', data, 'No backlink provider connected — DA/traffic are stable-but-fake demo figures.');
         document.getElementById('domAuthority').innerText = (data.authority !== undefined && data.authority !== null) ? `${data.authority}/100` : '--';
         document.getElementById('domSSL').innerText = data.isSSL !== undefined ? (data.isSSL ? '✅ Valid TLS 1.3 / HTTPS' : '❌ Insecure HTTP') : '--';
         document.getElementById('domTraffic').innerText = (data.organicTraffic !== undefined && data.organicTraffic !== null) ? `${Number(data.organicTraffic).toLocaleString()} /mo` : '--';
@@ -3005,6 +3109,7 @@
         headers: getApiHeaders(),
         body: JSON.stringify({ url })
       }).then(r => r.json()).then(data => {
+        stampPanel('tabGscRank', data, 'GSC OAuth not connected — clicks/impressions/positions are SIMULATED.');
         document.getElementById('gscClicks').innerText = (data.clicks !== undefined && data.clicks !== null) ? Number(data.clicks).toLocaleString() : '--';
         document.getElementById('gscImpressions').innerText = (data.impressions !== undefined && data.impressions !== null) ? (data.impressions > 1000 ? (data.impressions/1000).toFixed(1) + 'k' : data.impressions) : '--';
         document.getElementById('gscCtr').innerText = (data.ctr !== undefined && data.ctr !== null) ? `${data.ctr}` : '--';
@@ -3042,6 +3147,7 @@
         headers: getApiHeaders(),
         body: JSON.stringify({ url })
       }).then(r => r.json()).then(data => {
+        stampPanel('tabGscRank', data, 'No SERP history collected — rank deltas are SIMULATED.');
         const rTbody = document.getElementById('rankTrackerTable').querySelector('tbody');
         if (rTbody && data.keywords) {
           rTbody.innerHTML = data.keywords.map(k => `
@@ -3064,6 +3170,7 @@
         headers: getApiHeaders(),
         body: JSON.stringify({ brand: brandName })
       }).then(r => r.json()).then(data => {
+        stampPanel('tabBrand', data, 'No mention monitoring connected — sentiment/reach are SIMULATED.');
         document.getElementById('brandSentiment').innerText = data.sentiment || '--';
         document.getElementById('brandReach').innerText = data.reach || '--';
         document.getElementById('brandSov').innerText = data.shareOfVoice || '--';
@@ -3105,6 +3212,10 @@
 
     function renderHeadEeat(data) {
       if (!data) return;
+      // FIXED: stamp provenance — head lint is measured, E-E-A-T is heuristic
+      stampPanel('tabHeadEeat', data.headCompleteness, null);
+      const _heHost = document.querySelector('#tabHeadEeat .prov-stamp');
+      if (_heHost && data.eeatAudit) _heHost.insertAdjacentHTML('beforeend', provPill(data.eeatAudit));
 
       // KPI scores
       document.getElementById('headCompScore').innerText = `${data.headCompleteness?.score || 90}/100`;
@@ -3288,6 +3399,12 @@
         });
         const data = await res.json();
         resBox.innerText = data.response;
+        // FIXED: show which model answered (live LLM vs static template) — original never disclosed
+        const _isLive = data.dataStatus === 'measured' || data.isRealLlm;
+        const provEl = document.createElement('div');
+        provEl.style.cssText = 'margin-top:10px; padding-top:8px; border-top:1px dashed rgba(255,255,255,0.15); font-size:0.72rem; font-family:JetBrains Mono,monospace; color:' + (_isLive ? '#34d399' : '#fde68a') + ';';
+        provEl.innerText = _isLive ? '⚡ ' + (data.provenance || data.model || 'live LLM call') : '◌ SIMULATED — ' + (data.provenance || 'static template, no LLM connected');
+        resBox.appendChild(provEl);
 
         const badge = document.getElementById('aiCopilotModelBadge');
         if (badge && data.model) {

@@ -213,6 +213,9 @@ export async function analyzeKeywordsAndSERP(targetDomain, targetKeywords = [], 
 
   return {
     provider: 'OmniSEO SERP & Keyword Intelligence Adapter (Semrush + Ahrefs + AnswerThePublic Engine)',
+    dataStatus: 'simulated',
+    isSimulated: true,
+    provenance: 'Simulated SERP & Keyword Intelligence Model (Connect DataForSEO in ⚙️ Settings for live SERP tracking)',
     domain,
     analyzedTopic: seedTopic,
     analyzedKeywordsCount: keywords.length,

@@ -20,6 +20,9 @@ export async function auditTechnical(url) {
   const results = {
     url,
     timestamp: new Date().toISOString(),
+    dataStatus: 'measured',
+    isSimulated: false,
+    provider: 'Built-in SSRF-safe crawler (real server-side crawl)',
     status: null,
     responseTimeMs: 0,
     headers: {},

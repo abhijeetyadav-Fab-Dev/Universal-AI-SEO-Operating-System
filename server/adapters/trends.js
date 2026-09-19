@@ -96,6 +96,9 @@ export async function fetchGoogleTrendsAndVolume(keywordOrTopic, geo = 'US') {
         { topic: 'Web Analytics & Core Web Vitals', relevance: '76%' },
         { topic: 'Search Console Indexing', relevance: '64%' }
       ],
+      dataStatus: 'simulated',
+      isSimulated: true,
+      provenance: 'Estimated Search Trends & Volume (Connect Google Trends/DataForSEO in ⚙️ Settings for live SERP volume)',
       provider: 'Google Trends & Volume Engine v1'
     };
 
@@ -131,6 +134,9 @@ export async function fetchGoogleTrendsAndVolume(keywordOrTopic, geo = 'US') {
         { topic: 'Search Engine Optimization', relevance: '100%' },
         { topic: 'AI Overviews & Search', relevance: '85%' }
       ],
+      dataStatus: 'simulated',
+      isSimulated: true,
+      provenance: 'Estimated Search Trends & Volume (Fallback Mode)',
       provider: 'Google Trends & Volume Engine (Fallback Mode)'
     };
   }

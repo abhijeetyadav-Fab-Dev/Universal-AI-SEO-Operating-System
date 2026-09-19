@@ -286,6 +286,15 @@
         }
       }
     },
+    "/api/v1/provenance": {
+      "get": {
+        "summary": "Data Integrity and Provenance Registry",
+        "description": "Returns transparent 4-state data status (measured, heuristic, simulated, unavailable) and active provider catalog for every module.",
+        "responses": {
+          "200": { "description": "Live provenance mapping" }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "summary": "Service Health Check",

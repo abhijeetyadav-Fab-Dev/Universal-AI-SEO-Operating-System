@@ -245,14 +245,22 @@ export async function auditHeadAndEeat(url) {
 
   return {
     url,
+    dataStatus: 'measured',
+    provider: 'SSRF-safe Cheerio DOM analysis',
     headCompleteness: {
       score: Math.max(20, headScore),
-      elements: headElements
+      elements: headElements,
+      dataStatus: 'measured',
+      isSimulated: false,
+      provider: 'Built-in <head> tag linter (joshbuchea/HEAD)'
     },
     eeatAudit: {
       overallScore: eeatScore,
       rating: eeatScore >= 85 ? 'EXCELLENT (Tier 1 Entity)' : eeatScore >= 70 ? 'STRONG (High Trust)' : 'NEEDS_IMPROVEMENT',
-      pillars: eeatChecks
+      pillars: eeatChecks,
+      dataStatus: 'heuristic',
+      isSimulated: false,
+      provider: 'Real content heuristics (author/date/review/contact signals)'
     },
     contentMetrics: {
       wordCount,
@@ -260,7 +268,9 @@ export async function auditHeadAndEeat(url) {
       sentenceCount,
       fleschScore,
       readabilityGrade,
-      topKeywords
+      topKeywords,
+      dataStatus: 'measured',
+      isSimulated: false
     }
   };
 }

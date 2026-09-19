@@ -338,6 +338,15 @@ export async function executeOrchestratedPlan(plan, options = {}) {
   let speedScore = agentResults.pageSpeed?.performanceScore ?? 78;
   let overallHealth = Math.round((technicalScore * 0.5) + (speedScore * 0.3) + ((agentResults.geoAeo?.overallGeoScore || 75) * 0.2));
 
+  const dataStatusSummary = {
+    technical: agentResults.technical?.dataStatus || 'measured',
+    pageSpeed: agentResults.pageSpeed?.dataStatus || (agentResults.pageSpeed?.error ? 'unavailable' : 'simulated'),
+    backlinks: agentResults.backlinks?.dataStatus || 'simulated',
+    serp: agentResults.serp?.dataStatus || 'simulated',
+    trends: agentResults.trends?.dataStatus || 'simulated',
+    geoAeo: agentResults.geoAeo?.dataStatus || 'simulated'
+  };
+
   return {
     canonicalModel: {
       projectId: `proj_${Date.now()}`,
@@ -349,7 +358,8 @@ export async function executeOrchestratedPlan(plan, options = {}) {
       durationMs: Date.now() - startTime,
       overallHealth,
       intents,
-      dataSourcesUsed: agents.map(a => a.name || a.id)
+      dataSourcesUsed: agents.map(a => a.name || a.id),
+      dataStatusSummary
     },
     recommendations: scoredRecommendations,
     detailedPayloads: agentResults

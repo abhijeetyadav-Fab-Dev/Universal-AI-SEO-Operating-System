@@ -1,16 +1,16 @@
 # Graph Report - OmniSEO-OS  (2026-09-19)
 
 ## Corpus Check
-- 28 files · ~60,178 words
+- 29 files · ~63,170 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 137 nodes · 197 edges · 19 communities (17 shown, 2 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 1 edges (avg confidence: 0.5)
+- 151 nodes · 212 edges · 19 communities (17 shown, 2 thin omitted)
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d145032f`
+- Built from commit: `216c96b3`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -19,7 +19,7 @@
 - orchestrator.js
 - dependencies
 - package.json
-- keywords
+- ui_smoke_test.js
 - OmniSEO-OS: Universal AI-Powered SEO Operating System
 - Comprehensive Evaluation & Catalog of Open Source SEO Ecosystem & APIs
 - test_audit_fixes.py
@@ -56,8 +56,8 @@
 ## Communities (19 total, 2 thin omitted)
 
 ### Community 0 - "index.js"
-Cohesion: 0.16
-Nodes (23): auditHeadAndEeat(), analyzeCompetitorGap(), analyzeDomainOverview(), classifyIntent(), cpcForIntentINR(), crawlMultiPageSite(), diffForKeyword(), extractSavedKeywords() (+15 more)
+Cohesion: 0.15
+Nodes (26): auditHeadAndEeat(), analyzeCompetitorGap(), analyzeDomainOverview(), classifyIntent(), cpcForIntentINR(), crawlMultiPageSite(), diffForKeyword(), extractSavedKeywords() (+18 more)
 
 ### Community 1 - "orchestrator.js"
 Cohesion: 0.20
@@ -68,12 +68,12 @@ Cohesion: 0.18
 Nodes (11): cheerio, cors, dotenv, express, node-fetch, dependencies, cheerio, cors (+3 more)
 
 ### Community 3 - "package.json"
-Cohesion: 0.11
-Nodes (17): author, bugs, url, description, homepage, license, main, name (+9 more)
+Cohesion: 0.07
+Nodes (27): author, bugs, url, description, homepage, keywords, license, main (+19 more)
 
-### Community 4 - "keywords"
-Cohesion: 0.20
-Nodes (10): keywords, aeo, ai-seo, core-web-vitals, crawler, geo, lighthouse, operating-system (+2 more)
+### Community 4 - "ui_smoke_test.js"
+Cohesion: 0.17
+Nodes (10): ctx, __dirname, documentStub, elements, __filename, html, htmlPath, sandbox (+2 more)
 
 ### Community 5 - "OmniSEO-OS: Universal AI-Powered SEO Operating System"
 Cohesion: 0.15
@@ -88,7 +88,7 @@ Cohesion: 0.83
 Nodes (3): make_request(), run_tests(), scan_for_markers()
 
 ## Knowledge Gaps
-- **46 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+41 more)
+- **56 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+51 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -96,10 +96,10 @@ Nodes (3): make_request(), run_tests(), scan_for_markers()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `dependencies` connect `dependencies` to `package.json`?**
-  _High betweenness centrality (0.035) - this node is a cross-community bridge._
-- **Why does `keywords` connect `keywords` to `package.json`?**
-  _High betweenness centrality (0.032) - this node is a cross-community bridge._
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
+- **Why does `executeOrchestratedPlan()` connect `orchestrator.js` to `index.js`?**
+  _High betweenness centrality (0.010) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
-  _46 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _56 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `package.json` be split into smaller, more focused modules?**
-  _Cohesion score 0.1111111111111111 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07142857142857142 - nodes in this community are weakly interconnected._

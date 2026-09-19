@@ -63,7 +63,8 @@ export async function fetchPageSpeed(url, strategy = 'mobile', customApiKey = nu
       provider: 'Google PageSpeed Insights v5',
       strategy,
       durationMs: Date.now() - startTime,
-      dataStatus: 'live',
+      dataStatus: 'measured',
+      isSimulated: false,
       isConfigured: Boolean(resolvedApiKey),
       fromCache: false,
       performanceScore,
@@ -140,11 +141,11 @@ export async function fetchPageSpeed(url, strategy = 'mobile', customApiKey = nu
       performanceScore: null,
       seoScore: null,
       cwvMetrics: {
-        lcp: { displayValue: 'N/A', numericValueMs: null, status: 'UNAVAILABLE' },
-        cls: { displayValue: 'N/A', numericValue: null, status: 'UNAVAILABLE' },
-        tbt: { displayValue: 'N/A', numericValueMs: null, status: 'UNAVAILABLE' },
-        fcp: { displayValue: 'N/A', numericValueMs: null },
-        speedIndex: { displayValue: 'N/A' }
+        lcp: { displayValue: '—', numericValueMs: null, status: 'UNAVAILABLE' },
+        cls: { displayValue: '—', numericValue: null, status: 'UNAVAILABLE' },
+        tbt: { displayValue: '—', numericValueMs: null, status: 'UNAVAILABLE' },
+        fcp: { displayValue: '—', numericValueMs: null },
+        speedIndex: { displayValue: '—' }
       },
       diagnosticOpportunities: [],
       message: 'Connect a free Google PageSpeed API key in ⚙️ Settings or .env to fetch live Lighthouse & Core Web Vitals diagnostics.'
