@@ -48,11 +48,14 @@ async function runMcpTestSuite() {
     'get_cwv',
     'get_backlinks',
     'check_geo',
-    'get_open_intel'
+    'get_open_intel',
+    'audit_helpful_content',
+    'submit_indexnow',
+    'detect_orphan_pages'
   ];
 
   assert(Array.isArray(TOOLS), 'TOOLS export is an array');
-  assert(TOOLS.length === 5, `Expected 5 tools, found ${TOOLS.length}`);
+  assert(TOOLS.length === 8, `Expected 8 tools, found ${TOOLS.length}`);
 
   for (const expectedName of expectedTools) {
     const tool = TOOLS.find(t => t.name === expectedName);
@@ -83,6 +86,20 @@ async function runMcpTestSuite() {
   const openIntelTool = TOOLS.find(t => t.name === 'get_open_intel');
   assert('domain' in openIntelTool.inputSchema.properties, 'get_open_intel specifies domain parameter');
   assert(openIntelTool.inputSchema.required.includes('domain'), 'get_open_intel marks domain as required');
+
+  const helpfulTool = TOOLS.find(t => t.name === 'audit_helpful_content');
+  assert('url' in helpfulTool.inputSchema.properties, 'audit_helpful_content specifies url parameter');
+  assert(helpfulTool.inputSchema.required.includes('url'), 'audit_helpful_content marks url as required');
+
+  const indexnowTool = TOOLS.find(t => t.name === 'submit_indexnow');
+  assert('host' in indexnowTool.inputSchema.properties, 'submit_indexnow specifies host parameter');
+  assert('urlList' in indexnowTool.inputSchema.properties, 'submit_indexnow specifies urlList parameter');
+  assert(indexnowTool.inputSchema.required.includes('host'), 'submit_indexnow marks host as required');
+
+  const orphansTool = TOOLS.find(t => t.name === 'detect_orphan_pages');
+  assert('sitemapUrls' in orphansTool.inputSchema.properties, 'detect_orphan_pages specifies sitemapUrls parameter');
+  assert('crawledUrls' in orphansTool.inputSchema.properties, 'detect_orphan_pages specifies crawledUrls parameter');
+  assert(orphansTool.inputSchema.required.includes('sitemapUrls'), 'detect_orphan_pages marks sitemapUrls as required');
 
   // ─────────────────────────────────────────────────────────────────
   // TEST SECTION 2: JSON-RPC 2.0 Protocol In-Memory Handling
@@ -129,7 +146,7 @@ async function runMcpTestSuite() {
     params: {}
   });
   assert(Array.isArray(toolsListRes.result?.tools), 'tools/list returns tools array');
-  assert(toolsListRes.result.tools.length === 5, 'tools/list returns all 5 tools');
+  assert(toolsListRes.result.tools.length === 8, 'tools/list returns all 8 tools');
 
   // 2.5 Unknown Method Handling
   const unknownRes = await handleJsonRpcMessage({
@@ -182,7 +199,34 @@ async function runMcpTestSuite() {
   assert(backlinksOutput && typeof backlinksOutput === 'object', 'get_backlinks returned structured backlink profile');
   assert('domainRating' in backlinksOutput || 'backlinks' in backlinksOutput, 'get_backlinks contains authority metrics');
 
-  // 3.6 Tool Error Cases via tools/call
+  // 3.6 audit_helpful_content Tool
+  console.log('  Testing tool audit_helpful_content...');
+  const draftHtml = `<!DOCTYPE html><html><head><title>Original Technical SEO Guide</title></head><body><h1>Original Technical SEO Guide</h1><p>Written by Dr. Alice Vance, PhD.</p><a href="/author/alice">Author Bio</a><p>Our testing methodology evaluated 50 high-traffic enterprise websites using open benchmarks.</p><table><tr><th>Site</th><th>LCP</th></tr><tr><td>Alpha</td><td>1.2s</td></tr></table><p>Official RFC documentation confirms the architecture standards.</p></body></html>`;
+  const helpfulOutput = await handleToolCall('audit_helpful_content', { url: 'https://example.com', html: draftHtml });
+  assert(helpfulOutput && typeof helpfulOutput === 'object', 'audit_helpful_content returned valid object');
+  assert('overallScore' in helpfulOutput, 'audit_helpful_content has overallScore');
+  assert('verdict' in helpfulOutput, 'audit_helpful_content has verdict');
+  assert('dimensions' in helpfulOutput && 'who' in helpfulOutput.dimensions, 'audit_helpful_content includes dimensions');
+
+  // 3.7 submit_indexnow Tool
+  console.log('  Testing tool submit_indexnow...');
+  const indexnowOutput = await handleToolCall('submit_indexnow', { host: 'example.com', urlList: ['https://example.com/blog/seo-guide'] });
+  assert(indexnowOutput && typeof indexnowOutput === 'object', 'submit_indexnow returned structured receipt');
+  assert(indexnowOutput.host === 'example.com', 'submit_indexnow preserved host');
+  assert('status' in indexnowOutput || 'submittedUrls' in indexnowOutput, 'submit_indexnow contains status or submittedUrls');
+
+  // 3.8 detect_orphan_pages Tool
+  console.log('  Testing tool detect_orphan_pages...');
+  const orphansOutput = await handleToolCall('detect_orphan_pages', {
+    sitemapUrls: ['https://example.com/home', 'https://example.com/orphan-article'],
+    crawledUrls: ['https://example.com/home', 'https://example.com/about']
+  });
+  assert(orphansOutput && typeof orphansOutput === 'object', 'detect_orphan_pages returned structured report');
+  assert(Array.isArray(orphansOutput.orphans), 'detect_orphan_pages returns orphans array');
+  assert(orphansOutput.orphans.includes('https://example.com/orphan-article'), 'detect_orphan_pages correctly identified orphan URL');
+  assert(orphansOutput.unindexed.includes('https://example.com/about'), 'detect_orphan_pages correctly identified unindexed URL');
+
+  // 3.9 Tool Error Cases via tools/call
   console.log('  Testing tool error handling via tools/call...');
   const missingParamRes = await handleJsonRpcMessage({
     jsonrpc: '2.0',
@@ -265,7 +309,7 @@ async function runMcpTestSuite() {
       try {
         assert(receivedMessages.length === 3, `Received 3 responses via stdio IPC (got ${receivedMessages.length})`);
         assert(receivedMessages[0].id === 100 && receivedMessages[0].result?.serverInfo?.name === 'omniseo-os-mcp', 'Subprocess initialize handshake succeeded');
-        assert(receivedMessages[1].id === 101 && receivedMessages[1].result?.tools?.length === 5, 'Subprocess tools/list returned 5 tools');
+        assert(receivedMessages[1].id === 101 && receivedMessages[1].result?.tools?.length === 8, 'Subprocess tools/list returned 8 tools');
         assert(receivedMessages[2].id === 102, 'Subprocess ping succeeded');
         resolve();
       } catch (e) {

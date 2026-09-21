@@ -400,6 +400,311 @@
         }
       }
     },
+    "/api/v1/settings/save": {
+      "post": {
+        "summary": "Save API Settings & Provider Configuration",
+        "description": "Securely updates in-memory API credentials and model preferences for OpenRouter, NVIDIA NIM, Google Gemini, OpenAI, Google PSI, and Google Search Console.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Settings updated successfully" }
+        }
+      }
+    },
+    "/api/v1/settings/test": {
+      "post": {
+        "summary": "Test Provider API Connection",
+        "description": "Performs an active ping/probe to verify validity of API credentials for psi, openrouter, nvidia, gemini, openai, or gsc.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "service": { "type": "string", "enum": ["psi", "openrouter", "nvidia", "gemini", "openai", "gsc"] },
+                  "apiKey": { "type": "string" },
+                  "model": { "type": "string" }
+                },
+                "required": ["service"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Provider connection successful" },
+          "400": { "description": "Provider connection failed or invalid credentials" }
+        }
+      }
+    },
+    "/api/v1/guardrail/helpful-content": {
+      "get": {
+        "summary": "Google Helpful Content & E-E-A-T Guardrail Audit",
+        "description": "Audits a live target webpage against Google Search Central Helpful Content System and E-E-A-T guidelines (Who, How, Why, E-E-A-T scores, anti-patterns, 8-question self-assessment matrix).",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "example": "https://example.com" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Helpful content and E-E-A-T evaluation returned" },
+          "400": { "description": "Missing or SSRF-restricted target URL" }
+        }
+      }
+    },
+    "/api/v1/guardrail/helpful-content/evaluate": {
+      "post": {
+        "summary": "Direct Pre-Publish Content Helpfulness Evaluation",
+        "description": "Evaluates draft HTML or Markdown text directly before publishing to verify compliance with Google People-First guidelines.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": { "type": "string", "example": "https://example.com/draft" },
+                  "html": { "type": "string" },
+                  "content": { "type": "string" },
+                  "title": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Guardrail self-assessment results" },
+          "400": { "description": "Missing required content payload" }
+        }
+      }
+    },
+    "/api/v1/audit/eeat": {
+      "get": {
+        "summary": "Comprehensive <head> & E-E-A-T Technical Audit",
+        "description": "Performs in-depth audit of document head completeness, E-E-A-T signals, content readability metrics, and helpful content guardrail.",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "example": "https://example.com" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Complete head and E-E-A-T audit returned" },
+          "400": { "description": "Missing or restricted URL" }
+        }
+      }
+    },
+    "/api/v1/storage/snapshot": {
+      "post": {
+        "summary": "Save Audit Snapshot to Persistent Storage",
+        "description": "Stores complete audit results into embedded persistent database with timestamp, domain key, and health metrics.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": { "type": "string", "example": "example.com" },
+                  "url": { "type": "string", "example": "https://example.com" },
+                  "auditData": { "type": "object" }
+                },
+                "required": ["domain", "auditData"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Audit snapshot persisted" }
+        }
+      }
+    },
+    "/api/v1/storage/history/{domain}": {
+      "get": {
+        "summary": "Retrieve Historical Audit Snapshots for Domain",
+        "description": "Returns time-series audit snapshots to track SEO health progression over time.",
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "example.com" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Historical snapshots array" }
+        }
+      }
+    },
+    "/api/v1/storage/projects": {
+      "get": {
+        "summary": "List Monitored Projects & Health Trends",
+        "description": "Returns all saved domains, snapshot counts, and latest health scores.",
+        "responses": {
+          "200": { "description": "Projects list returned" }
+        }
+      }
+    },
+    "/api/v1/storage/snapshot/{snapshotId}": {
+      "get": {
+        "summary": "Get Audit Snapshot by ID",
+        "parameters": [
+          { "name": "snapshotId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Snapshot data returned" },
+          "404": { "description": "Snapshot not found" }
+        }
+      },
+      "delete": {
+        "summary": "Delete Audit Snapshot by ID",
+        "parameters": [
+          { "name": "snapshotId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Snapshot deleted" }
+        }
+      }
+    },
+    "/api/v1/storage/compare": {
+      "post": {
+        "summary": "Compare Two Snapshots for Progress Delta",
+        "description": "Calculates health score differences, new issues, and resolved issues between two audit runs.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "baseSnapshotId": { "type": "string" },
+                  "targetSnapshotId": { "type": "string" }
+                },
+                "required": ["baseSnapshotId", "targetSnapshotId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Comparison delta metrics returned" }
+        }
+      }
+    },
+    "/api/v1/export/report": {
+      "post": {
+        "summary": "Generate White-Label Executive HTML/PDF Report",
+        "description": "Generates a clean, printable white-label executive audit report complete with cover page, executive scorecard, code diffs, and remediation steps.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "auditData": { "type": "object" },
+                  "brandName": { "type": "string", "example": "OmniSEO OS" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Printable HTML report document" }
+        }
+      }
+    },
+    "/api/v1/export/csv": {
+      "post": {
+        "summary": "Bulk RFC-4180 CSV Data Export",
+        "description": "Exports audit data into spreadsheets for pages, missing alt images, audit issues, or backlinks.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "enum": ["pages", "alts", "issues", "backlinks"] },
+                  "auditData": { "type": "object" }
+                },
+                "required": ["type", "auditData"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "RFC-4180 compliant CSV stream" }
+        }
+      }
+    },
+    "/api/v1/indexnow": {
+      "post": {
+        "summary": "Submit URLs via IndexNow Protocol",
+        "description": "Directly pings Bing and Yandex with newly crawled or modified URLs for instant indexing.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host": { "type": "string", "example": "example.com" },
+                  "urlList": { "type": "array", "items": { "type": "string" } },
+                  "key": { "type": "string" }
+                },
+                "required": ["host", "urlList"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "IndexNow submission receipt" }
+        }
+      }
+    },
+    "/api/v1/indexnow/key": {
+      "get": {
+        "summary": "Retrieve IndexNow Verification Key",
+        "responses": {
+          "200": { "description": "Key string and instructions" }
+        }
+      }
+    },
+    "/api/v1/sitemap/orphans": {
+      "post": {
+        "summary": "Detect Orphan Pages",
+        "description": "Cross-references XML sitemap URL entries against internal crawler links to identify unlinked orphan pages and unindexed sitemap URLs.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sitemapUrls": { "type": "array", "items": { "type": "string" } },
+                  "crawledUrls": { "type": "array", "items": { "type": "string" } }
+                },
+                "required": ["sitemapUrls", "crawledUrls"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Orphan pages report" }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "summary": "Service Health Check",

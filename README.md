@@ -112,9 +112,69 @@ OmniSEO-OS includes crawlable, static-rendered technical deep-dives to drive top
 
 ---
 
+---
+
+## 🛡️ Google Helpful Content & E-E-A-T Guardrail Engine
+
+OmniSEO-OS enforces Google Search Central's official standard ([Creating Helpful, Reliable, People-First Content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)) as an active, automated guardrail:
+
+- **"Who" Dimension (25 pts)**: Authorship bylines, verified author biographies, Schema.org `Person`/`Author` structured data, and editorial transparency.
+- **"How" Dimension (25 pts)**: Methodology disclosure, empirical data tables, benchmark evidence, primary source citations, and editorial review standards.
+- **"Why" Dimension (25 pts)**: Verification of People-First intent vs. search-engine-first anti-patterns:
+  - **Keyword Stuffing**: Flags unnatural keyword density > 3.8%.
+  - **Sensational Clickbait**: Detects misleading title-to-body discrepancies.
+  - **Thin Content**: Identifies shallow, superficial content lacking original value.
+  - **Manufactured Padding**: Detects transitional filler fluff designed to inflate word counts.
+- **E-E-A-T Trust Foundations (25 pts)**: Experience, Expertise, Authoritativeness, and Trustworthiness verification.
+- **8-Question Self-Assessment Matrix**: Evaluates original reporting, comprehensive topic coverage, bookmark-worthy utility, and true people-first intent.
+
+---
+
+## 🔌 Model Context Protocol (MCP) Server
+
+OmniSEO-OS embeds a full **JSON-RPC 2.0 / stdio MCP server** (`server/mcp.js`) enabling seamless native tool execution for **Claude Desktop, Cursor, Antigravity CLI**, and any MCP-compatible agent:
+
+| MCP Tool | Description |
+| :--- | :--- |
+| `audit_url` | Full crawl and technical on-page SEO audit (title, meta, canonical, headings, alts, issues). |
+| `get_cwv` | Inspects Core Web Vitals & Lighthouse lab/field metrics via Google PageSpeed Insights. |
+| `get_backlinks` | Backlink profile, domain authority rating, referring domains, and disavow toxicity scan. |
+| `check_geo` | Tests Generative Engine Optimization (GEO) & Answer Engine Optimization (AEO) grounding. |
+| `get_open_intel` | Authoritative zero-auth open protocols (ICANN RDAP, Google DoH DNS, Wikipedia, Hacker News). |
+| `audit_helpful_content` | Google Search Central Helpful Content System & E-E-A-T self-assessment with Who/How/Why scoring. |
+| `submit_indexnow` | Dispatches instant indexing notifications to Bing and Yandex via IndexNow protocol. |
+| `detect_orphan_pages` | Cross-references XML sitemap URLs against internal crawl graph to identify unlinked orphan pages. |
+
+**Launch MCP Server:**
+```bash
+npm run mcp
+# or directly:
+node server/mcp.js
+```
+
+---
+
+## 🤖 Multi-Model AI Strategy Copilot
+
+Connect any modern LLM provider for strategic SEO recommendations:
+- **OpenRouter**: DeepSeek V3/R1, Meta Llama 3.3 70B, Qwen 2.5, and free tier open-weights models.
+- **NVIDIA NIM**: Llama 3.3 70B Instruct, Nemotron-4, and DeepSeek-R1 via high-throughput inference microservices.
+- **Google Gemini**: Gemini 2.0 Flash, Gemini 1.5 Flash, and Gemini 1.5 Pro with automatic multi-model fallback.
+- **OpenAI**: GPT-4o, GPT-4o-mini.
+
+---
+
+## 📖 OpenAPI 3.0 & Swagger UI
+
+OmniSEO-OS provides full interactive API documentation covering all 34 endpoints:
+- **Interactive Swagger UI**: [http://localhost:4000/api/docs](http://localhost:4000/api/docs)
+- **OpenAPI 3.0 Specification**: [http://localhost:4000/api/v1/openapi.json](http://localhost:4000/api/v1/openapi.json)
+
+---
+
 ## 🚀 Deployment
 
-OmniSEO-OS is cloud-ready and includes native Render configuration (`render.yaml`):
+OmniSEO-OS is cloud-ready and includes native Render configuration (`render.yaml`), Dockerfile, and docker-compose:
 - **Runtime**: Node.js 18+
 - **Build Command**: `npm install`
 - **Start Command**: `node server/index.js`

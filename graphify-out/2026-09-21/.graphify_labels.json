@@ -24,5 +24,5 @@
   "22": "indexnow_sitemap.js",
   "23": "cheerio",
   "24": "node-fetch",
-  "25": "test_openrouter_nvidia.js"
+  "25": "orchestrator.js"
 }

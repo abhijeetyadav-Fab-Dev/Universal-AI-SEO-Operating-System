@@ -36,6 +36,8 @@ import {
   queryWikipediaSummary,
   queryDatamuseLsiKeywords
 } from './adapters/open_apis.js';
+import { auditHelpfulContentGuardrail } from './adapters/head_eeat.js';
+import { submitToIndexNow, detectOrphanPages } from './adapters/indexnow_sitemap.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -141,6 +143,71 @@ export const TOOLS = [
         }
       },
       required: ['domain']
+    }
+  },
+  {
+    name: 'audit_helpful_content',
+    description: "Evaluates any webpage against Google Search Central's official Helpful Content System & E-E-A-T guidelines (https://developers.google.com/search/docs/fundamentals/creating-helpful-content). Returns scores for Who, How, Why, and E-E-A-T dimensions (out of 100), detects search-engine-first anti-patterns (keyword stuffing >3.8%, sensational clickbait, thin fluff, manufactured padding), evaluates the 8-point Google Self-Assessment Matrix, and provides prioritized, actionable remediations.",
+    inputSchema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'The target website URL to evaluate against Google Helpful Content standards'
+        },
+        html: {
+          type: 'string',
+          description: 'Optional raw HTML string to evaluate directly without network fetching (useful for draft content testing)'
+        }
+      },
+      required: ['url']
+    }
+  },
+  {
+    name: 'submit_indexnow',
+    description: 'Submits one or more URLs to Bing, Yandex, and IndexNow participating search engines for instant indexing and crawl notification via the IndexNow protocol.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        host: {
+          type: 'string',
+          description: 'Target website host/domain (e.g. example.com)'
+        },
+        urlList: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Array of URLs to submit for instant indexing'
+        },
+        key: {
+          type: 'string',
+          description: 'Optional IndexNow 32-character hexadecimal verification key (auto-generated if omitted)'
+        },
+        keyLocation: {
+          type: 'string',
+          description: 'Optional URL where the key verification file is hosted'
+        }
+      },
+      required: ['host', 'urlList']
+    }
+  },
+  {
+    name: 'detect_orphan_pages',
+    description: 'Identifies orphan pages and coverage gaps by comparing discovered XML sitemap URLs against internal crawl graph links.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        sitemapUrls: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'List of URLs extracted from XML sitemap'
+        },
+        crawledUrls: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'List of URLs discovered during internal crawl'
+        }
+      },
+      required: ['sitemapUrls', 'crawledUrls']
     }
   }
 ];
@@ -288,6 +355,37 @@ export async function handleToolCall(name, args = {}) {
           datamuseLsiKeywords: datamuseWords.status === 'fulfilled' ? datamuseWords.value : { success: false, error: datamuseWords.reason?.message }
         }
       };
+    }
+
+    case 'audit_helpful_content': {
+      const rawUrl = args?.url;
+      if (!rawUrl) {
+        throw new Error("Missing required parameter: 'url'");
+      }
+      const targetUrl = normalizeUrl(rawUrl);
+      const rawHtml = args?.html || null;
+      return await auditHelpfulContentGuardrail(targetUrl, rawHtml);
+    }
+
+    case 'submit_indexnow': {
+      const host = args?.host || extractDomain(args?.url || '');
+      if (!host) {
+        throw new Error("Missing required parameter: 'host'");
+      }
+      const urlList = Array.isArray(args?.urlList) ? args.urlList : (args?.url ? [args.url] : []);
+      if (urlList.length === 0) {
+        throw new Error("Missing required parameter: 'urlList' (array of URLs)");
+      }
+      const key = args?.key || null;
+      const keyLocation = args?.keyLocation || null;
+      const res = await submitToIndexNow({ host, urlList, key, keyLocation });
+      return { host, ...res };
+    }
+
+    case 'detect_orphan_pages': {
+      const sitemapUrls = Array.isArray(args?.sitemapUrls) ? args.sitemapUrls : [];
+      const crawledUrls = Array.isArray(args?.crawledUrls) ? args.crawledUrls : [];
+      return detectOrphanPages(crawledUrls, sitemapUrls);
     }
 
     default:
