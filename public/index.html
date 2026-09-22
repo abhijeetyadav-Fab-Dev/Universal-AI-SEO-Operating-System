@@ -190,6 +190,154 @@
     .tab-btn:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
     .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
+    /* Deep Dive Vertical Navigation Studio */
+    .deep-dive-panel {
+      margin-top: 20px;
+      margin-bottom: 24px;
+      background: var(--card-bg, #0f172a);
+      border: 1px solid var(--border, rgba(255,255,255,0.1));
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .deep-dive-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border, rgba(255,255,255,0.1));
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .deep-dive-layout {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .deep-tabs-sidebar {
+      width: 250px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 10px 8px;
+      position: sticky;
+      top: 80px;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+    .deep-tabs-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .deep-tabs-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 4px;
+    }
+    .deep-tab-category-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 8px 10px 4px;
+    }
+    .deep-tab-category-label:not(:first-child) {
+      margin-top: 6px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .deep-tabs-sidebar .tab-btn {
+      width: 100%;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-muted, #94a3b8);
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      white-space: nowrap;
+    }
+    .deep-tabs-sidebar .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateX(2px);
+    }
+    .deep-tabs-sidebar .tab-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+      font-weight: 700;
+      transform: translateX(3px);
+    }
+    .deep-tabs-sidebar .tab-badge-count {
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+    .deep-tabs-sidebar .tab-btn.active .tab-badge-count {
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
+    .deep-tabs-content-area {
+      flex: 1;
+      min-width: 0;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .deep-dive-panel.horizontal-mode .deep-dive-layout {
+      flex-direction: column;
+    }
+    .deep-dive-panel.horizontal-mode .deep-tabs-sidebar {
+      width: 100%;
+      position: static;
+      max-height: none;
+      flex-direction: row;
+      flex-wrap: wrap;
+      overflow-x: auto;
+    }
+    .deep-dive-panel.horizontal-mode .deep-tab-category-label {
+      display: none;
+    }
+    .deep-dive-panel.horizontal-mode .deep-tabs-sidebar .tab-btn {
+      width: auto;
+    }
+    @media (max-width: 960px) {
+      .deep-dive-layout {
+        flex-direction: column;
+      }
+      .deep-tabs-sidebar {
+        width: 100%;
+        position: static;
+        max-height: none;
+        flex-direction: row;
+        flex-wrap: wrap;
+        overflow-x: auto;
+      }
+      .deep-tab-category-label {
+        display: none;
+      }
+      .deep-tabs-sidebar .tab-btn {
+        width: auto;
+      }
+    }
+
     /* Loading Spinner */
     .loading-pulse { display: none; text-align: center; padding: 40px 0; }
     .spinner { width: 44px; height: 44px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 16px; }
@@ -448,288 +596,95 @@
         </div>
       </div>
 
-      <div class="grid-2">
-        <!-- Left Column: Prioritized Actions Inbox -->
-        <div class="panel" id="panelInbox" style="align-self: start;">
-          <div class="panel-title">
-            <span>🎯 Evidence-Based Priority Inbox</span>
-            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">Sorted by (Impact × Opp × Conf) / Effort</span>
-          </div>
-          <div id="recList"></div>
-        </div>
-
-        <!-- Right Column: Multi-Widget Real-Time Intelligence Sidebar Stack -->
-        <div class="sidebar-stack" style="display:flex; flex-direction:column; gap:20px; align-self: start;">
-          <!-- Widget 1: Technical & On-Page Summary -->
-          <div class="panel" id="panelOnpage">
-            <div class="panel-title">
-              <span>🔍 On-Page Signal Inspection</span>
-              <div style="display:flex; gap:6px; align-items:center;">
-                <span style="font-size:0.68rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 6px; border-radius:4px; font-weight:700; font-family:'JetBrains Mono',monospace;">⚡ Live DOM</span>
-                <span style="font-size:0.75rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">⚡ Line Badges</span>
-              </div>
-            </div>
-            <table class="data-table" id="onPageTable">
-              <tbody>
-                <tr>
-                  <td class="signal-label">Target URL</td>
-                  <td id="tblUrl" class="signal-value">-</td>
-                </tr>
-                <tr>
-                  <td class="signal-label">HTTP Status</td>
-                  <td id="tblStatus" class="signal-value">-</td>
-                </tr>
-                <tr>
-                  <td class="signal-label">Title Tag</td>
-                  <td id="tblTitle" class="signal-value">-</td>
-                </tr>
-                <tr>
-                  <td class="signal-label">Meta Description</td>
-                  <td id="tblDesc" class="signal-value">-</td>
-                </tr>
-                <tr>
-                  <td class="signal-label">Canonical</td>
-                  <td id="tblCanonical" class="signal-value">-</td>
-                </tr>
-                <tr>
-                  <td class="signal-label">JSON-LD Schema</td>
-                  <td id="tblSchema" class="signal-value" style="color:#34d399;">-</td>
-                </tr>
-                <tr>
-                  <td class="signal-label">H1 / H2 / H3</td>
-                  <td id="tblHeadings" class="signal-value" style="color:#60a5fa;">-</td>
-                </tr>
-                <tr id="rowImagesAlt" style="background:rgba(244,63,94,0.08);">
-                  <td class="signal-label" style="color:#fda4af;">Images (No Alt)</td>
-                  <td id="tblImages" class="signal-value" style="color:#f43f5e; font-weight:700;">-</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Widget 2: Core Web Vitals & Real-Time Performance Radar -->
-          <div class="panel" id="panelCwv">
-            <div class="panel-title">
-              <span>⚡ Core Web Vitals &amp; Performance Radar</span>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <span id="cwvProviderTag" style="font-size:0.75rem; color:#94a3b8; font-family:'JetBrains Mono',monospace;">Awaiting PageSpeed run…</span>
-                <span id="cwvPanelBadge" onclick="openApiSettingsModal()" style="cursor:pointer; font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;" title="Click to configure Google PageSpeed API key">⚠️ Key Required (Connect in ⚙️ Settings)</span>
-              </div>
-            </div>
-            <div id="cwvUnavailableBanner" class="prov-banner"></div>
-            
-            <div id="cwvKeyPromptBox" style="display:none; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:6px; padding:8px 12px; margin-bottom:10px; justify-content:space-between; align-items:center;">
-              <span style="font-size:0.75rem; color:#fde68a;">⚠️ Live Core Web Vitals requires free PSI key.</span>
-              <button onclick="openApiSettingsModal()" class="btn-line-tag" style="background:rgba(245,158,11,0.2); border:1px solid #f59e0b; color:#fff; cursor:pointer; font-size:0.7rem;">⚙️ Connect Key</button>
-            </div>
-
-            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:12px;">
-              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
-                  <span>LCP (Largest Contentful)</span>
-                  <span id="cwvLcpStatus" style="font-weight:700; color:#f43f5e;">--</span>
-                </div>
-                <div id="cwvLcpVal" style="font-size:1.25rem; font-weight:800; color:#fff; margin:3px 0;">--</div>
-                <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
-                  <div id="cwvLcpBar" style="width:75%; height:100%; background:#f43f5e; border-radius:2px;"></div>
-                </div>
-                <span style="font-size:0.65rem; color:#64748b; margin-top:2px; display:block;">Target: &le; 2.5s</span>
-              </div>
-              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
-                  <span>CLS (Layout Shift)</span>
-                  <span id="cwvClsStatus" style="font-weight:700; color:#10b981;">--</span>
-                </div>
-                <div id="cwvClsVal" style="font-size:1.25rem; font-weight:800; color:#fff; margin:3px 0;">--</div>
-                <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
-                  <div id="cwvClsBar" style="width:20%; height:100%; background:#10b981; border-radius:2px;"></div>
-                </div>
-                <span style="font-size:0.65rem; color:#64748b; margin-top:2px; display:block;">Target: &le; 0.1</span>
-              </div>
-              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
-                  <span>INP / FID (Interaction)</span>
-                  <span id="cwvInpStatus" style="font-weight:700; color:#10b981;">--</span>
-                </div>
-                <div id="cwvInpVal" style="font-size:1.25rem; font-weight:800; color:#fff; margin:3px 0;">--</div>
-                <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
-                  <div id="cwvInpBar" style="width:30%; height:100%; background:#10b981; border-radius:2px;"></div>
-                </div>
-                <span style="font-size:0.65rem; color:#64748b; margin-top:2px; display:block;">Target: &le; 200ms</span>
-              </div>
-              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
-                  <span>FCP (First Contentful)</span>
-                  <span id="cwvFcpStatus" style="font-weight:700; color:#10b981;">--</span>
-                </div>
-                <div id="cwvFcpVal" style="font-size:1.25rem; font-weight:800; color:#fff; margin:3px 0;">--</div>
-                <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
-                  <div id="cwvFcpBar" style="width:25%; height:100%; background:#10b981; border-radius:2px;"></div>
-                </div>
-                <span style="font-size:0.65rem; color:#64748b; margin-top:2px; display:block;">Target: &le; 1.8s</span>
-              </div>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); border-radius:6px; padding:8px 12px;">
-              <span style="font-size:0.75rem; color:#93c5fd;">⚡ Code Patch Available for LCP Optimization</span>
-              <button onclick="jumpToEngine('cwv')" class="btn-line-tag" style="background:rgba(59,130,246,0.2); border:1px solid #3b82f6; color:#fff; cursor:pointer;">Inspect CWV Fix ↗</button>
-            </div>
-            <!-- Google CrUX Real-User Field Data & CrUX Vis -->
-            <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:6px; padding:8px 12px; flex-wrap:wrap; gap:6px;">
-              <div>
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <strong style="font-size:0.75rem; color:#a7f3d0;">📊 Google CrUX Field Data:</strong>
-                  <span id="cruxOverviewBadge" style="font-size:0.68rem; padding:1px 6px; border-radius:3px; background:rgba(148,163,184,0.15); color:#94a3b8; font-weight:700;">Awaiting Run</span>
-                </div>
-                <div id="cruxOverviewSub" style="font-size:0.68rem; color:#94a3b8; margin-top:2px;">Real-user 28-day rolling p75 &amp; up to 40-week history</div>
-              </div>
-              <div style="display:flex; gap:6px;">
-                <a id="cruxOverviewDeepLink" href="https://cruxvis.withgoogle.com/" target="_blank" class="btn-line-tag" style="background:rgba(59,130,246,0.2); border:1px solid #3b82f6; color:#93c5fd; text-decoration:none; font-size:0.7rem;">Launch CrUX Vis ↗</a>
-                <button onclick="jumpToEngine('crux')" class="btn-line-tag" style="background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#a7f3d0; cursor:pointer; font-size:0.7rem;">CrUX Studio ↗</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Widget 3: AI Search (GEO) Presence -->
-          <div class="panel" id="panelGeo">
-            <div class="panel-title">
-              <span>🤖 AI Search (GEO) Presence</span>
-              <span id="geoPanelBadge" style="font-size:0.75rem; color:#f59e0b; font-family:'JetBrains Mono',monospace;">No LLM provider connected</span>
-            </div>
-            <table class="data-table" id="geoTable">
-              <thead>
-                <tr><th>AI Engine</th><th>Presence Status</th><th>Citation Readiness</th></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-          <!-- Widget 4: Google Trends & Search Volume Engine -->
-          <div class="panel" id="panelTrends">
-            <div class="panel-title">
-              <span>📈 Google Trends &amp; Keyword Search Volume</span>
-              <div style="display:flex; gap:6px; align-items:center;">
-                <span style="font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;" title="Heuristic volume analytics and seasonal curve estimation.">🧪 Demo Heuristics</span>
-                <span id="trendKeywordTag" style="font-size:0.75rem; background:rgba(59,130,246,0.2); color:#93c5fd; padding:3px 8px; border-radius:6px; font-family:'JetBrains Mono',monospace;">--</span>
-              </div>
-            </div>
-            <div style="display:flex; gap:10px; margin-bottom:14px;">
-              <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; flex:1;">
-                <div style="font-size:0.7rem; color:var(--text-muted);">Avg. Monthly Volume</div>
-                <div id="trendAvgVol" style="font-size:1.2rem; font-weight:700; color:var(--emerald);">--</div>
-              </div>
-              <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; flex:1;">
-                <div style="font-size:0.7rem; color:var(--text-muted);">Estimated CPC (INR)</div>
-                <div id="trendCpc" style="font-size:1.2rem; font-weight:700; color:#60a5fa;">₹--</div>
-              </div>
-              <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; flex:1;">
-                <div style="font-size:0.7rem; color:var(--text-muted);">Search Intent</div>
-                <div id="trendIntent" style="font-size:0.95rem; font-weight:700; color:#fde68a; margin-top:2px;">--</div>
-              </div>
-            </div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:600;">12-Month Search Interest Velocity:</div>
-            <div id="trendBars" style="display:flex; align-items:flex-end; gap:6px; height:70px; background:rgba(0,0,0,0.2); padding:8px; border-radius:8px; margin-bottom:14px;"></div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Surging &amp; Breakout Queries:</div>
-            <table class="data-table" id="trendsTable">
-              <thead>
-                <tr><th>Rising Query</th><th>Velocity</th><th>Est. Volume</th></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-          <!-- Widget 5: Security, Infrastructure & Crawlability Radar -->
-          <div class="panel" id="panelSecurity">
-            <div class="panel-title">
-              <span>🛡️ Security &amp; Technical Infrastructure Radar</span>
-              <span style="font-size:0.7rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;">⚡ Live TLS &amp; Network Probe</span>
-            </div>
-            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:12px;">
-              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-                <div style="font-size:0.7rem; color:var(--text-muted);">SSL / TLS Security</div>
-                <div id="radarSslStatus" style="font-size:0.85rem; font-weight:700; color:#94a3b8; margin-top:4px;">🔒 Awaiting probe…</div>
-                <span style="font-size:0.65rem; color:#64748b;">HSTS Enforced</span>
-              </div>
-              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-                <div style="font-size:0.7rem; color:var(--text-muted);">Compression</div>
-                <div id="radarCompression" style="font-size:0.85rem; font-weight:700; color:#94a3b8; margin-top:4px;">⚡ Awaiting probe…</div>
-                <span style="font-size:0.65rem; color:#64748b;">Fast TTFB Transfer</span>
-              </div>
-              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-                <div style="font-size:0.7rem; color:var(--text-muted);">Crawl Directives</div>
-                <div id="radarRobots" style="font-size:0.85rem; font-weight:700; color:#94a3b8; margin-top:4px;">🤖 Awaiting probe…</div>
-                <span style="font-size:0.65rem; color:#64748b;">Robots.txt &amp; Sitemap Valid</span>
-              </div>
-              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-                <div style="font-size:0.7rem; color:var(--text-muted);">Canonical Integrity</div>
-                <div id="radarCanonical" style="font-size:0.85rem; font-weight:700; color:#94a3b8; margin-top:4px;">✅ Awaiting probe…</div>
-                <span style="font-size:0.65rem; color:#64748b;">Zero index collisions</span>
-              </div>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-size:0.75rem; color:var(--text-muted);">Inspect complete headers &amp; network latency:</span>
-              <button onclick="switchDeepTabByTag('tabSerpSimulator')" class="btn-line-tag" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; cursor:pointer;">View Firewall &amp; Sitemap ↗</button>
-            </div>
-          </div>
-
-          <!-- Widget 6: Authority & Backlink Health Snapshot -->
-          <div class="panel" id="panelBacklinks">
-            <div class="panel-title">
-              <span>🔗 Authority &amp; Backlink Health Snapshot</span>
-              <span style="font-size:0.75rem; color:#f59e0b; font-family:'JetBrains Mono',monospace;">No provider — demo profile</span>
-            </div>
-            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:12px;">
-              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; text-align:center;">
-                <div style="font-size:0.7rem; color:var(--text-muted);">Domain Rating</div>
-                <div id="sideDrVal" style="font-size:1.25rem; font-weight:800; color:#38bdf8; margin:3px 0;">--</div>
-                <span id="sideDrTier" style="font-size:0.65rem; color:#10b981;">--</span>
-              </div>
-              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; text-align:center;">
-                <div style="font-size:0.7rem; color:var(--text-muted);">Ref. Domains</div>
-                <div id="sideRefDomVal" style="font-size:1.25rem; font-weight:800; color:#f8fafc; margin:3px 0;">--</div>
-                <span id="sideRefDofollow" style="font-size:0.65rem; color:#34d399;">--</span>
-              </div>
-              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; text-align:center;">
-                <div style="font-size:0.7rem; color:var(--text-muted);">Toxic Links</div>
-                <div id="sideToxicVal" style="font-size:1.25rem; font-weight:800; color:#f43f5e; margin:3px 0;">--</div>
-                <span id="sideToxicStatus" style="font-size:0.65rem; color:#fda4af;">--</span>
-              </div>
-            </div>
-            <button onclick="switchDeepTabByTag('tabBacklinks')" class="btn-line-tag" style="width:100%; justify-content:center; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.35); color:#fde68a; cursor:pointer; padding:6px 10px;">
-              🔗 Open Full Backlink Intelligence &amp; Disavow Studio ↗
-            </button>
-          </div>
-        </div>
-      </div>
-
+      
       <!-- Deep Dive Tabs Section: Images, Headings Tree, Schema, Backlinks, OpenSEO, AI Copilot, Guides -->
-      <div class="panel" style="margin-top:24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:16px; overflow-x:auto;">
-          <div style="display:flex; gap:8px; flex-wrap:nowrap; padding-bottom:4px;">
-            <button class="tab-btn active" onclick="switchDeepTab(this, 'tabImages')">🖼️ Image Alt (<span id="tabImgCount">0</span>)</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabHeadings')">📑 Headings (<span id="tabHeadingCount">0</span>)</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabSchemas')">📜 Schema Dumper (<span id="tabSchemaCount">0</span>)</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabKeywords')">🔑 Keywords & Rank (<span id="tabKeywordCount">0</span>)</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabATP')">💡 AnswerThePublic & Questions</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabBacklinks')">🔗 Backlinks & Disavow</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabMultiAudit')">🕸️ Multi-Page Audit</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabDomain')">🌐 Domain & Competitors</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabGscRank')">📈 GSC & Rank Tracker</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabBrand')">🏷️ Brand & Sentiment</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabSerpSimulator')">📱 SERP & Social Preview</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabHeadEeat')">🛡️ Helpful Content &amp; E-E-A-T</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabAiCopilot')">🤖 AI Strategy Copilot</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabGuides')">📚 Guides & How-Tos</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabScraper')">🕷️ Web Scraper Studio</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabCrux')">📊 Google CrUX Vis</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabPagespeed')">⚡ PageSpeed &amp; CrUX Studio</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabArsenal')">⚡ Agent Arsenal &amp; Tools</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabGoogleCloud')">☁️ Google Cloud &amp; BigQuery Hub</button>
-            <button class="tab-btn" onclick="switchDeepTab(this, 'tabScreamingFrog')">🐸 Screaming Frog Hub</button>
+      <div class="panel deep-dive-panel" id="deepDivePanel">
+        <div class="deep-dive-header">
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <span style="font-size:1.15rem; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+              🔬 Deep Signal &amp; Asset Inspection Studio
+            </span>
+            <span style="font-size:0.7rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:4px; font-weight:700; font-family:'JetBrains Mono',monospace;">⚡ 20 Live Modules</span>
           </div>
-          <span style="font-size:0.75rem; color:#38bdf8; font-family:'JetBrains Mono',monospace; flex-shrink:0; margin-left:12px;">⚡ OpenSEO OS v2.0</span>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <button id="btnToggleDeepTabsOrientation" class="btn-line-tag" onclick="toggleDeepTabsOrientation()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; padding:4px 10px; font-size:0.75rem; cursor:pointer;" title="Switch between vertical sidebar and horizontal chips layout">⊞ Vertical Sidebar</button>
+            <span style="font-size:0.75rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">⚡ OpenSEO OS v2.0</span>
+          </div>
         </div>
 
-        <!-- Tab 1: Image Alt Inspector -->
+        <div class="deep-dive-layout">
+          <!-- Vertical Navigation Sidebar (Sticky near Top) -->
+          <nav class="deep-tabs-sidebar" aria-label="Deep Inspection Tabs">
+            <div class="deep-tab-category-label">On-Page &amp; DOM Architecture</div>
+            <button class="tab-btn active" onclick="switchDeepTab(this, 'tabImages')">
+              <span>🖼️ Image Alt (<span id="tabImgCount">0</span>)</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabHeadings')">
+              <span>📑 Headings (<span id="tabHeadingCount">0</span>)</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabSchemas')">
+              <span>📜 Schema Dumper (<span id="tabSchemaCount">0</span>)</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabKeywords')">
+              <span>🔑 Keywords &amp; Rank (<span id="tabKeywordCount">0</span>)</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabATP')">
+              <span>💡 AnswerThePublic &amp; Questions</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabBacklinks')">
+              <span>🔗 Backlinks &amp; Disavow</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabMultiAudit')">
+              <span>🕸️ Multi-Page Audit</span>
+            </button>
+
+            <div class="deep-tab-category-label">Search Intelligence &amp; EEAT</div>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabDomain')">
+              <span>🌐 Domain &amp; Competitors</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabGscRank')">
+              <span>📈 GSC &amp; Rank Tracker</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabBrand')">
+              <span>🏷️ Brand &amp; Sentiment</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabSerpSimulator')">
+              <span>📱 SERP &amp; Social Preview</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabHeadEeat')">
+              <span>🛡️ Helpful Content &amp; E-E-A-T</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabAiCopilot')">
+              <span>🤖 AI Strategy Copilot</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabGuides')">
+              <span>📚 Guides &amp; How-Tos</span>
+            </button>
+
+            <div class="deep-tab-category-label">Performance &amp; Enterprise Crawlers</div>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabScraper')">
+              <span>🕷️ Web Scraper Studio</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabCrux')">
+              <span>📊 Google CrUX Vis</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabPagespeed')">
+              <span>⚡ PageSpeed &amp; CrUX Studio</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabArsenal')">
+              <span>⚡ Agent Arsenal &amp; Tools</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabGoogleCloud')">
+              <span>☁️ Google Cloud &amp; BigQuery Hub</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabScreamingFrog')">
+              <span>🐸 Screaming Frog Hub</span>
+            </button>
+          </nav>
+
+          <!-- Right Content Viewport -->
+          <div class="deep-tabs-content-area">
+            <!-- Tab 1: Image Alt Inspector -->
         <div id="tabImages" class="deep-tab-content">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:0.85rem; color:var(--text-muted);">
             <div style="display:flex; gap:8px; align-items:center;">
@@ -2334,7 +2289,263 @@ https://web.dev/explore"></textarea>
             </div>
           </div>
         </div>
+          </div>
+        </div>
       </div>
+
+      <div class="grid-2">
+        <!-- Left Column: Prioritized Actions Inbox -->
+        <div class="panel" id="panelInbox" style="align-self: start;">
+          <div class="panel-title">
+            <span>🎯 Evidence-Based Priority Inbox</span>
+            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">Sorted by (Impact × Opp × Conf) / Effort</span>
+          </div>
+          <div id="recList"></div>
+        </div>
+
+        <!-- Right Column: Multi-Widget Real-Time Intelligence Sidebar Stack -->
+        <div class="sidebar-stack" style="display:flex; flex-direction:column; gap:20px; align-self: start;">
+          <!-- Widget 1: Technical & On-Page Summary -->
+          <div class="panel" id="panelOnpage">
+            <div class="panel-title">
+              <span>🔍 On-Page Signal Inspection</span>
+              <div style="display:flex; gap:6px; align-items:center;">
+                <span style="font-size:0.68rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 6px; border-radius:4px; font-weight:700; font-family:'JetBrains Mono',monospace;">⚡ Live DOM</span>
+                <span style="font-size:0.75rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">⚡ Line Badges</span>
+              </div>
+            </div>
+            <table class="data-table" id="onPageTable">
+              <tbody>
+                <tr>
+                  <td class="signal-label">Target URL</td>
+                  <td id="tblUrl" class="signal-value">-</td>
+                </tr>
+                <tr>
+                  <td class="signal-label">HTTP Status</td>
+                  <td id="tblStatus" class="signal-value">-</td>
+                </tr>
+                <tr>
+                  <td class="signal-label">Title Tag</td>
+                  <td id="tblTitle" class="signal-value">-</td>
+                </tr>
+                <tr>
+                  <td class="signal-label">Meta Description</td>
+                  <td id="tblDesc" class="signal-value">-</td>
+                </tr>
+                <tr>
+                  <td class="signal-label">Canonical</td>
+                  <td id="tblCanonical" class="signal-value">-</td>
+                </tr>
+                <tr>
+                  <td class="signal-label">JSON-LD Schema</td>
+                  <td id="tblSchema" class="signal-value" style="color:#34d399;">-</td>
+                </tr>
+                <tr>
+                  <td class="signal-label">H1 / H2 / H3</td>
+                  <td id="tblHeadings" class="signal-value" style="color:#60a5fa;">-</td>
+                </tr>
+                <tr id="rowImagesAlt" style="background:rgba(244,63,94,0.08);">
+                  <td class="signal-label" style="color:#fda4af;">Images (No Alt)</td>
+                  <td id="tblImages" class="signal-value" style="color:#f43f5e; font-weight:700;">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Widget 2: Core Web Vitals & Real-Time Performance Radar -->
+          <div class="panel" id="panelCwv">
+            <div class="panel-title">
+              <span>⚡ Core Web Vitals &amp; Performance Radar</span>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <span id="cwvProviderTag" style="font-size:0.75rem; color:#94a3b8; font-family:'JetBrains Mono',monospace;">Awaiting PageSpeed run…</span>
+                <span id="cwvPanelBadge" onclick="openApiSettingsModal()" style="cursor:pointer; font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;" title="Click to configure Google PageSpeed API key">⚠️ Key Required (Connect in ⚙️ Settings)</span>
+              </div>
+            </div>
+            <div id="cwvUnavailableBanner" class="prov-banner"></div>
+            
+            <div id="cwvKeyPromptBox" style="display:none; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:6px; padding:8px 12px; margin-bottom:10px; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.75rem; color:#fde68a;">⚠️ Live Core Web Vitals requires free PSI key.</span>
+              <button onclick="openApiSettingsModal()" class="btn-line-tag" style="background:rgba(245,158,11,0.2); border:1px solid #f59e0b; color:#fff; cursor:pointer; font-size:0.7rem;">⚙️ Connect Key</button>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:12px;">
+              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
+                  <span>LCP (Largest Contentful)</span>
+                  <span id="cwvLcpStatus" style="font-weight:700; color:#f43f5e;">--</span>
+                </div>
+                <div id="cwvLcpVal" style="font-size:1.25rem; font-weight:800; color:#fff; margin:3px 0;">--</div>
+                <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
+                  <div id="cwvLcpBar" style="width:75%; height:100%; background:#f43f5e; border-radius:2px;"></div>
+                </div>
+                <span style="font-size:0.65rem; color:#64748b; margin-top:2px; display:block;">Target: &le; 2.5s</span>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
+                  <span>CLS (Layout Shift)</span>
+                  <span id="cwvClsStatus" style="font-weight:700; color:#10b981;">--</span>
+                </div>
+                <div id="cwvClsVal" style="font-size:1.25rem; font-weight:800; color:#fff; margin:3px 0;">--</div>
+                <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
+                  <div id="cwvClsBar" style="width:20%; height:100%; background:#10b981; border-radius:2px;"></div>
+                </div>
+                <span style="font-size:0.65rem; color:#64748b; margin-top:2px; display:block;">Target: &le; 0.1</span>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
+                  <span>INP / FID (Interaction)</span>
+                  <span id="cwvInpStatus" style="font-weight:700; color:#10b981;">--</span>
+                </div>
+                <div id="cwvInpVal" style="font-size:1.25rem; font-weight:800; color:#fff; margin:3px 0;">--</div>
+                <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
+                  <div id="cwvInpBar" style="width:30%; height:100%; background:#10b981; border-radius:2px;"></div>
+                </div>
+                <span style="font-size:0.65rem; color:#64748b; margin-top:2px; display:block;">Target: &le; 200ms</span>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
+                  <span>FCP (First Contentful)</span>
+                  <span id="cwvFcpStatus" style="font-weight:700; color:#10b981;">--</span>
+                </div>
+                <div id="cwvFcpVal" style="font-size:1.25rem; font-weight:800; color:#fff; margin:3px 0;">--</div>
+                <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
+                  <div id="cwvFcpBar" style="width:25%; height:100%; background:#10b981; border-radius:2px;"></div>
+                </div>
+                <span style="font-size:0.65rem; color:#64748b; margin-top:2px; display:block;">Target: &le; 1.8s</span>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); border-radius:6px; padding:8px 12px;">
+              <span style="font-size:0.75rem; color:#93c5fd;">⚡ Code Patch Available for LCP Optimization</span>
+              <button onclick="jumpToEngine('cwv')" class="btn-line-tag" style="background:rgba(59,130,246,0.2); border:1px solid #3b82f6; color:#fff; cursor:pointer;">Inspect CWV Fix ↗</button>
+            </div>
+            <!-- Google CrUX Real-User Field Data & CrUX Vis -->
+            <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:6px; padding:8px 12px; flex-wrap:wrap; gap:6px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <strong style="font-size:0.75rem; color:#a7f3d0;">📊 Google CrUX Field Data:</strong>
+                  <span id="cruxOverviewBadge" style="font-size:0.68rem; padding:1px 6px; border-radius:3px; background:rgba(148,163,184,0.15); color:#94a3b8; font-weight:700;">Awaiting Run</span>
+                </div>
+                <div id="cruxOverviewSub" style="font-size:0.68rem; color:#94a3b8; margin-top:2px;">Real-user 28-day rolling p75 &amp; up to 40-week history</div>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <a id="cruxOverviewDeepLink" href="https://cruxvis.withgoogle.com/" target="_blank" class="btn-line-tag" style="background:rgba(59,130,246,0.2); border:1px solid #3b82f6; color:#93c5fd; text-decoration:none; font-size:0.7rem;">Launch CrUX Vis ↗</a>
+                <button onclick="jumpToEngine('crux')" class="btn-line-tag" style="background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#a7f3d0; cursor:pointer; font-size:0.7rem;">CrUX Studio ↗</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Widget 3: AI Search (GEO) Presence -->
+          <div class="panel" id="panelGeo">
+            <div class="panel-title">
+              <span>🤖 AI Search (GEO) Presence</span>
+              <span id="geoPanelBadge" style="font-size:0.75rem; color:#f59e0b; font-family:'JetBrains Mono',monospace;">No LLM provider connected</span>
+            </div>
+            <table class="data-table" id="geoTable">
+              <thead>
+                <tr><th>AI Engine</th><th>Presence Status</th><th>Citation Readiness</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <!-- Widget 4: Google Trends & Search Volume Engine -->
+          <div class="panel" id="panelTrends">
+            <div class="panel-title">
+              <span>📈 Google Trends &amp; Keyword Search Volume</span>
+              <div style="display:flex; gap:6px; align-items:center;">
+                <span style="font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;" title="Heuristic volume analytics and seasonal curve estimation.">🧪 Demo Heuristics</span>
+                <span id="trendKeywordTag" style="font-size:0.75rem; background:rgba(59,130,246,0.2); color:#93c5fd; padding:3px 8px; border-radius:6px; font-family:'JetBrains Mono',monospace;">--</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:14px;">
+              <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; flex:1;">
+                <div style="font-size:0.7rem; color:var(--text-muted);">Avg. Monthly Volume</div>
+                <div id="trendAvgVol" style="font-size:1.2rem; font-weight:700; color:var(--emerald);">--</div>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; flex:1;">
+                <div style="font-size:0.7rem; color:var(--text-muted);">Estimated CPC (INR)</div>
+                <div id="trendCpc" style="font-size:1.2rem; font-weight:700; color:#60a5fa;">₹--</div>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; flex:1;">
+                <div style="font-size:0.7rem; color:var(--text-muted);">Search Intent</div>
+                <div id="trendIntent" style="font-size:0.95rem; font-weight:700; color:#fde68a; margin-top:2px;">--</div>
+              </div>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:600;">12-Month Search Interest Velocity:</div>
+            <div id="trendBars" style="display:flex; align-items:flex-end; gap:6px; height:70px; background:rgba(0,0,0,0.2); padding:8px; border-radius:8px; margin-bottom:14px;"></div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Surging &amp; Breakout Queries:</div>
+            <table class="data-table" id="trendsTable">
+              <thead>
+                <tr><th>Rising Query</th><th>Velocity</th><th>Est. Volume</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <!-- Widget 5: Security, Infrastructure & Crawlability Radar -->
+          <div class="panel" id="panelSecurity">
+            <div class="panel-title">
+              <span>🛡️ Security &amp; Technical Infrastructure Radar</span>
+              <span style="font-size:0.7rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;">⚡ Live TLS &amp; Network Probe</span>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:12px;">
+              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                <div style="font-size:0.7rem; color:var(--text-muted);">SSL / TLS Security</div>
+                <div id="radarSslStatus" style="font-size:0.85rem; font-weight:700; color:#94a3b8; margin-top:4px;">🔒 Awaiting probe…</div>
+                <span style="font-size:0.65rem; color:#64748b;">HSTS Enforced</span>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                <div style="font-size:0.7rem; color:var(--text-muted);">Compression</div>
+                <div id="radarCompression" style="font-size:0.85rem; font-weight:700; color:#94a3b8; margin-top:4px;">⚡ Awaiting probe…</div>
+                <span style="font-size:0.65rem; color:#64748b;">Fast TTFB Transfer</span>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                <div style="font-size:0.7rem; color:var(--text-muted);">Crawl Directives</div>
+                <div id="radarRobots" style="font-size:0.85rem; font-weight:700; color:#94a3b8; margin-top:4px;">🤖 Awaiting probe…</div>
+                <span style="font-size:0.65rem; color:#64748b;">Robots.txt &amp; Sitemap Valid</span>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                <div style="font-size:0.7rem; color:var(--text-muted);">Canonical Integrity</div>
+                <div id="radarCanonical" style="font-size:0.85rem; font-weight:700; color:#94a3b8; margin-top:4px;">✅ Awaiting probe…</div>
+                <span style="font-size:0.65rem; color:#64748b;">Zero index collisions</span>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.75rem; color:var(--text-muted);">Inspect complete headers &amp; network latency:</span>
+              <button onclick="switchDeepTabByTag('tabSerpSimulator')" class="btn-line-tag" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; cursor:pointer;">View Firewall &amp; Sitemap ↗</button>
+            </div>
+          </div>
+
+          <!-- Widget 6: Authority & Backlink Health Snapshot -->
+          <div class="panel" id="panelBacklinks">
+            <div class="panel-title">
+              <span>🔗 Authority &amp; Backlink Health Snapshot</span>
+              <span style="font-size:0.75rem; color:#f59e0b; font-family:'JetBrains Mono',monospace;">No provider — demo profile</span>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:12px;">
+              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; text-align:center;">
+                <div style="font-size:0.7rem; color:var(--text-muted);">Domain Rating</div>
+                <div id="sideDrVal" style="font-size:1.25rem; font-weight:800; color:#38bdf8; margin:3px 0;">--</div>
+                <span id="sideDrTier" style="font-size:0.65rem; color:#10b981;">--</span>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; text-align:center;">
+                <div style="font-size:0.7rem; color:var(--text-muted);">Ref. Domains</div>
+                <div id="sideRefDomVal" style="font-size:1.25rem; font-weight:800; color:#f8fafc; margin:3px 0;">--</div>
+                <span id="sideRefDofollow" style="font-size:0.65rem; color:#34d399;">--</span>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; text-align:center;">
+                <div style="font-size:0.7rem; color:var(--text-muted);">Toxic Links</div>
+                <div id="sideToxicVal" style="font-size:1.25rem; font-weight:800; color:#f43f5e; margin:3px 0;">--</div>
+                <span id="sideToxicStatus" style="font-size:0.65rem; color:#fda4af;">--</span>
+              </div>
+            </div>
+            <button onclick="switchDeepTabByTag('tabBacklinks')" class="btn-line-tag" style="width:100%; justify-content:center; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.35); color:#fde68a; cursor:pointer; padding:6px 10px;">
+              🔗 Open Full Backlink Intelligence &amp; Disavow Studio ↗
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -5815,6 +6026,21 @@ https://web.dev/explore"></textarea>
       } catch (err) {
         console.error('Failed to load past crawls:', err);
       }
+    }
+
+    // Deep Tabs Orientation Controller
+    function toggleDeepTabsOrientation() {
+      const panel = document.getElementById('deepDivePanel');
+      const btn = document.getElementById('btnToggleDeepTabsOrientation');
+      if (!panel) return;
+      panel.classList.toggle('horizontal-mode');
+      const isHorizontal = panel.classList.contains('horizontal-mode');
+      if (btn) {
+        btn.innerHTML = isHorizontal ? '⊟ Horizontal Chips' : '⊞ Vertical Sidebar';
+      }
+      try {
+        localStorage.setItem('omniseo_tabs_orientation', isHorizontal ? 'horizontal' : 'vertical');
+      } catch (e) {}
     }
 
     // Deep Tabs Controller

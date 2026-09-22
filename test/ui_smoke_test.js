@@ -92,8 +92,8 @@ vm.runInContext(big, ctx, { filename: 'inline-app.js' });
   console.log('plan ok:', !!run('currentPlan'));
 
   // 2) execute
-  run('runExecution()');
-  await new Promise(r => setTimeout(r, 12000)); // PSI 429 is fast; leave margin
+  await run('runExecution()');
+  await new Promise(r => setTimeout(r, 1500));
 
   const el = (id) => elements.get(id);
   const stampOf = (panelId) => {
