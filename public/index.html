@@ -190,151 +190,154 @@
     .tab-btn:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
     .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-    /* Deep Dive Vertical Navigation Studio */
+    /* Deep Signal & Asset Inspection Studio: Unified 2-Tier Categorized Navigation */
     .deep-dive-panel {
       margin-top: 20px;
       margin-bottom: 24px;
       background: var(--card-bg, #0f172a);
       border: 1px solid var(--border, rgba(255,255,255,0.1));
-      border-radius: 12px;
-      padding: 18px;
+      border-radius: 14px;
+      padding: 22px 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
     }
     .deep-dive-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--border, rgba(255,255,255,0.1));
-      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 14px;
       margin-bottom: 16px;
       flex-wrap: wrap;
+      gap: 12px;
+    }
+    /* Tier 1: Category Segmented Switcher */
+    .deep-category-bar {
+      display: flex;
       gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .deep-dive-layout {
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
-    }
-    .deep-tabs-sidebar {
-      width: 250px;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      padding: 10px 8px;
-      position: sticky;
-      top: 80px;
-      max-height: calc(100vh - 100px);
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.15) transparent;
-    }
-    .deep-tabs-sidebar::-webkit-scrollbar {
-      width: 4px;
-    }
-    .deep-tabs-sidebar::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.15);
-      border-radius: 4px;
-    }
-    .deep-tab-category-label {
-      font-size: 0.65rem;
-      font-weight: 800;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 8px 10px 4px;
-    }
-    .deep-tab-category-label:not(:first-child) {
-      margin-top: 6px;
-      border-top: 1px solid rgba(255,255,255,0.06);
-    }
-    .deep-tabs-sidebar .tab-btn {
-      width: 100%;
-      text-align: left;
+    .deep-cat-btn {
+      flex: 1;
+      min-width: 220px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 8px 12px;
-      font-size: 0.8rem;
-      border-radius: 7px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      color: var(--text-muted, #94a3b8);
+      justify-content: center;
+      gap: 10px;
+      padding: 11px 18px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: #94a3b8;
+      font-size: 0.88rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s ease-in-out;
-      white-space: nowrap;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
     }
-    .deep-tabs-sidebar .tab-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-      border-color: rgba(255, 255, 255, 0.15);
-      transform: translateX(2px);
+    .deep-cat-btn:hover {
+      color: #f1f5f9;
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
     }
-    .deep-tabs-sidebar .tab-btn.active {
-      background: #2563eb;
+    .deep-cat-btn.active {
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
       color: #ffffff;
       border-color: #3b82f6;
-      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
       font-weight: 700;
-      transform: translateX(3px);
     }
-    .deep-tabs-sidebar .tab-badge-count {
-      font-size: 0.7rem;
-      padding: 1px 6px;
+    .deep-cat-badge {
+      font-size: 0.72rem;
+      padding: 2px 8px;
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.12);
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
     }
-    .deep-tabs-sidebar .tab-btn.active .tab-badge-count {
+    .deep-cat-btn.active .deep-cat-badge {
       background: rgba(255, 255, 255, 0.25);
       color: #fff;
     }
-    .deep-tabs-content-area {
-      flex: 1;
-      min-width: 0;
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+    /* Tier 2: Sub-Module Pills Strip */
+    .deep-submodules-strip {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 10px;
-      padding: 16px;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
     }
-    .deep-dive-panel.horizontal-mode .deep-dive-layout {
-      flex-direction: column;
-    }
-    .deep-dive-panel.horizontal-mode .deep-tabs-sidebar {
-      width: 100%;
-      position: static;
-      max-height: none;
-      flex-direction: row;
-      flex-wrap: wrap;
-      overflow-x: auto;
-    }
-    .deep-dive-panel.horizontal-mode .deep-tab-category-label {
+    .deep-subgroup {
       display: none;
+      flex-wrap: wrap;
+      gap: 8px;
+      width: 100%;
+      align-items: center;
     }
-    .deep-dive-panel.horizontal-mode .deep-tabs-sidebar .tab-btn {
-      width: auto;
+    .deep-subgroup.active {
+      display: flex;
     }
-    @media (max-width: 960px) {
-      .deep-dive-layout {
+    .deep-subgroup .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      white-space: nowrap;
+    }
+    .deep-subgroup .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    .deep-subgroup .tab-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #60a5fa;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+      font-weight: 700;
+      transform: translateY(-1px);
+    }
+    .deep-subgroup .tab-badge-count {
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.15);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+    .deep-subgroup .tab-btn.active .tab-badge-count {
+      background: rgba(255, 255, 255, 0.3);
+      color: #fff;
+    }
+    /* Tier 3: Full-Width Content Container */
+    .deep-tabs-content-area {
+      width: 100%;
+      min-width: 0;
+      padding-top: 4px;
+    }
+    @media (max-width: 768px) {
+      .deep-category-bar {
         flex-direction: column;
       }
-      .deep-tabs-sidebar {
-        width: 100%;
-        position: static;
-        max-height: none;
-        flex-direction: row;
-        flex-wrap: wrap;
-        overflow-x: auto;
-      }
-      .deep-tab-category-label {
-        display: none;
-      }
-      .deep-tabs-sidebar .tab-btn {
-        width: auto;
+      .deep-cat-btn {
+        min-width: 100%;
       }
     }
 
@@ -607,15 +610,31 @@
             <span style="font-size:0.7rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:4px; font-weight:700; font-family:'JetBrains Mono',monospace;">⚡ 20 Live Modules</span>
           </div>
           <div style="display:flex; align-items:center; gap:12px;">
-            <button id="btnToggleDeepTabsOrientation" class="btn-line-tag" onclick="toggleDeepTabsOrientation()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; padding:4px 10px; font-size:0.75rem; cursor:pointer;" title="Switch between vertical sidebar and horizontal chips layout">⊞ Vertical Sidebar</button>
-            <span style="font-size:0.75rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">⚡ OpenSEO OS v2.0</span>
+            <span id="activeCategoryBadge" style="font-size:0.72rem; color:#38bdf8; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.25); padding:3px 10px; border-radius:4px; font-weight:700; font-family:'JetBrains Mono',monospace;">🏛️ ON-PAGE &amp; DOM</span>
+            <span style="font-size:0.75rem; color:#64748b; font-family:'JetBrains Mono',monospace;">⚡ OpenSEO OS v2.0</span>
           </div>
         </div>
 
-        <div class="deep-dive-layout">
-          <!-- Vertical Navigation Sidebar (Sticky near Top) -->
-          <nav class="deep-tabs-sidebar" aria-label="Deep Inspection Tabs">
-            <div class="deep-tab-category-label">On-Page &amp; DOM Architecture</div>
+        <!-- Tier 1: Unified Category Switcher -->
+        <div class="deep-category-bar" role="tablist" aria-label="Inspection Categories">
+          <button class="deep-cat-btn active" onclick="switchDeepCategory(0)" id="catBtnDom">
+            <span>🏛️ On-Page &amp; DOM Architecture</span>
+            <span class="deep-cat-badge">7</span>
+          </button>
+          <button class="deep-cat-btn" onclick="switchDeepCategory(1)" id="catBtnSearch">
+            <span>🎯 Search Intelligence &amp; E-E-A-T</span>
+            <span class="deep-cat-badge">7</span>
+          </button>
+          <button class="deep-cat-btn" onclick="switchDeepCategory(2)" id="catBtnPerf">
+            <span>⚡ Performance &amp; Enterprise Crawlers</span>
+            <span class="deep-cat-badge">6</span>
+          </button>
+        </div>
+
+        <!-- Tier 2: Sub-Module Pills Strip -->
+        <div class="deep-submodules-strip">
+          <!-- Category 0 Sub-Group: On-Page & DOM Architecture -->
+          <div id="subgroupDom" class="deep-subgroup active">
             <button class="tab-btn active" onclick="switchDeepTab(this, 'tabImages')">
               <span>🖼️ Image Alt (<span id="tabImgCount">0</span>)</span>
             </button>
@@ -637,8 +656,10 @@
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabMultiAudit')">
               <span>🕸️ Multi-Page Audit</span>
             </button>
+          </div>
 
-            <div class="deep-tab-category-label">Search Intelligence &amp; EEAT</div>
+          <!-- Category 1 Sub-Group: Search Intelligence & EEAT -->
+          <div id="subgroupSearch" class="deep-subgroup">
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabDomain')">
               <span>🌐 Domain &amp; Competitors</span>
             </button>
@@ -660,8 +681,10 @@
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabGuides')">
               <span>📚 Guides &amp; How-Tos</span>
             </button>
+          </div>
 
-            <div class="deep-tab-category-label">Performance &amp; Enterprise Crawlers</div>
+          <!-- Category 2 Sub-Group: Performance & Enterprise Crawlers -->
+          <div id="subgroupPerf" class="deep-subgroup">
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabScraper')">
               <span>🕷️ Web Scraper Studio</span>
             </button>
@@ -680,10 +703,11 @@
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabScreamingFrog')">
               <span>🐸 Screaming Frog Hub</span>
             </button>
-          </nav>
+          </div>
+        </div>
 
-          <!-- Right Content Viewport -->
-          <div class="deep-tabs-content-area">
+        <!-- Tier 3: Full-Width Content Container -->
+        <div class="deep-tabs-content-area">
             <!-- Tab 1: Image Alt Inspector -->
         <div id="tabImages" class="deep-tab-content">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:0.85rem; color:var(--text-muted);">
@@ -2289,7 +2313,6 @@ https://web.dev/explore"></textarea>
             </div>
           </div>
         </div>
-          </div>
         </div>
       </div>
 
@@ -6028,30 +6051,101 @@ https://web.dev/explore"></textarea>
       }
     }
 
-    // Deep Tabs Orientation Controller
-    function toggleDeepTabsOrientation() {
-      const panel = document.getElementById('deepDivePanel');
-      const btn = document.getElementById('btnToggleDeepTabsOrientation');
-      if (!panel) return;
-      panel.classList.toggle('horizontal-mode');
-      const isHorizontal = panel.classList.contains('horizontal-mode');
-      if (btn) {
-        btn.innerHTML = isHorizontal ? '⊟ Horizontal Chips' : '⊞ Vertical Sidebar';
+    // Deep Signal & Asset Inspection Studio: 2-Tier Navigation Controller
+    const DEEP_TAB_CATEGORIES = {
+      tabImages: 0,
+      tabHeadings: 0,
+      tabSchemas: 0,
+      tabKeywords: 0,
+      tabATP: 0,
+      tabBacklinks: 0,
+      tabMultiAudit: 0,
+      tabDomain: 1,
+      tabGscRank: 1,
+      tabBrand: 1,
+      tabSerpSimulator: 1,
+      tabHeadEeat: 1,
+      tabAiCopilot: 1,
+      tabGuides: 1,
+      tabScraper: 2,
+      tabCrux: 2,
+      tabPagespeed: 2,
+      tabArsenal: 2,
+      tabGoogleCloud: 2,
+      tabScreamingFrog: 2
+    };
+
+    const DEEP_CAT_NAMES = [
+      '🏛️ ON-PAGE & DOM',
+      '🎯 SEARCH & E-E-A-T',
+      '⚡ PERFORMANCE & CRAWLERS'
+    ];
+
+    function switchDeepCategory(catIdx, activateDefaultTab = true) {
+      // 1. Update Category Buttons
+      const catBtns = document.querySelectorAll('.deep-cat-btn');
+      if (catBtns && catBtns.length > 0) {
+        catBtns.forEach((btn, i) => {
+          if (i === catIdx) {
+            btn.classList.add('active');
+            if (btn.setAttribute) btn.setAttribute('aria-selected', 'true');
+          } else {
+            btn.classList.remove('active');
+            if (btn.setAttribute) btn.setAttribute('aria-selected', 'false');
+          }
+        });
       }
-      try {
-        localStorage.setItem('omniseo_tabs_orientation', isHorizontal ? 'horizontal' : 'vertical');
-      } catch (e) {}
+
+      // 2. Update Active Category Badge
+      const badge = document.getElementById('activeCategoryBadge');
+      if (badge && DEEP_CAT_NAMES[catIdx]) {
+        badge.innerText = DEEP_CAT_NAMES[catIdx];
+      }
+
+      // 3. Update Subgroups
+      const subgroups = [
+        document.getElementById('subgroupDom'),
+        document.getElementById('subgroupSearch'),
+        document.getElementById('subgroupPerf')
+      ];
+      subgroups.forEach((grp, i) => {
+        if (grp) {
+          if (i === catIdx) {
+            grp.classList.add('active');
+          } else {
+            grp.classList.remove('active');
+          }
+        }
+      });
+
+      // 4. If default tab should be activated and no tab in this category is currently active
+      if (activateDefaultTab && subgroups[catIdx]) {
+        const currentActive = subgroups[catIdx].querySelector ? subgroups[catIdx].querySelector('.tab-btn.active') : null;
+        if (!currentActive) {
+          const firstTab = subgroups[catIdx].querySelector ? subgroups[catIdx].querySelector('.tab-btn') : null;
+          if (firstTab && typeof firstTab.click === 'function') {
+            firstTab.click();
+          }
+        }
+      }
     }
 
-    // Deep Tabs Controller
     function switchDeepTab(btn, tabId) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.deep-tab-content').forEach(c => c.style.display = 'none');
-      btn.classList.add('active');
+      const catIdx = DEEP_TAB_CATEGORIES[tabId] !== undefined ? DEEP_TAB_CATEGORIES[tabId] : 0;
+      switchDeepCategory(catIdx, false);
+
+      const allBtns = document.querySelectorAll('.tab-btn');
+      if (allBtns && allBtns.forEach) {
+        allBtns.forEach(b => b.classList.remove('active'));
+      }
+      const allContents = document.querySelectorAll('.deep-tab-content');
+      if (allContents && allContents.forEach) {
+        allContents.forEach(c => c.style.display = 'none');
+      }
+      if (btn && btn.classList) btn.classList.add('active');
       const target = document.getElementById(tabId);
       if (target) {
         target.style.display = 'block';
-        target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
 
@@ -6078,16 +6172,24 @@ https://web.dev/explore"></textarea>
         tabGoogleCloud: 18,
         tabScreamingFrog: 19
       };
-      const idx = tabs[tabId] || 0;
+      const idx = tabs[tabId] !== undefined ? tabs[tabId] : 0;
       const buttons = document.querySelectorAll('.tab-btn');
-      if (buttons[idx]) {
+      if (buttons && buttons[idx]) {
         switchDeepTab(buttons[idx], tabId);
+        const panel = document.getElementById('deepDivePanel');
+        if (panel && typeof panel.scrollIntoView === 'function') {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }
+    }
+
+    function toggleDeepTabsOrientation() {
+      // Retained for backward compatibility
     }
 
     // Auto-switch deep tab if URL contains hash (e.g. #tabScreamingFrog or #screaming-frog)
     function checkInitialTabHash() {
-      if (!window || !window.location || !window.location.hash) return;
+      if (typeof window === 'undefined' || !window.location || !window.location.hash) return;
       const h = window.location.hash.replace('#', '').trim();
       if (!h) return;
       if (h === 'screamingfrog' || h === 'screaming-frog' || h === 'sf') {
@@ -6102,9 +6204,11 @@ https://web.dev/explore"></textarea>
         switchDeepTabByTag(h);
       }
     }
-    window.addEventListener('DOMContentLoaded', checkInitialTabHash);
-    window.addEventListener('hashchange', checkInitialTabHash);
-    setTimeout(checkInitialTabHash, 100);
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('DOMContentLoaded', checkInitialTabHash);
+      window.addEventListener('hashchange', checkInitialTabHash);
+      setTimeout(checkInitialTabHash, 100);
+    }
 
     // Modal & Inspector Handlers
     function openPageIssuesModal(encodedUrl) {
