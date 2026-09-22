@@ -195,6 +195,42 @@
         }
       }
     },
+    "/api/v1/freellmapi/chat": {
+      "post": {
+        "summary": "FreeLLMAPI Zero-Auth Chat Inference",
+        "description": "Executes 100% free, keyless AI inference via Pollinations AI, AI Horde volunteer GPUs, or local gateway based on github.com/tashfeenahmed/freellmapi. Automatically enforces Google Helpful Content & E-E-A-T guidelines.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt": { "type": "string", "example": "Recommend a people-first content outline for this topic" },
+                  "context": { "type": "string", "example": "Target Page Title: Best Running Shoes" },
+                  "provider": { "type": "string", "enum": ["auto", "pollinations", "aihorde", "local"], "default": "auto" },
+                  "model": { "type": "string", "example": "openai-fast" },
+                  "customUrl": { "type": "string", "example": "http://127.0.0.1:3001/v1" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Free LLM completion response with provenance and latency" }
+        }
+      }
+    },
+    "/api/v1/freellmapi/models": {
+      "get": {
+        "summary": "FreeLLMAPI Available Models Catalog",
+        "description": "Lists available keyless models across Pollinations AI and decentralized AI Horde providers.",
+        "responses": {
+          "200": { "description": "Catalog of active free providers and models" }
+        }
+      }
+    },
     "/api/v1/domain": {
       "post": {
         "summary": "Domain Overview & Benchmark",
@@ -428,7 +464,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "service": { "type": "string", "enum": ["psi", "openrouter", "nvidia", "gemini", "openai", "gsc"] },
+                  "service": { "type": "string", "enum": ["psi", "openrouter", "nvidia", "gemini", "openai", "gsc", "freellmapi"] },
                   "apiKey": { "type": "string" },
                   "model": { "type": "string" }
                 },
@@ -703,6 +739,483 @@
         "responses": {
           "200": { "description": "Orphan pages report" }
         }
+      }
+    },
+    "/api/v1/crux": {
+      "get": {
+        "summary": "Comprehensive Google CrUX & CrUX Vis Audit",
+        "description": "Queries Google Chrome User Experience Report (CrUX) for 28-day rolling real-user metrics, up to 40 weekly historical periods, Core Web Vitals assessment, and official Google CrUX Vis interactive visualizer deep link.",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "example": "https://web.dev" },
+            "description": "Target URL or origin to analyze"
+          },
+          {
+            "name": "formFactor",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["ALL", "PHONE", "DESKTOP", "TABLET"], "default": "ALL" },
+            "description": "Device form factor breakdown"
+          },
+          {
+            "name": "periods",
+            "in": "query",
+            "schema": { "type": "integer", "default": 25 },
+            "description": "Number of weekly collection periods (1-40)"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Combined CrUX audit with snapshot, historical timeseries, and CrUX Vis deep link" }
+        }
+      }
+    },
+    "/api/v1/crux/history": {
+      "post": {
+        "summary": "Query Google CrUX History Timeseries",
+        "description": "Fetches multi-week historical percentiles (p75) and histogram distributions for LCP, INP, CLS, FCP, and TTFB from Google CrUX History API.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": { "type": "string", "example": "https://web.dev" },
+                  "origin": { "type": "string", "example": "https://web.dev" },
+                  "formFactor": { "type": "string", "enum": ["ALL", "PHONE", "DESKTOP", "TABLET"], "default": "ALL" },
+                  "collectionPeriodCount": { "type": "integer", "minimum": 1, "maximum": 40, "default": 25 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "CrUX historical timeseries dataset" }
+        }
+      }
+    },
+    "/api/v1/crux/vis-url": {
+      "get": {
+        "summary": "Generate Google CrUX Vis Interactive Deep Link",
+        "description": "Generates the official deep link to Google CrUX Vis (https://cruxvis.withgoogle.com/) configured with target URL/origin, form factor, and metric views.",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "schema": { "type": "string", "example": "https://web.dev" }
+          },
+          {
+            "name": "origin",
+            "in": "query",
+            "schema": { "type": "string", "example": "https://web.dev" }
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["all", "phone", "desktop", "tablet"], "default": "all" }
+          },
+          {
+            "name": "view",
+            "in": "query",
+            "schema": { "type": "string", "default": "cwvsummary" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "CrUX Vis URL receipt" }
+        }
+      }
+    },
+    "/api/v1/crux/monthly": {
+      "get": {
+        "summary": "Month-by-Month CrUX Real-User Performance History",
+        "description": "Groups weekly collection periods by calendar month and calculates monthly aggregated P75 Core Web Vitals (LCP, INP, CLS, FCP, TTFB) and monthly verdicts.",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "example": "https://web.dev" }
+          },
+          {
+            "name": "formFactor",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["ALL", "PHONE", "DESKTOP", "TABLET"], "default": "ALL" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Month-by-month aggregated CrUX performance history" }
+        }
+      }
+    },
+    "/api/v1/pagespeed": {
+      "get": {
+        "summary": "Google PageSpeed Insights (Real-User CrUX + Lighthouse Lab)",
+        "description": "Runs Google PageSpeed Insights v5 API on a page URL, returning real-user Core Web Vitals (CrUX loadingExperience) plus simulated Lighthouse lab audits.",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "example": "https://web.dev" }
+          },
+          {
+            "name": "strategy",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["mobile", "desktop"], "default": "mobile" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "PageSpeed Insights real-user and lab diagnostics" }
+        }
+      }
+    },
+    "/api/v1/pagespeed/analyze": {
+      "post": {
+        "summary": "Analyze Page URL via Google PageSpeed Insights",
+        "description": "Analyzes a single page URL with real-user CrUX field vitals, lab diagnostics, and official deep links.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": { "type": "string", "example": "https://web.dev" },
+                  "strategy": { "type": "string", "enum": ["mobile", "desktop"], "default": "mobile" }
+                },
+                "required": ["url"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Analysis result" }
+        }
+      }
+    },
+    "/api/v1/pagespeed/batch": {
+      "post": {
+        "summary": "Batch Per-Page PageSpeed Insights Analysis",
+        "description": "Analyzes multiple page URLs sequentially to retrieve per-page real-user CrUX and Lighthouse lab metrics for comparisons.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "urls": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["https://web.dev", "https://web.dev/learn", "https://web.dev/about"]
+                  },
+                  "strategy": { "type": "string", "enum": ["mobile", "desktop"], "default": "mobile" }
+                },
+                "required": ["urls"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Batch analysis comparison results" }
+        }
+      }
+    },
+    "/api/v1/browser-use/crawl": {
+      "post": {
+        "summary": "Browser-Use Interactive DOM Grounding",
+        "description": "Performs deep DOM crawl, accessibility tree extraction, and interactive element indexing (https://github.com/browser-use/browser-use).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": { "type": "string" },
+                  "maxElements": { "type": "number", "default": 50 }
+                },
+                "required": ["url"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Interactive elements and accessibility tree" } }
+      }
+    },
+    "/api/v1/memory/remember": {
+      "post": {
+        "summary": "Store Knowledge in AgentMemory",
+        "description": "Stores working, episodic, semantic, or entity knowledge (https://github.com/rohitg00/agentmemory).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "key": { "type": "string" },
+                  "value": { "type": "string" },
+                  "type": { "type": "string", "enum": ["working", "episodic", "semantic", "entity"] }
+                },
+                "required": ["value"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Stored memory key and timestamp" } }
+      }
+    },
+    "/api/v1/diagrams/generate": {
+      "post": {
+        "summary": "Generate Accessible Mermaid SEO Diagram",
+        "description": "Generates production-grade Mermaid diagrams (https://github.com/cathrynlavery/diagram-design).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "enum": ["site_architecture", "redirect_chain", "eeat_graph", "cwv_waterfall", "crawler_pipeline"] },
+                  "title": { "type": "string" }
+                },
+                "required": ["type"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Mermaid diagram code and WCAG accessibility validation" } }
+      }
+    },
+    "/api/v1/scientific/verify-citations": {
+      "post": {
+        "summary": "Scientific E-E-A-T Citation Verification",
+        "description": "Searches peer-reviewed academic literature via CrossRef/PubMed (https://github.com/k-dense-ai/scientific-agent-skills).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "claims": { "type": "array", "items": { "type": "string" } }
+                },
+                "required": ["claims"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Verified citations and Schema.org ScholarlyArticle" } }
+      }
+    },
+    "/api/v1/harness/evaluate": {
+      "post": {
+        "summary": "Run Autonomous Agent Harness Evaluation",
+        "description": "Runs agent evaluation benchmarks, schema integrity, and fault injection tests (walkinglabs / ai-boost).",
+        "responses": { "200": { "description": "Evaluation benchmarks, pass rate, and resilience score" } }
+      }
+    },
+    "/api/v1/openviking/compress": {
+      "post": {
+        "summary": "OpenViking Context Optimization",
+        "description": "Optimizes context into L0-L3 tiers and computes token savings (https://github.com/volcengine/OpenViking).",
+        "responses": { "200": { "description": "Tiered context and compression metrics" } }
+      }
+    },
+    "/api/v1/security/audit": {
+      "get": {
+        "summary": "Anthropic Cybersecurity Header Audit",
+        "description": "Audits HTTP security headers mapped to MITRE ATT&CK and F3 (https://github.com/mukul975/anthropic-cybersecurity-skills).",
+        "parameters": [
+          { "name": "url", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Security score, header audits, and MITRE mitigations" } }
+      }
+    },
+    "/api/v1/gcp/status": {
+      "get": {
+        "summary": "Google Cloud Enterprise Services Registry",
+        "description": "Returns operational status and catalog of all 24+ enabled enterprise GCP services, including BigQuery, Cloud Storage, and CrUX.",
+        "responses": { "200": { "description": "Catalog of enabled Google Cloud APIs with auth metadata" } }
+      }
+    },
+    "/api/v1/bigquery/crux-sql": {
+      "post": {
+        "summary": "Generate BigQuery CrUX Public Dataset SQL",
+        "description": "Generates production Standard SQL for analyzing Core Web Vitals across historical Chrome UX Report datasets.",
+        "responses": { "200": { "description": "Standard SQL query and target table descriptor" } }
+      }
+    },
+    "/api/v1/bigquery/gsc-sql": {
+      "post": {
+        "summary": "Generate Search Console BigQuery Bulk Export SQL",
+        "description": "Generates SQL to query searchdata_url_impression tables for organic keywords, clicks, and average rank.",
+        "responses": { "200": { "description": "Standard SQL query for Search Console exports" } }
+      }
+    },
+    "/api/v1/bigquery/log-sql": {
+      "post": {
+        "summary": "Generate Server Crawl Log BigQuery SQL",
+        "description": "Generates SQL to inspect Googlebot Smartphone, Desktop, and search spider crawl frequency and HTTP status distribution.",
+        "responses": { "200": { "description": "Standard SQL query for crawler log analysis" } }
+      }
+    },
+    "/api/v1/bigquery/execute": {
+      "post": {
+        "summary": "Execute BigQuery Query or Dry Run Estimation",
+        "description": "Dispatches SQL query to live BigQuery cluster or runs syntax dry-run cost and byte estimation.",
+        "responses": { "200": { "description": "Query execution results or dry-run byte/cost estimation" } }
+      }
+    },
+    "/api/v1/gcs/upload": {
+      "post": {
+        "summary": "Archive Audit Snapshot to Google Cloud Storage",
+        "description": "Stores SEO audit snapshot and sitemap XML backups in GCS bucket with gs:// and signed HTTPS URIs.",
+        "responses": { "200": { "description": "GCS storage confirmation and URI links" } }
+      }
+    },
+    "/api/v1/ga4/correlate": {
+      "post": {
+        "summary": "Correlate Core Web Vitals with GA4 Revenue Lift",
+        "description": "Simulates organic conversion lift, bounce rate reduction, and projected monthly/annual revenue gains from CWV improvements.",
+        "responses": { "200": { "description": "Financial simulation and bounce risk assessment" } }
+      }
+    },
+    "/api/v1/telemetry/log": {
+      "post": {
+        "summary": "Format Structured Telemetry for Cloud Logging",
+        "description": "Formats structured audit telemetry compatible with Google Cloud Logging and Telemetry API.",
+        "responses": { "200": { "description": "Structured log entry" } }
+      }
+    },
+    "/api/v1/screaming-frog": {
+      "get": {
+        "summary": "Screaming Frog Hub Root Catalog",
+        "description": "Returns installation status, connected license, and available Screaming Frog API endpoints.",
+        "responses": { "200": { "description": "Screaming Frog catalog and status" } }
+      }
+    },
+    "/api/v1/screaming-frog/status": {
+      "get": {
+        "summary": "Screaming Frog SEO Spider CLI Status",
+        "description": "Returns operational status, binary path, full licensed version detection, and linked API credentials of the local Screaming Frog installation.",
+        "responses": { "200": { "description": "Screaming Frog installation status and supported crawl modes" } }
+      }
+    },
+    "/api/v1/screaming-frog/command": {
+      "get": {
+        "summary": "Preview Screaming Frog CLI Command",
+        "description": "Returns executable CLI command string for given query parameters (?target=https://example.com&mode=spider).",
+        "parameters": [
+          { "name": "target", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "mode", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Constructed CLI arguments and executable command line" } }
+      },
+      "post": {
+        "summary": "Construct Screaming Frog CLI Command",
+        "description": "Generates headless CLI command syntax for Spider, List, or Sitemap crawls with multi-tab export flags.",
+        "responses": { "200": { "description": "Constructed CLI arguments and executable command line" } }
+      }
+    },
+    "/api/v1/screaming-frog/crawl": {
+      "post": {
+        "summary": "Dispatch Headless Screaming Frog Crawl",
+        "description": "Executes or queues an enterprise headless crawl using ScreamingFrogSEOSpiderCli.exe with automated CSV export parsing.",
+        "responses": { "200": { "description": "Crawl job status and diagnostic summary" } }
+      }
+    },
+    "/api/v1/screaming-frog/crawls": {
+      "get": {
+        "summary": "List Screaming Frog Crawl Jobs",
+        "description": "Returns an inventory of active and completed Screaming Frog crawl jobs and on-disk crawl archives.",
+        "responses": { "200": { "description": "List of crawl records" } }
+      }
+    },
+    "/api/v1/screaming-frog/crawls/{id}": {
+      "get": {
+        "summary": "Get Screaming Frog Crawl Details",
+        "description": "Retrieves comprehensive crawl metrics, status code breakdown, indexability ratios, and issues for a specific crawl.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Crawl details and aggregated summary" } }
+      }
+    },
+    "/api/v1/screaming-frog/crawls/{id}/file/{filename}": {
+      "get": {
+        "summary": "Retrieve Exported Crawl CSV or JSON",
+        "description": "Downloads raw exported CSV (Internal:All, Response Codes:All, etc.) or returns parsed JSON rows.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "filename", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Exported crawl file or parsed dataset" } }
+      }
+    },
+    "/api/v1/cannibalization": {
+      "get": {
+        "summary": "Resolve Keyword Cannibalization",
+        "description": "Analyzes internal URL collisions and generates 301 redirect and cross-page canonical resolutions.",
+        "parameters": [
+          { "name": "domain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "keyword", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Cannibalization risk analysis and resolution strategies" } }
+      },
+      "post": {
+        "summary": "Resolve Keyword Cannibalization",
+        "description": "Analyzes internal URL collisions and generates 301 redirect and cross-page canonical resolutions.",
+        "responses": { "200": { "description": "Cannibalization risk analysis and resolution strategies" } }
+      }
+    },
+    "/api/v1/cwv/patches": {
+      "get": {
+        "summary": "Generate Core Web Vitals Instant Patches",
+        "description": "Produces instant code fixes for LCP fetchpriority hero preloading, font-display swap, and CLS.",
+        "parameters": [
+          { "name": "url", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Drop-in HTML and CSS performance patches" } }
+      },
+      "post": {
+        "summary": "Generate Core Web Vitals Instant Patches",
+        "description": "Produces instant code fixes for LCP fetchpriority hero preloading, font-display swap, and CLS.",
+        "responses": { "200": { "description": "Drop-in HTML and CSS performance patches" } }
+      }
+    },
+    "/api/v1/schema/generate": {
+      "get": {
+        "summary": "Schema Studio JSON-LD Generator & Validator",
+        "description": "Validates and generates Schema.org JSON-LD scripts (FAQPage, Organization, Article, LocalBusiness).",
+        "parameters": [
+          { "name": "url", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "type", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Validated Schema.org structured data script" } }
+      },
+      "post": {
+        "summary": "Schema Studio JSON-LD Generator & Validator",
+        "description": "Validates and generates Schema.org JSON-LD scripts (FAQPage, Organization, Article, LocalBusiness).",
+        "responses": { "200": { "description": "Validated Schema.org structured data script" } }
+      }
+    },
+    "/api/v1/tech-radar": {
+      "get": {
+        "summary": "Live Technical Radar & Server Header Inspector",
+        "description": "Probes live target server headers, HTTP status, Brotli/Gzip compression, TLS, and canonical tag.",
+        "parameters": [
+          { "name": "url", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Live server header telemetry and security audit" } }
+      },
+      "post": {
+        "summary": "Live Technical Radar & Server Header Inspector",
+        "description": "Probes live target server headers, HTTP status, Brotli/Gzip compression, TLS, and canonical tag.",
+        "responses": { "200": { "description": "Live server header telemetry and security audit" } }
       }
     },
     "/api/v1/health": {

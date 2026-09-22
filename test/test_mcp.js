@@ -51,11 +51,19 @@ async function runMcpTestSuite() {
     'get_open_intel',
     'audit_helpful_content',
     'submit_indexnow',
-    'detect_orphan_pages'
+    'detect_orphan_pages',
+    'get_crux_history',
+    'query_free_llm',
+    'browser_use_crawl',
+    'manage_agent_memory',
+    'generate_seo_diagram',
+    'verify_scientific_citations',
+    'run_agent_harness',
+    'audit_security_posture'
   ];
 
   assert(Array.isArray(TOOLS), 'TOOLS export is an array');
-  assert(TOOLS.length === 8, `Expected 8 tools, found ${TOOLS.length}`);
+  assert(TOOLS.length === 16, `Expected 16 tools, found ${TOOLS.length}`);
 
   for (const expectedName of expectedTools) {
     const tool = TOOLS.find(t => t.name === expectedName);
@@ -100,6 +108,37 @@ async function runMcpTestSuite() {
   assert('sitemapUrls' in orphansTool.inputSchema.properties, 'detect_orphan_pages specifies sitemapUrls parameter');
   assert('crawledUrls' in orphansTool.inputSchema.properties, 'detect_orphan_pages specifies crawledUrls parameter');
   assert(orphansTool.inputSchema.required.includes('sitemapUrls'), 'detect_orphan_pages marks sitemapUrls as required');
+
+  const cruxTool = TOOLS.find(t => t.name === 'get_crux_history');
+  assert('url' in cruxTool.inputSchema.properties, 'get_crux_history specifies url parameter');
+  assert(cruxTool.inputSchema.required.includes('url'), 'get_crux_history marks url as required');
+
+  const freeLlmTool = TOOLS.find(t => t.name === 'query_free_llm');
+  assert('prompt' in freeLlmTool.inputSchema.properties, 'query_free_llm specifies prompt parameter');
+  assert(freeLlmTool.inputSchema.required.includes('prompt'), 'query_free_llm marks prompt as required');
+
+  const browserTool = TOOLS.find(t => t.name === 'browser_use_crawl');
+  assert('url' in browserTool.inputSchema.properties, 'browser_use_crawl specifies url parameter');
+  assert(browserTool.inputSchema.required.includes('url'), 'browser_use_crawl marks url as required');
+
+  const memoryTool = TOOLS.find(t => t.name === 'manage_agent_memory');
+  assert('action' in memoryTool.inputSchema.properties, 'manage_agent_memory specifies action parameter');
+  assert(memoryTool.inputSchema.required.includes('action'), 'manage_agent_memory marks action as required');
+
+  const diagramTool = TOOLS.find(t => t.name === 'generate_seo_diagram');
+  assert('type' in diagramTool.inputSchema.properties, 'generate_seo_diagram specifies type parameter');
+  assert(diagramTool.inputSchema.required.includes('type'), 'generate_seo_diagram marks type as required');
+
+  const scientificTool = TOOLS.find(t => t.name === 'verify_scientific_citations');
+  assert('claims' in scientificTool.inputSchema.properties, 'verify_scientific_citations specifies claims parameter');
+  assert(scientificTool.inputSchema.required.includes('claims'), 'verify_scientific_citations marks claims as required');
+
+  const harnessTool = TOOLS.find(t => t.name === 'run_agent_harness');
+  assert('suite' in harnessTool.inputSchema.properties, 'run_agent_harness specifies suite parameter');
+
+  const secTool = TOOLS.find(t => t.name === 'audit_security_posture');
+  assert('url' in secTool.inputSchema.properties, 'audit_security_posture specifies url parameter');
+  assert(secTool.inputSchema.required.includes('url'), 'audit_security_posture marks url as required');
 
   // ─────────────────────────────────────────────────────────────────
   // TEST SECTION 2: JSON-RPC 2.0 Protocol In-Memory Handling
@@ -146,7 +185,7 @@ async function runMcpTestSuite() {
     params: {}
   });
   assert(Array.isArray(toolsListRes.result?.tools), 'tools/list returns tools array');
-  assert(toolsListRes.result.tools.length === 8, 'tools/list returns all 8 tools');
+  assert(toolsListRes.result.tools.length === 16, 'tools/list returns all 16 tools');
 
   // 2.5 Unknown Method Handling
   const unknownRes = await handleJsonRpcMessage({
@@ -226,7 +265,74 @@ async function runMcpTestSuite() {
   assert(orphansOutput.orphans.includes('https://example.com/orphan-article'), 'detect_orphan_pages correctly identified orphan URL');
   assert(orphansOutput.unindexed.includes('https://example.com/about'), 'detect_orphan_pages correctly identified unindexed URL');
 
-  // 3.9 Tool Error Cases via tools/call
+  // 3.9 get_crux_history Tool
+  console.log('  Testing tool get_crux_history...');
+  const cruxOutput = await handleToolCall('get_crux_history', { url: 'https://web.dev', collectionPeriodCount: 5 });
+  assert(cruxOutput && typeof cruxOutput === 'object', 'get_crux_history returned structured object');
+  assert(cruxOutput.success === true, 'get_crux_history succeeded');
+  assert('snapshot' in cruxOutput && 'history' in cruxOutput, 'get_crux_history contains snapshot and history');
+  assert('visUrl' in cruxOutput && cruxOutput.visUrl.includes('cruxvis.withgoogle.com'), 'get_crux_history provides CrUX Vis deep link');
+
+  // 3.10 query_free_llm Tool
+  console.log('  Testing tool query_free_llm...');
+  const freeLlmOutput = await handleToolCall('query_free_llm', { prompt: 'Recommend a 3-step SEO checklist' });
+  assert(freeLlmOutput && typeof freeLlmOutput === 'object', 'query_free_llm returned structured object');
+  assert(freeLlmOutput.success === true, 'query_free_llm succeeded');
+  assert(typeof freeLlmOutput.response === 'string' && freeLlmOutput.response.length > 5, 'query_free_llm produced response');
+  assert(freeLlmOutput.provenance.includes('FreeLLMAPI'), 'query_free_llm indicates FreeLLMAPI provenance');
+
+  // 3.11 browser_use_crawl Tool
+  console.log('  Testing tool browser_use_crawl...');
+  const browserOutput = await handleToolCall('browser_use_crawl', { url: 'https://example.com' });
+  assert(browserOutput && typeof browserOutput === 'object', 'browser_use_crawl returned structured object');
+  assert(browserOutput.success === true, 'browser_use_crawl succeeded');
+  assert(Array.isArray(browserOutput.interactiveElements), 'browser_use_crawl returned interactive elements array');
+
+  // 3.12 manage_agent_memory Tool
+  console.log('  Testing tool manage_agent_memory...');
+  const memWrite = await handleToolCall('manage_agent_memory', {
+    action: 'remember',
+    key: 'test_mcp_key',
+    value: 'High LCP is typically caused by unoptimized hero images.',
+    type: 'semantic'
+  });
+  assert(memWrite && memWrite.success === true, 'manage_agent_memory remember succeeded');
+
+  const memRecall = await handleToolCall('manage_agent_memory', {
+    action: 'recall',
+    query: 'LCP hero images'
+  });
+  assert(memRecall && memRecall.success === true, 'manage_agent_memory recall succeeded');
+  assert(memRecall.count > 0, 'manage_agent_memory recalled stored memory');
+
+  const memStats = await handleToolCall('manage_agent_memory', { action: 'stats' });
+  assert(memStats && memStats.totalMemories > 0, 'manage_agent_memory stats returned valid counts');
+
+  // 3.13 generate_seo_diagram Tool
+  console.log('  Testing tool generate_seo_diagram...');
+  const diagramOutput = await handleToolCall('generate_seo_diagram', { type: 'site_architecture' });
+  assert(diagramOutput && diagramOutput.success === true, 'generate_seo_diagram succeeded');
+  assert(typeof diagramOutput.mermaid === 'string' && diagramOutput.mermaid.includes('graph TD'), 'generate_seo_diagram returned Mermaid syntax');
+
+  // 3.14 verify_scientific_citations Tool
+  console.log('  Testing tool verify_scientific_citations...');
+  const scientificOutput = await handleToolCall('verify_scientific_citations', { claims: ['Web performance affects user cognitive load'] });
+  assert(scientificOutput && scientificOutput.success === true, 'verify_scientific_citations succeeded');
+  assert(Array.isArray(scientificOutput.verifiedClaims), 'verify_scientific_citations returned claims array');
+
+  // 3.15 run_agent_harness Tool
+  console.log('  Testing tool run_agent_harness...');
+  const harnessOutput = await handleToolCall('run_agent_harness', { suite: 'schema_integrity' });
+  assert(harnessOutput && harnessOutput.success === true, 'run_agent_harness succeeded');
+  assert(harnessOutput.passRate === '100%', 'run_agent_harness achieved 100% pass rate');
+
+  // 3.16 audit_security_posture Tool
+  console.log('  Testing tool audit_security_posture...');
+  const secOutput = await handleToolCall('audit_security_posture', { url: 'https://example.com' });
+  assert(secOutput && secOutput.success === true, 'audit_security_posture succeeded');
+  assert('securityScore' in secOutput && 'headerAudits' in secOutput, 'audit_security_posture returned header audits');
+
+  // 3.17 Tool Error Cases via tools/call
   console.log('  Testing tool error handling via tools/call...');
   const missingParamRes = await handleJsonRpcMessage({
     jsonrpc: '2.0',
@@ -309,7 +415,7 @@ async function runMcpTestSuite() {
       try {
         assert(receivedMessages.length === 3, `Received 3 responses via stdio IPC (got ${receivedMessages.length})`);
         assert(receivedMessages[0].id === 100 && receivedMessages[0].result?.serverInfo?.name === 'omniseo-os-mcp', 'Subprocess initialize handshake succeeded');
-        assert(receivedMessages[1].id === 101 && receivedMessages[1].result?.tools?.length === 8, 'Subprocess tools/list returned 8 tools');
+        assert(receivedMessages[1].id === 101 && receivedMessages[1].result?.tools?.length === 16, 'Subprocess tools/list returned 16 tools');
         assert(receivedMessages[2].id === 102, 'Subprocess ping succeeded');
         resolve();
       } catch (e) {

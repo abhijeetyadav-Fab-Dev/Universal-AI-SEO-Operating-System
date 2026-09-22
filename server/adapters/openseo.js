@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import fetch from 'node-fetch';
 import { queryDomainRdap, queryGoogleDns, queryHackerNewsMentions, queryWikipediaSummary } from './open_apis.js';
+import { queryFreeLlm } from './freellmapi.js';
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 OmniSEO/2.0';
 
@@ -796,6 +797,35 @@ You must strictly comply with Google's official standard: https://developers.goo
 3. GROUNDING IN E-E-A-T: Base all tactical recommendations on Experience, Expertise, Authoritativeness, and foundational Trustworthiness.
 Include precise HTML/code snippets where relevant (Schema.org Person/Article, canonicals, semantic tags). Be concise, actionable, and mathematically grounded.`;
 
+  const useFreeLlm = Boolean(options.useFreeLlm || options.provider === 'freellmapi' || options.freellmProvider);
+
+  // 0. FreeLLMAPI (Zero-Auth, 100% Free Keyless Open Inference: Pollinations AI, AI Horde, Local Gateway)
+  if (useFreeLlm) {
+    try {
+      const freeRes = await queryFreeLlm({
+        prompt,
+        context: pageContext || (targetDomain !== 'example.com' ? `Target Domain: ${targetDomain}` : ''),
+        provider: options.freellmProvider || (options.provider === 'freellmapi' ? 'auto' : (options.provider || 'auto')),
+        customUrl: options.freellmCustomUrl || null,
+        model: options.freellmModel || null
+      });
+
+      if (freeRes && freeRes.response) {
+        return {
+          response: freeRes.response,
+          model: `FreeLLMAPI (${freeRes.model || freeRes.provider})`,
+          isRealLlm: true,
+          dataStatus: 'measured',
+          isSimulated: false,
+          latencyMs: freeRes.latencyMs || (Date.now() - startTime),
+          provenance: freeRes.provenance
+        };
+      }
+    } catch (freeErr) {
+      // Fall through to commercial keys or heuristic
+    }
+  }
+
   // 1. Try OpenRouter API if key is available (Supports DeepSeek, Llama 3.3, Free Models)
   if (openrouterKey) {
     try {
@@ -1030,7 +1060,7 @@ Include precise HTML/code snippets where relevant (Schema.org Person/Article, ca
     baseResponse = `OmniSEO Strategy Guidance for ${targetDomain}:\n\nFocus on the convergence of Traditional SEO and AI Search (GEO):\n• Structure direct answer paragraphs (40–60 words) immediately beneath H2 tags for Perplexity and Google AI Overviews.\n• Ensure 100% of images have descriptive, localized alt tags.\n• Resolve internal keyword cannibalization via cross-page canonicals or 301 redirects.\n• Maintain strict schema validation for FAQPage, Organization, and WebPage entities.`;
   }
 
-  const prefixedNotice = '⚡ [Rule-Based Heuristic — Connect OpenRouter, NVIDIA NIM, Gemini, or OpenAI in ⚙️ Settings for Live Generative Reasoning]\n\n';
+  const prefixedNotice = '⚡ [Rule-Based Heuristic — Connect FreeLLMAPI (100% Free & Keyless), OpenRouter, NVIDIA NIM, Gemini, or OpenAI in ⚙️ Settings for Live Generative Reasoning]\n\n';
 
   return {
     response: `${prefixedNotice}${baseResponse}`,
@@ -1039,7 +1069,7 @@ Include precise HTML/code snippets where relevant (Schema.org Person/Article, ca
     dataStatus: 'simulated',
     isSimulated: true,
     latencyMs: Date.now() - startTime,
-    provenance: 'Rule-Based Heuristic — Connect OpenRouter/NVIDIA/Gemini in ⚙️ Settings'
+    provenance: 'Rule-Based Heuristic — Connect FreeLLMAPI/OpenRouter/NVIDIA/Gemini in ⚙️ Settings'
   };
 }
 

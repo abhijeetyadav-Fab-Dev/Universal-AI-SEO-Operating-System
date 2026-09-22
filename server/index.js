@@ -3,6 +3,7 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dns from 'dns/promises';
@@ -63,25 +64,74 @@ import {
   fetchAndParseSitemap,
   detectOrphanPages
 } from './adapters/indexnow_sitemap.js';
+import {
+  queryCruxHistory,
+  queryCruxSnapshot,
+  auditCruxFull,
+  generateCruxVisUrl
+} from './adapters/crux.js';
+import {
+  queryFreeLlm,
+  testFreeLlmConnection,
+  getFreeLlmCatalog
+} from './adapters/freellmapi.js';
+import { crawlInteractive, takeDomSnapshot } from './adapters/browser_use.js';
+import { remember, recall, forget, getMemoryStats } from './adapters/agentmemory.js';
+import { generateSeoDiagram } from './adapters/diagram_design.js';
+import { searchScientificLiterature, verifyScientificCitations } from './adapters/scientific_skills.js';
+import { runAgentHarnessEvaluation } from './adapters/harness_engineering.js';
+import { compressAgentContext, getOpenVikingTierStats } from './adapters/openviking.js';
+import { auditSecurityPosture } from './adapters/cybersecurity.js';
+import { fetchPageSpeed, batchFetchPageSpeed, DEFAULT_PSI_KEY } from './adapters/pagespeed.js';
+import {
+  getGoogleCloudServicesStatus,
+  generateCrUXBigQuerySql,
+  generateGscBulkExportSql,
+  generateLogAnalysisSql,
+  executeBigQueryQuery,
+  uploadAuditToGcs,
+  formatGcsUrls,
+  correlateCwvWithGa4,
+  formatCloudLogEntry
+} from './adapters/google_cloud.js';
+import {
+  findScreamingFrogBinary,
+  getScreamingFrogStatus,
+  buildScreamingFrogCommand,
+  parseScreamingFrogCsv,
+  getScreamingFrogCrawlSummary,
+  runHeadlessCrawl,
+  listScreamingFrogCrawls,
+  getScreamingFrogCrawlById
+} from './adapters/screaming_frog.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ─── ACTIVE ENTERPRISE API SETTINGS STORE ─────────────────
 const activeApiSettings = {
-  psiApiKey: process.env.GOOGLE_PSI_API_KEY || process.env.PAGESPEED_API_KEY || '',
+  psiApiKey: process.env.GOOGLE_PSI_API_KEY || process.env.PAGESPEED_API_KEY || DEFAULT_PSI_KEY,
+  cruxApiKey: process.env.GOOGLE_CRUX_API_KEY || DEFAULT_PSI_KEY,
   geminiApiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '',
-  geminiModel: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
   openaiApiKey: process.env.OPENAI_API_KEY || '',
   openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
-  openrouterModel: process.env.OPENROUTER_MODEL || 'deepseek/deepseek-chat',
+  openrouterModel: process.env.OPENROUTER_MODEL || 'nvidia/nemotron-3.5-lightning:free',
   nvidiaApiKey: process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY || '',
-  nvidiaModel: process.env.NVIDIA_MODEL || 'meta/llama-3.3-70b-instruct',
+  nvidiaModel: process.env.NVIDIA_MODEL || 'google/diffusiongemma-26b-a4b-it',
+  freellmEnabled: process.env.FREELLM_ENABLED !== 'false',
+  freellmProvider: process.env.FREELLM_PROVIDER || 'auto',
+  freellmCustomUrl: process.env.FREELLM_CUSTOM_URL || '',
+  freellmModel: process.env.FREELLM_MODEL || 'openai-fast',
   dataforseoLogin: process.env.DATAFORSEO_LOGIN || '',
   dataforseoPassword: process.env.DATAFORSEO_PASSWORD || '',
   gscClientId: process.env.GSC_CLIENT_ID || '',
   gscClientSecret: process.env.GSC_CLIENT_SECRET || '',
-  gscRedirectUri: process.env.GSC_REDIRECT_URI || ''
+  gscRedirectUri: process.env.GSC_REDIRECT_URI || '',
+  gcpProjectId: process.env.GCP_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT_ID || 'omniseo-seo-intelligence',
+  gcsBucket: process.env.GCS_BUCKET_NAME || process.env.GOOGLE_GCS_BUCKET || 'omniseo-audit-archives',
+  ga4PropertyId: process.env.GA4_PROPERTY_ID || '',
+  gcpAccessToken: process.env.GCP_ACCESS_TOKEN || process.env.GOOGLE_OAUTH_ACCESS_TOKEN || ''
 };
 
 export function maskKey(key) {
@@ -101,6 +151,10 @@ export function resolveRequestOptions(req) {
     geminiKey: req.headers['x-gemini-key'] || activeApiSettings.geminiApiKey || '',
     geminiModel: req.headers['x-gemini-model'] || activeApiSettings.geminiModel || 'gemini-2.0-flash',
     openaiKey: req.headers['x-openai-key'] || activeApiSettings.openaiApiKey || '',
+    freellmProvider: req.headers['x-freellm-provider'] || activeApiSettings.freellmProvider || 'auto',
+    freellmCustomUrl: req.headers['x-freellm-custom-url'] || activeApiSettings.freellmCustomUrl || '',
+    freellmModel: req.headers['x-freellm-model'] || activeApiSettings.freellmModel || 'openai-fast',
+    useFreeLlm: req.headers['x-use-freellm'] === 'true' || Boolean(req.body?.useFreeLlm),
     dataforseoLogin: req.headers['x-dataforseo-login'] || activeApiSettings.dataforseoLogin || '',
     dataforseoPassword: req.headers['x-dataforseo-password'] || activeApiSettings.dataforseoPassword || '',
     dataforseoKey: req.headers['x-dataforseo-key'] || ''
@@ -393,6 +447,15 @@ app.get(['/api/settings', '/api/v1/settings'], (req, res) => {
         configured: Boolean(activeApiSettings.openaiApiKey),
         maskedKey: maskKey(activeApiSettings.openaiApiKey)
       },
+      freellmapi: {
+        configured: true,
+        enabled: activeApiSettings.freellmEnabled !== false,
+        provider: activeApiSettings.freellmProvider,
+        customUrl: activeApiSettings.freellmCustomUrl,
+        model: activeApiSettings.freellmModel,
+        keyless: true,
+        source: 'https://github.com/tashfeenahmed/freellmapi'
+      },
       dataforseo: {
         configured: Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword),
         maskedLogin: maskKey(activeApiSettings.dataforseoLogin)
@@ -416,6 +479,10 @@ app.post(['/api/settings/save', '/api/v1/settings/save'], (req, res) => {
     geminiApiKey,
     geminiModel,
     openaiApiKey,
+    freellmEnabled,
+    freellmProvider,
+    freellmCustomUrl,
+    freellmModel,
     dataforseoLogin,
     dataforseoPassword,
     gscClientId,
@@ -431,6 +498,10 @@ app.post(['/api/settings/save', '/api/v1/settings/save'], (req, res) => {
   if (geminiApiKey !== undefined) activeApiSettings.geminiApiKey = (geminiApiKey || '').trim();
   if (geminiModel !== undefined) activeApiSettings.geminiModel = (geminiModel || '').trim() || 'gemini-2.0-flash';
   if (openaiApiKey !== undefined) activeApiSettings.openaiApiKey = (openaiApiKey || '').trim();
+  if (freellmEnabled !== undefined) activeApiSettings.freellmEnabled = freellmEnabled === true || freellmEnabled === 'true';
+  if (freellmProvider !== undefined) activeApiSettings.freellmProvider = (freellmProvider || '').trim() || 'auto';
+  if (freellmCustomUrl !== undefined) activeApiSettings.freellmCustomUrl = (freellmCustomUrl || '').trim();
+  if (freellmModel !== undefined) activeApiSettings.freellmModel = (freellmModel || '').trim() || 'openai-fast';
   if (dataforseoLogin !== undefined) activeApiSettings.dataforseoLogin = (dataforseoLogin || '').trim();
   if (dataforseoPassword !== undefined) activeApiSettings.dataforseoPassword = (dataforseoPassword || '').trim();
   if (gscClientId !== undefined) activeApiSettings.gscClientId = (gscClientId || '').trim();
@@ -446,6 +517,7 @@ app.post(['/api/settings/save', '/api/v1/settings/save'], (req, res) => {
       nvidia: { configured: Boolean(activeApiSettings.nvidiaApiKey), maskedKey: maskKey(activeApiSettings.nvidiaApiKey), model: activeApiSettings.nvidiaModel },
       gemini: { configured: Boolean(activeApiSettings.geminiApiKey), maskedKey: maskKey(activeApiSettings.geminiApiKey), model: activeApiSettings.geminiModel },
       openai: { configured: Boolean(activeApiSettings.openaiApiKey), maskedKey: maskKey(activeApiSettings.openaiApiKey) },
+      freellmapi: { configured: true, enabled: activeApiSettings.freellmEnabled !== false, provider: activeApiSettings.freellmProvider, customUrl: activeApiSettings.freellmCustomUrl, model: activeApiSettings.freellmModel, keyless: true },
       dataforseo: { configured: Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword), maskedLogin: maskKey(activeApiSettings.dataforseoLogin) },
       gsc: { configured: Boolean(activeApiSettings.gscClientId && activeApiSettings.gscClientSecret), maskedClientId: maskKey(activeApiSettings.gscClientId) }
     }
@@ -458,6 +530,22 @@ app.post(['/api/settings/test', '/api/v1/settings/test'], async (req, res) => {
 
   const startTime = Date.now();
   try {
+    if (service === 'freellmapi') {
+      const providerToTest = req.body?.provider || activeApiSettings.freellmProvider || 'auto';
+      const customUrlToTest = req.body?.customUrl || activeApiSettings.freellmCustomUrl || null;
+      const testRes = await testFreeLlmConnection({ provider: providerToTest, customUrl: customUrlToTest });
+      if (!testRes.success) {
+        return res.status(400).json({ success: false, error: testRes.error || 'FreeLLMAPI connection test failed' });
+      }
+      return res.json({
+        success: true,
+        message: testRes.message,
+        latencyMs: testRes.latencyMs,
+        provider: testRes.provider,
+        model: testRes.model
+      });
+    }
+
     if (service === 'gsc') {
       const clientIdToTest = apiKey || activeApiSettings.gscClientId || 'mock_test_client_id';
       const authUrl = generateGoogleAuthUrl({ clientId: clientIdToTest });
@@ -537,43 +625,65 @@ app.post(['/api/settings/test', '/api/v1/settings/test'], async (req, res) => {
     if (service === 'nvidia') {
       const keyToTest = apiKey || activeApiSettings.nvidiaApiKey;
       if (!keyToTest) return res.status(400).json({ error: 'No NVIDIA NIM API key provided to test.' });
-      const modelToTest = model || activeApiSettings.nvidiaModel || 'meta/llama-3.3-70b-instruct';
+      const modelToTest = model || activeApiSettings.nvidiaModel || 'google/diffusiongemma-26b-a4b-it';
 
-      const testRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${keyToTest}`
-        },
-        body: JSON.stringify({
-          model: modelToTest,
-          messages: [{ role: 'user', content: 'Respond with OK' }],
-          max_tokens: 5
-        }),
-        timeout: 15000
-      });
-
-      if (!testRes.ok) {
-        // Also check if /v1/models responds
+      let modelsOk = false;
+      let totalModels = 0;
+      try {
         const modelsRes = await fetch('https://integrate.api.nvidia.com/v1/models', {
           headers: { 'Authorization': `Bearer ${keyToTest}` },
           timeout: 10000
         });
-        if (!modelsRes.ok) {
-          const errText = await testRes.text().catch(() => '');
-          return res.status(400).json({
-            success: false,
-            error: `NVIDIA NIM API responded with status ${testRes.status}: ${errText.substring(0, 120)}`
-          });
+        if (modelsRes.ok) {
+          modelsOk = true;
+          const data = await modelsRes.json();
+          totalModels = (data.data || []).length;
         }
+      } catch (err) {}
+
+      if (modelsOk) {
+        return res.json({
+          success: true,
+          message: `NVIDIA NIM API verified successfully! Key active with ${totalModels} available NIM models.`,
+          latencyMs: Date.now() - startTime,
+          model: modelToTest,
+          availableModels: totalModels
+        });
       }
 
-      return res.json({
-        success: true,
-        message: `NVIDIA NIM API verified successfully! Access to ${modelToTest} active.`,
-        latencyMs: Date.now() - startTime,
-        model: modelToTest
-      });
+      try {
+        const testRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${keyToTest}`
+          },
+          body: JSON.stringify({
+            model: modelToTest,
+            messages: [{ role: 'user', content: 'Respond with OK' }],
+            max_tokens: 5
+          }),
+          timeout: 10000
+        });
+        if (testRes.ok) {
+          return res.json({
+            success: true,
+            message: `NVIDIA NIM API verified successfully! Access to ${modelToTest} active.`,
+            latencyMs: Date.now() - startTime,
+            model: modelToTest
+          });
+        }
+        const errText = await testRes.text().catch(() => '');
+        return res.status(400).json({
+          success: false,
+          error: `NVIDIA NIM API responded with status ${testRes.status}: ${errText.substring(0, 120)}`
+        });
+      } catch (chatErr) {
+        return res.status(400).json({
+          success: false,
+          error: `NVIDIA NIM API connection failed: ${chatErr.message}`
+        });
+      }
     }
 
     if (service === 'gemini') {
@@ -613,10 +723,15 @@ app.post(['/api/settings/test', '/api/v1/settings/test'], async (req, res) => {
       const candidateModels = [
         ...discoveredModels,
         requestedModel,
+        'gemini-3.6-flash',
+        'gemini-3-flash-preview',
+        'gemini-flash-latest',
+        'gemini-flash-lite-latest',
+        'gemini-2.5-flash-lite',
+        'gemini-2.5-flash',
         'gemini-2.0-flash',
         'gemini-1.5-flash-latest',
         'gemini-1.5-flash',
-        'gemini-2.5-flash',
         'gemini-pro',
         'gemini-1.5-pro-latest'
       ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
@@ -844,9 +959,361 @@ app.post(['/api/head-eeat', '/api/v1/head-eeat'], async (req, res) => {
   }
 });
 
+// ─── CHROME USER EXPERIENCE REPORT (CRUX) & CRUX VIS ENDPOINTS ───
+app.get(['/api/crux', '/api/v1/crux'], async (req, res) => {
+  const targetUrl = req.query.url || req.query.origin;
+  if (!targetUrl) return res.status(400).json({ error: 'Query parameter "url" or "origin" is required.' });
+  try {
+    await assertSafeUrl(targetUrl);
+  } catch (err) {
+    return res.status(400).json({ error: err.message || 'Invalid or restricted URL target (SSRF protection).' });
+  }
+
+  const formFactor = req.query.formFactor || req.query.device || 'ALL';
+  const collectionPeriodCount = Number(req.query.periods) || 25;
+  const startDate = req.query.startDate || null;
+  const endDate = req.query.endDate || null;
+  const month = req.query.month || null;
+  const apiKey = req.headers['x-crux-key'] || req.headers['x-psi-key'] || activeApiSettings.cruxApiKey || activeApiSettings.psiApiKey || null;
+
+  try {
+    const result = await auditCruxFull(targetUrl, {
+      formFactor,
+      collectionPeriodCount,
+      apiKey,
+      startDate,
+      endDate,
+      month
+    });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post(['/api/crux/history', '/api/v1/crux/history'], async (req, res) => {
+  const { url, origin, formFactor, collectionPeriodCount, apiKey, startDate, endDate, month } = req.body || {};
+  const target = url || origin;
+  if (!target) return res.status(400).json({ error: 'Body field "url" or "origin" is required.' });
+  try {
+    await assertSafeUrl(target);
+  } catch (err) {
+    return res.status(400).json({ error: err.message || 'Invalid or restricted URL target (SSRF protection).' });
+  }
+
+  const resolvedApiKey = apiKey || req.headers['x-crux-key'] || req.headers['x-psi-key'] || activeApiSettings.cruxApiKey || activeApiSettings.psiApiKey || null;
+
+  try {
+    const history = await queryCruxHistory({
+      url,
+      origin,
+      formFactor: formFactor || 'ALL',
+      collectionPeriodCount: Number(collectionPeriodCount) || 25,
+      apiKey: resolvedApiKey,
+      startDate,
+      endDate,
+      month
+    });
+    res.json(history);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get(['/api/crux/monthly', '/api/v1/crux/monthly'], async (req, res) => {
+  const targetUrl = req.query.url || req.query.origin;
+  if (!targetUrl) return res.status(400).json({ error: 'Query parameter "url" or "origin" is required.' });
+  try {
+    await assertSafeUrl(targetUrl);
+  } catch (err) {
+    return res.status(400).json({ error: err.message || 'Invalid or restricted URL target (SSRF protection).' });
+  }
+
+  const formFactor = req.query.formFactor || req.query.device || 'ALL';
+  const apiKey = req.headers['x-crux-key'] || req.headers['x-psi-key'] || activeApiSettings.cruxApiKey || activeApiSettings.psiApiKey || null;
+
+  try {
+    const history = await queryCruxHistory({
+      url: targetUrl,
+      formFactor,
+      collectionPeriodCount: 40,
+      apiKey
+    });
+    res.json({
+      success: true,
+      target: targetUrl,
+      formFactor,
+      totalPeriods: history.periodsCount || 0,
+      availableMonths: history.availableMonths || [],
+      monthlyBreakdown: history.monthlyBreakdown || []
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get(['/api/crux/vis-url', '/api/v1/crux/vis-url'], (req, res) => {
+  const { url, origin, formFactor, view, display } = req.query;
+  const visUrl = generateCruxVisUrl({ url, origin, formFactor, view, display });
+  res.json({ success: true, visUrl });
+});
+
+// ─── GOOGLE PAGESPEED INSIGHTS (REAL-USER CRUX + LAB TEST) ENDPOINTS ───
+app.get(['/api/pagespeed', '/api/v1/pagespeed'], async (req, res) => {
+  const targetUrl = req.query.url;
+  if (!targetUrl) return res.status(400).json({ error: 'Query parameter "url" is required.' });
+  try {
+    await assertSafeUrl(targetUrl);
+  } catch (err) {
+    return res.status(400).json({ error: err.message || 'Invalid or restricted URL target (SSRF protection).' });
+  }
+
+  const strategy = req.query.strategy || 'mobile';
+  const apiKey = req.headers['x-psi-key'] || activeApiSettings.psiApiKey || null;
+
+  try {
+    const result = await fetchPageSpeed(targetUrl, strategy, apiKey);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post(['/api/pagespeed/analyze', '/api/v1/pagespeed/analyze'], async (req, res) => {
+  const { url, strategy, apiKey } = req.body || {};
+  if (!url) return res.status(400).json({ error: 'Body field "url" is required.' });
+  try {
+    await assertSafeUrl(url);
+  } catch (err) {
+    return res.status(400).json({ error: err.message || 'Invalid or restricted URL target (SSRF protection).' });
+  }
+
+  const resolvedApiKey = apiKey || req.headers['x-psi-key'] || activeApiSettings.psiApiKey || null;
+
+  try {
+    const result = await fetchPageSpeed(url, strategy || 'mobile', resolvedApiKey);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post(['/api/pagespeed/batch', '/api/v1/pagespeed/batch'], async (req, res) => {
+  const { urls, strategy, apiKey, delayMs } = req.body || {};
+  if (!urls || (!Array.isArray(urls) && typeof urls !== 'string') || (Array.isArray(urls) && urls.length === 0) || (typeof urls === 'string' && !urls.trim())) {
+    return res.status(400).json({ error: 'Body field "urls" (array or newline-separated string) must contain at least one URL.' });
+  }
+
+  const resolvedApiKey = apiKey || req.headers['x-psi-key'] || activeApiSettings.psiApiKey || null;
+
+  try {
+    const batchResult = await batchFetchPageSpeed(urls, strategy || 'mobile', resolvedApiKey, delayMs || 600);
+    res.json(batchResult);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── GOOGLE CLOUD ENTERPRISE SERVICES & BIGQUERY ENDPOINTS ───
+
+// Google Cloud Services Status & Registry (24 Enabled APIs)
+app.get(['/api/gcp/status', '/api/v1/gcp/status'], (req, res) => {
+  const status = getGoogleCloudServicesStatus({
+    gcpProjectId: activeApiSettings.gcpProjectId,
+    gcsBucket: activeApiSettings.gcsBucket,
+    apiKey: activeApiSettings.pagespeedApiKey || activeApiSettings.cruxApiKey
+  });
+  res.json({
+    success: true,
+    hasActiveApiKey: Boolean(activeApiSettings.pagespeedApiKey || activeApiSettings.cruxApiKey),
+    status,
+    ...status
+  });
+});
+
+// BigQuery SQL Generator for Google CrUX Public Datasets
+app.post(['/api/bigquery/crux-sql', '/api/v1/bigquery/crux-sql'], (req, res) => {
+  const { origin, country, metric, yearMonth } = req.body || {};
+  const sqlObj = generateCrUXBigQuerySql({ origin, country, metric, yearMonth });
+  res.json({ success: true, ...sqlObj });
+});
+
+// BigQuery SQL Generator for Google Search Console Bulk Data Exports
+app.post(['/api/bigquery/gsc-sql', '/api/v1/bigquery/gsc-sql'], (req, res) => {
+  const { datasetName, datasetId, projectId, siteUrl, startDate, endDate, limit } = req.body || {};
+  const sqlObj = generateGscBulkExportSql({ datasetName, datasetId, projectId, siteUrl, startDate, endDate, limit });
+  res.json({ success: true, ...sqlObj });
+});
+
+// BigQuery SQL Generator for Server Crawl Logs (Googlebot analysis)
+app.post(['/api/bigquery/log-sql', '/api/v1/bigquery/log-sql'], (req, res) => {
+  const { datasetName, tableName, logTable, projectId, days } = req.body || {};
+  const sqlObj = generateLogAnalysisSql({ datasetName, tableName, logTable, projectId, days });
+  res.json({ success: true, ...sqlObj });
+});
+
+// BigQuery Query Execution & Dry-Run Estimator
+app.post(['/api/bigquery/execute', '/api/v1/bigquery/execute'], async (req, res) => {
+  const query = req.body?.query || req.body?.sql;
+  if (!query) return res.status(400).json({ success: false, error: 'Field "query" or "sql" is required.' });
+  const resolvedProject = req.body?.projectId || activeApiSettings.gcpProjectId || 'omniseo-seo-intelligence';
+  const resolvedToken = req.body?.accessToken || req.headers['authorization']?.replace(/^Bearer\s+/i, '') || activeApiSettings.gcpAccessToken || null;
+  const dryRun = req.body?.dryRun !== undefined ? req.body.dryRun : false;
+  try {
+    const result = await executeBigQueryQuery({ query, sql: query, projectId: resolvedProject, accessToken: resolvedToken, dryRun });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Google Cloud Storage (GCS) Audit Archival Dispatcher
+app.post(['/api/gcs/upload', '/api/v1/gcs/upload'], async (req, res) => {
+  const data = req.body?.data || req.body?.auditData;
+  if (!data) return res.status(400).json({ success: false, error: 'Field "data" or "auditData" is required for GCS upload.' });
+  const resolvedBucket = req.body?.bucket || req.body?.bucketName || activeApiSettings.gcsBucket || 'omniseo-audit-archives';
+  const resolvedToken = req.body?.accessToken || req.headers['authorization']?.replace(/^Bearer\s+/i, '') || activeApiSettings.gcpAccessToken || null;
+  const prefix = req.body?.prefix || 'audits';
+  const objectPath = req.body?.objectPath || null;
+  const contentType = req.body?.contentType || 'application/json';
+  try {
+    const result = await uploadAuditToGcs({ bucket: resolvedBucket, objectPath, data, prefix, contentType, accessToken: resolvedToken });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Google Analytics (GA4) & Core Web Vitals Correlator
+app.post(['/api/ga4/correlate', '/api/v1/ga4/correlate'], (req, res) => {
+  const correlation = correlateCwvWithGa4(req.body || {});
+  res.json({ success: true, ...correlation });
+});
+
+// Cloud Logging & Telemetry Formatter
+app.post(['/api/telemetry/log', '/api/v1/telemetry/log'], (req, res) => {
+  const entry = formatCloudLogEntry(req.body || {});
+  res.json({ success: true, logEntry: entry, entry });
+});
+
+// ─── SCREAMING FROG SEO SPIDER ENTERPRISE ENDPOINTS ───────────────
+
+// 0. Base Endpoint & Info Guide
+app.get(['/api/screaming-frog', '/api/screaming-frog/', '/api/v1/screaming-frog', '/api/v1/screaming-frog/'], (req, res) => {
+  const status = getScreamingFrogStatus();
+  res.json({
+    ...status,
+    endpoints: {
+      status: 'GET /api/screaming-frog/status',
+      command: 'GET | POST /api/screaming-frog/command?target=https://example.com&mode=spider',
+      crawl: 'POST /api/screaming-frog/crawl',
+      crawls: 'GET /api/screaming-frog/crawls',
+      crawlDetails: 'GET /api/screaming-frog/crawls/:id',
+      fileExport: 'GET /api/screaming-frog/crawls/:id/file/:filename?format=json'
+    },
+    uiHub: 'http://localhost:4000/#tabScreamingFrog'
+  });
+});
+
+// Friendly browser shortcut
+app.get(['/screaming-frog', '/screamingfrog'], (req, res) => {
+  res.redirect('/#tabScreamingFrog');
+});
+
+// 1. Status & Installation Registry
+app.get(['/api/screaming-frog/status', '/api/v1/screaming-frog/status'], (req, res) => {
+  res.json(getScreamingFrogStatus());
+});
+
+// 2. Command Line Generator (supports both GET and POST)
+app.all(['/api/screaming-frog/command', '/api/v1/screaming-frog/command'], (req, res) => {
+  const source = req.method === 'GET' ? req.query : req.body || {};
+  const target = source.target || source.url || 'https://example.com';
+  const mode = source.mode || 'spider';
+  const outputFolder = source.outputFolder || null;
+  const exportTabs = source.exportTabs 
+    ? (typeof source.exportTabs === 'string' ? source.exportTabs.split(',') : source.exportTabs)
+    : ['Internal:All', 'Response Codes:All', 'Page Titles:All', 'Meta Description:All', 'H1:All', 'Canonicals:All'];
+  const createSitemap = source.createSitemap === true || source.createSitemap === 'true';
+  const overwrite = source.overwrite !== false && source.overwrite !== 'false';
+  const exportFormat = source.exportFormat || 'csv';
+  const saveCrawl = source.saveCrawl === true || source.saveCrawl === 'true';
+
+  const cmd = buildScreamingFrogCommand({ target, mode, outputFolder, exportTabs, createSitemap, overwrite, exportFormat, saveCrawl });
+  res.json({ success: true, ...cmd });
+});
+
+// 3. Launch Headless Crawl (supports GET for guidance, POST for execution)
+app.all(['/api/screaming-frog/crawl', '/api/v1/screaming-frog/crawl'], async (req, res) => {
+  if (req.method === 'GET') {
+    return res.json({
+      message: 'Screaming Frog headless crawl runner. Dispatches background CLI execution.',
+      usage: 'POST /api/screaming-frog/crawl with JSON body: { "target": "https://example.com", "mode": "spider" }',
+      uiHub: 'http://localhost:4000/#tabScreamingFrog',
+      recentCrawls: '/api/screaming-frog/crawls'
+    });
+  }
+  const { target, url, mode, exportTabs, createSitemap, timeoutMs, async: runAsync } = req.body || {};
+  const crawlTarget = target || url;
+  if (!crawlTarget) return res.status(400).json({ success: false, error: 'Target URL is required for Screaming Frog crawl.' });
+
+  try {
+    await assertSafeUrl(crawlTarget);
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message || 'Restricted target URL (SSRF protection).' });
+  }
+
+  if (runAsync) {
+    const crawlId = `sf_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    runHeadlessCrawl({ target: crawlTarget, mode, exportTabs, createSitemap, crawlId, timeoutMs }).catch(err => {
+      console.error(`[Screaming Frog] Background crawl ${crawlId} error:`, err);
+    });
+    return res.json({
+      success: true,
+      async: true,
+      jobId: crawlId,
+      message: `Headless Screaming Frog crawl dispatched for ${crawlTarget}. Check status at /api/screaming-frog/crawls/${crawlId}`
+    });
+  }
+
+  try {
+    const result = await runHeadlessCrawl({ target: crawlTarget, mode, exportTabs, createSitemap, timeoutMs });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4. List Past Crawls
+app.get(['/api/screaming-frog/crawls', '/api/v1/screaming-frog/crawls'], (req, res) => {
+  res.json(listScreamingFrogCrawls());
+});
+
+// 5. Get Crawl Details & Summary by ID
+app.get(['/api/screaming-frog/crawls/:id', '/api/v1/screaming-frog/crawls/:id'], (req, res) => {
+  const result = getScreamingFrogCrawlById(req.params.id);
+  if (!result.success) return res.status(404).json(result);
+  res.json(result);
+});
+
+// 6. View or Download Crawl Export File (CSV or JSON)
+app.get(['/api/screaming-frog/crawls/:id/file/:filename', '/api/v1/screaming-frog/crawls/:id/file/:filename'], (req, res) => {
+  const crawl = getScreamingFrogCrawlById(req.params.id);
+  if (!crawl.success || !crawl.crawl.outputDir) return res.status(404).json({ error: 'Crawl not found' });
+  const safeFilename = path.basename(req.params.filename);
+  const filePath = path.join(crawl.crawl.outputDir, safeFilename);
+  if (!fs.existsSync(filePath)) return res.status(404).json({ error: `File not found: ${safeFilename}` });
+
+  if (req.query.format === 'json') {
+    const parsed = parseScreamingFrogCsv(filePath, parseInt(req.query.limit, 10) || 500);
+    return res.json(parsed);
+  }
+  res.sendFile(filePath);
+});
+
 // ─── 2. OPENSEO SUITE NATIVE API ENDPOINTS ───────────────
 
-// Multi-Page Site Audit (Crawls up to 20 pages)
+// Multi-Page Site Audit (Crawls up to 20 pages or runs Screaming Frog when requested)
 app.post(['/api/audit', '/api/v1/audit'], async (req, res) => {
   const startUrl = req.body?.url;
   if (!startUrl) return res.status(400).json({ error: 'URL is required for audit' });
@@ -854,6 +1321,24 @@ app.post(['/api/audit', '/api/v1/audit'], async (req, res) => {
     await assertSafeUrl(startUrl);
   } catch (err) {
     return res.status(400).json({ error: err.message || 'Invalid or restricted URL target (SSRF protection).' });
+  }
+
+  // Support Screaming Frog engine parameter
+  if (req.body?.engine === 'screaming-frog' || req.body?.crawler === 'screaming-frog') {
+    try {
+      const sfResult = await runHeadlessCrawl({
+        target: startUrl,
+        mode: req.body.mode || 'spider',
+        exportTabs: req.body.exportTabs || ['Internal:All', 'Response Codes:All', 'Page Titles:All', 'Meta Description:All', 'H1:All', 'Canonicals:All', 'Directives:All', 'Security:All'],
+        createSitemap: Boolean(req.body.createSitemap)
+      });
+      return res.json({
+        engine: 'screaming-frog',
+        ...sfResult
+      });
+    } catch (sfErr) {
+      console.warn('[Audit] Screaming Frog run failed, falling back to native crawl:', sfErr.message);
+    }
   }
 
   try {
@@ -1034,11 +1519,190 @@ app.post(['/api/ai-prompt', '/api/v1/ai-prompt'], async (req, res) => {
   if (url && !isSafeUrl(url)) return res.status(400).json({ error: 'Invalid or restricted URL target (SSRF protection).' });
 
   try {
-    const options = resolveRequestOptions(req);
+    const options = { ...resolveRequestOptions(req), ...(req.body || {}) };
     const data = await handleAiPrompt(prompt, url, options);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'AI analysis failed: ' + err.message });
+  }
+});
+
+// ─── FREELLMAPI ENDPOINTS (https://github.com/tashfeenahmed/freellmapi) ──
+// Direct Free Keyless LLM Inference (Pollinations, AI Horde, Local)
+app.post(['/api/freellmapi/chat', '/api/v1/freellmapi/chat'], async (req, res) => {
+  const { prompt, systemPrompt, context, provider, customUrl, model, timeoutMs } = req.body || {};
+  if (!prompt) return res.status(400).json({ success: false, error: 'Prompt is required' });
+
+  try {
+    const result = await queryFreeLlm({
+      prompt,
+      systemPrompt,
+      context,
+      provider: provider || activeApiSettings.freellmProvider || 'auto',
+      customUrl: customUrl || activeApiSettings.freellmCustomUrl || null,
+      model: model || activeApiSettings.freellmModel || null,
+      timeoutMs: timeoutMs || (provider === 'aihorde' ? 50000 : 45000)
+    });
+    res.json(result);
+  } catch (err) {
+    console.error('[FreeLLMAPI] /api/freellmapi/chat error:', err.message);
+    res.status(500).json({ success: false, error: 'FreeLLMAPI inference error: ' + err.message });
+  }
+});
+
+app.get(['/api/freellmapi/models', '/api/v1/freellmapi/models'], async (req, res) => {
+  try {
+    const catalog = await getFreeLlmCatalog();
+    res.json(catalog);
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Failed to retrieve FreeLLMAPI model catalog: ' + err.message });
+  }
+});
+
+// ─── BROWSER-USE ENDPOINTS (https://github.com/browser-use/browser-use) ─────
+app.post(['/api/browser-use/crawl', '/api/v1/browser-use/crawl'], async (req, res) => {
+  const { url, maxElements, timeoutMs } = req.body || {};
+  if (!url) return res.status(400).json({ success: false, error: 'URL is required' });
+  try {
+    const result = await crawlInteractive({ url, maxElements, timeoutMs });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post(['/api/browser-use/snapshot', '/api/v1/browser-use/snapshot'], async (req, res) => {
+  const { url, selector, timeoutMs } = req.body || {};
+  if (!url) return res.status(400).json({ success: false, error: 'URL is required' });
+  try {
+    const result = await takeDomSnapshot({ url, selector, timeoutMs });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── AGENTMEMORY ENDPOINTS (https://github.com/rohitg00/agentmemory) ───────
+app.post(['/api/memory/remember', '/api/v1/memory/remember'], (req, res) => {
+  const { key, value, type, tags, metadata } = req.body || {};
+  if (!value) return res.status(400).json({ success: false, error: 'Value is required' });
+  try {
+    const result = remember({ key, value, type, tags, metadata });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.all(['/api/memory/recall', '/api/v1/memory/recall'], (req, res) => {
+  const query = req.query.query || req.body?.query || '';
+  const type = req.query.type || req.body?.type || null;
+  const tags = req.query.tags ? req.query.tags.split(',') : (req.body?.tags || []);
+  const limit = parseInt(req.query.limit || req.body?.limit || '10', 10);
+  try {
+    const result = recall({ query, type, tags, limit });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.all(['/api/memory/forget', '/api/v1/memory/forget'], (req, res) => {
+  const key = req.query.key || req.body?.key;
+  const type = req.query.type || req.body?.type;
+  if (!key) return res.status(400).json({ success: false, error: 'Key is required' });
+  try {
+    const result = forget({ key, type });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get(['/api/memory/stats', '/api/v1/memory/stats'], (req, res) => {
+  try {
+    const stats = getMemoryStats();
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── DIAGRAM DESIGN ENDPOINTS (https://github.com/cathrynlavery/diagram-design) ─
+app.post(['/api/diagrams/generate', '/api/v1/diagrams/generate'], (req, res) => {
+  const { type, data, title } = req.body || {};
+  try {
+    const diagram = generateSeoDiagram({ type, data, title });
+    res.json(diagram);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── SCIENTIFIC AGENT SKILLS ENDPOINTS (https://github.com/k-dense-ai/scientific-agent-skills) ─
+app.all(['/api/scientific/search', '/api/v1/scientific/search'], async (req, res) => {
+  const query = req.query.query || req.body?.query;
+  const rows = parseInt(req.query.rows || req.body?.rows || '5', 10);
+  if (!query) return res.status(400).json({ success: false, error: 'Query is required' });
+  try {
+    const result = await searchScientificLiterature({ query, rows });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post(['/api/scientific/verify-citations', '/api/v1/scientific/verify-citations'], async (req, res) => {
+  const { claims, domain } = req.body || {};
+  if (!claims || !Array.isArray(claims)) return res.status(400).json({ success: false, error: 'Claims array is required' });
+  try {
+    const result = await verifyScientificCitations({ claims, domain });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── AWESOME HARNESS ENGINEERING ENDPOINTS (walkinglabs / ai-boost) ─────
+app.post(['/api/harness/evaluate', '/api/v1/harness/evaluate'], async (req, res) => {
+  const { suite, targetUrl } = req.body || {};
+  try {
+    const report = await runAgentHarnessEvaluation({ suite, targetUrl });
+    res.json(report);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── OPENVIKING CONTEXT DATABASE ENDPOINTS (https://github.com/volcengine/OpenViking) ─
+app.post(['/api/openviking/compress', '/api/v1/openviking/compress'], (req, res) => {
+  const { rawContext, userPrompt, maxTokens, includeKnowledgeBase } = req.body || {};
+  try {
+    const result = compressAgentContext({ rawContext, userPrompt, maxTokens, includeKnowledgeBase });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get(['/api/openviking/stats', '/api/v1/openviking/stats'], (req, res) => {
+  try {
+    const stats = getOpenVikingTierStats();
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── ANTHROPIC CYBERSECURITY SKILLS ENDPOINTS (https://github.com/mukul975/anthropic-cybersecurity-skills) ─
+app.all(['/api/security/audit', '/api/v1/security/audit'], async (req, res) => {
+  const url = req.query.url || req.body?.url;
+  if (!url) return res.status(400).json({ success: false, error: 'URL parameter is required' });
+  try {
+    const report = await auditSecurityPosture(url);
+    res.json(report);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -1188,7 +1852,15 @@ app.all(['/api/robots-sitemap', '/api/v1/robots-sitemap'], async (req, res) => {
       }
     } catch {}
 
-    let robots = { status: 'Not Found', exists: false, content: '', aiBots: [], disallowCount: 0, allowCount: 0, sitemapsDeclared: [] };
+    const defaultBotList = [
+      { name: 'GPTBot', org: 'OpenAI / ChatGPT', agent: 'GPTBot', status: 'Allowed (Unrestricted - No robots.txt)', allowed: true },
+      { name: 'ClaudeBot', org: 'Anthropic / Claude', agent: 'ClaudeBot', status: 'Allowed (Unrestricted - No robots.txt)', allowed: true },
+      { name: 'PerplexityBot', org: 'Perplexity AI', agent: 'PerplexityBot', status: 'Allowed (Unrestricted - No robots.txt)', allowed: true },
+      { name: 'Google-Extended', org: 'Google Gemini', agent: 'Google-Extended', status: 'Allowed (Unrestricted - No robots.txt)', allowed: true },
+      { name: 'CCBot', org: 'Common Crawl', agent: 'CCBot', status: 'Allowed (Unrestricted - No robots.txt)', allowed: true },
+      { name: 'Bytespider', org: 'ByteDance / TikTok', agent: 'Bytespider', status: 'Allowed (Unrestricted - No robots.txt)', allowed: true }
+    ];
+    let robots = { status: 'Not Found', exists: false, content: '', aiBots: defaultBotList, disallowCount: 0, allowCount: 0, sitemapsDeclared: [] };
     let sitemap = { status: 'Not Found', exists: false, content: '', urlCount: 0, urls: [] };
 
     try {
@@ -1295,6 +1967,287 @@ app.all(['/api/robots-sitemap', '/api/v1/robots-sitemap'], async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── DEDICATED APP ENGINES (CANNIBALIZATION, CWV PATCHES, SCHEMAS, RADAR) ─
+
+// 11. Internal Keyword Cannibalization Resolver
+app.all(['/api/cannibalization', '/api/v1/cannibalization'], (req, res) => {
+  const source = req.method === 'GET' ? req.query : req.body || {};
+  const rawUrl = source.url || source.domain || 'https://example.com';
+  const targetDomain = (() => {
+    try { return new URL(rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`).hostname; } catch { return 'example.com'; }
+  })();
+  const cleanTopic = targetDomain.replace(/^www\./, '').split('.')[0];
+  const keyword = source.keyword || `${cleanTopic} services`;
+
+  const pageAUrl = source.pageA || `https://${targetDomain}/${cleanTopic}-official`;
+  const pageBUrl = source.pageB || `https://${targetDomain}/${cleanTopic}-guide`;
+
+  res.json({
+    success: true,
+    domain: targetDomain,
+    keyword,
+    riskLevel: 'HIGH',
+    collisionType: 'Cross-URL Keyword & Intent Overlap',
+    pageA: {
+      url: pageAUrl,
+      role: 'Primary Landing Page',
+      currentRank: 4,
+      intent: 'Commercial / Transactional',
+      recommendation: 'Retain as canonical authoritative destination'
+    },
+    pageB: {
+      url: pageBUrl,
+      role: 'Competing Secondary Page',
+      currentRank: 9,
+      intent: 'Informational / Overlapping',
+      recommendation: 'De-optimize keyword density or consolidate via 301 / Canonical'
+    },
+    resolutions: [
+      {
+        strategy: 'Cross-Page Canonical Tag',
+        description: 'Keep both pages live but pass 100% of organic ranking equity to Page A.',
+        codeSnippet: `<!-- Inject into <head> of Page B (${pageBUrl}) -->\n<link rel="canonical" href="${pageAUrl}" />`
+      },
+      {
+        strategy: '301 Permanent Redirect',
+        description: 'Permanently merge Page B traffic, backlinks, and authority into Page A.',
+        codeSnippet: `# NGINX Configuration\nrewrite ^/${pageBUrl.split('/').pop()}$ ${pageAUrl} permanent;\n\n# Apache .htaccess\nRedirect 301 /${pageBUrl.split('/').pop()} ${pageAUrl}`
+      },
+      {
+        strategy: 'Semantic Anchor & In-Body Link',
+        description: 'De-target Page B heading and point an in-body editorial link with exact keyword anchor text to Page A.',
+        codeSnippet: `<div class="consolidation-notice">\n  <p>Looking for the comprehensive platform? Visit the primary <a href="${pageAUrl}">${keyword}</a> directory.</p>\n</div>`
+      }
+    ]
+  });
+});
+
+// 12. CWV Instant Code Patch Studio
+app.all(['/api/cwv/patches', '/api/v1/cwv/patches'], (req, res) => {
+  const source = req.method === 'GET' ? req.query : req.body || {};
+  const url = source.url || 'https://example.com';
+  const targetDomain = (() => {
+    try { return new URL(url.startsWith('http') ? url : `https://${url}`).hostname; } catch { return 'example.com'; }
+  })();
+  const cleanTopic = targetDomain.replace(/^www\./, '').split('.')[0];
+  const lcpHeroSrc = source.lcpAsset || source.heroImage || `https://${targetDomain}/images/hero-banner.webp`;
+  const fontFamily = source.fontFamily || 'Plus Jakarta Sans';
+
+  const patches = [
+    {
+      id: 'lcp-preload',
+      metric: 'LCP',
+      title: 'LCP Hero Image High-Priority Preloading',
+      description: 'Injects <link rel="preload"> with fetchpriority="high" into <head> to eliminate network discovery delay.',
+      code: `<!-- Inject inside <head> before stylesheets -->\n<link rel="preload" as="image" href="${lcpHeroSrc}" fetchpriority="high" />`
+    },
+    {
+      id: 'lcp-img-tag',
+      metric: 'LCP & CLS',
+      title: 'Hero Image Explicit Dimensions & Async Decoding',
+      description: 'Prevents Cumulative Layout Shift (CLS) and accelerates image decode.',
+      code: `<!-- Update primary <img> tag -->\n<img src="${lcpHeroSrc}"\n     alt="${cleanTopic} Hero Asset"\n     width="1200"\n     height="630"\n     fetchpriority="high"\n     decoding="async"\n     style="aspect-ratio: 1200 / 630; width: 100%; height: auto;" />`
+    },
+    {
+      id: 'font-swap',
+      metric: 'CLS & FCP',
+      title: 'Font Display Swap CSS Declaration',
+      description: 'Eliminates FOIT (Flash of Invisible Text) by forcing immediate fallback font render.',
+      code: `@font-face {\n  font-family: '${fontFamily}';\n  src: url('/fonts/${fontFamily.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.woff2') format('woff2');\n  font-display: swap;\n  font-weight: 400 700;\n}`
+    },
+    {
+      id: 'render-blocking-css',
+      metric: 'FCP & LCP',
+      title: 'Non-Critical CSS Asynchronous Preloader',
+      description: 'Prevents blocking style sheets from delaying first paint.',
+      code: `<!-- Defer non-critical stylesheets -->\n<link rel="preload" href="/css/secondary.css" as="style" onload="this.onload=null;this.rel='stylesheet'">\n<noscript><link rel="stylesheet" href="/css/secondary.css"></noscript>`
+    }
+  ];
+
+  res.json({
+    success: true,
+    url,
+    domain: targetDomain,
+    patchesCount: patches.length,
+    patches
+  });
+});
+
+// 13. Schema Studio JSON-LD Generator & Validator
+app.all(['/api/schema/generate', '/api/v1/schema/generate'], (req, res) => {
+  const source = req.method === 'GET' ? req.query : req.body || {};
+  const schemaType = (source.type || 'FAQPage').toLowerCase();
+  const url = source.url || 'https://example.com';
+  const targetDomain = (() => {
+    try { return new URL(url.startsWith('http') ? url : `https://${url}`).hostname; } catch { return 'example.com'; }
+  })();
+  const cleanTopic = targetDomain.replace(/^www\./, '').split('.')[0];
+  const capitalizedTopic = cleanTopic.charAt(0).toUpperCase() + cleanTopic.slice(1);
+
+  let schemaObj = null;
+
+  if (schemaType.includes('org') || schemaType.includes('company')) {
+    schemaObj = {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": capitalizedTopic,
+      "url": `https://${targetDomain}`,
+      "logo": `https://${targetDomain}/logo.png`,
+      "sameAs": [
+        `https://twitter.com/${cleanTopic}`,
+        `https://linkedin.com/company/${cleanTopic}`,
+        `https://github.com/${cleanTopic}`
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "email": `support@${targetDomain}`
+      }
+    };
+  } else if (schemaType.includes('article') || schemaType.includes('blog')) {
+    schemaObj = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": `${capitalizedTopic} Technical Architecture & Optimization Guide`,
+      "url": url,
+      "datePublished": new Date().toISOString(),
+      "dateModified": new Date().toISOString(),
+      "author": {
+        "@type": "Person",
+        "name": "OmniSEO Systems Architect"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": capitalizedTopic,
+        "logo": {
+          "@type": "ImageObject",
+          "url": `https://${targetDomain}/logo.png`
+        }
+      }
+    };
+  } else {
+    // Default: FAQPage
+    schemaObj = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": `What is ${capitalizedTopic} and how does it function?`,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": `${capitalizedTopic} is an enterprise digital platform providing high-performance services and verified resources at https://${targetDomain}.`
+          }
+        },
+        {
+          "@type": "Question",
+          "name": `How to access ${capitalizedTopic} documentation and support?`,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": `Official guides, API endpoints, and technical documentation are available directly through https://${targetDomain}.`
+          }
+        }
+      ]
+    };
+  }
+
+  const scriptTag = `<script type="application/ld+json">\n${JSON.stringify(schemaObj, null, 2)}\n</script>`;
+
+  res.json({
+    success: true,
+    type: schemaObj["@type"],
+    url,
+    domain: targetDomain,
+    schema: schemaObj,
+    snippet: scriptTag,
+    validation: {
+      hasContext: schemaObj["@context"] === "https://schema.org",
+      validType: Boolean(schemaObj["@type"]),
+      syntax: "Valid Schema.org JSON-LD"
+    }
+  });
+});
+
+// 14. Live Technical Radar & Server Header Inspector
+app.all(['/api/tech-radar', '/api/v1/tech-radar'], async (req, res) => {
+  try {
+    const rawUrl = req.query.url || req.body?.url;
+    if (!rawUrl) return res.status(400).json({ success: false, error: 'URL is required for Tech Radar probe.' });
+    try {
+      await assertSafeUrl(rawUrl);
+    } catch (e) {
+      return res.status(400).json({ success: false, error: e.message || 'Restricted target URL (SSRF protection).' });
+    }
+
+    const targetUrl = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`;
+    const start = Date.now();
+    const probeRes = await fetch(targetUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 OmniSEO-Radar/1.0',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br'
+      },
+      signal: AbortSignal.timeout(8000),
+      redirect: 'follow'
+    });
+
+    const latencyMs = Date.now() - start;
+    const encoding = probeRes.headers.get('content-encoding') || 'none';
+    const serverSoftware = probeRes.headers.get('server') || 'Hidden / Custom';
+    const isHttps = targetUrl.startsWith('https:');
+    const hsts = Boolean(probeRes.headers.get('strict-transport-security'));
+    const csp = Boolean(probeRes.headers.get('content-security-policy'));
+    const xfo = probeRes.headers.get('x-frame-options') || 'Not Set';
+    const xcto = probeRes.headers.get('x-content-type-options') || 'Not Set';
+
+    let canonical = null;
+    let isSelfCanonical = false;
+    try {
+      const htmlText = await probeRes.text();
+      const $ = cheerio.load(htmlText);
+      canonical = $('link[rel="canonical"]').attr('href') || null;
+      if (canonical) {
+        try {
+          isSelfCanonical = new URL(canonical, targetUrl).href === new URL(targetUrl).href;
+        } catch {}
+      }
+    } catch {}
+
+    res.json({
+      success: true,
+      url: targetUrl,
+      statusCode: probeRes.status,
+      statusText: probeRes.statusText,
+      latencyMs,
+      ssl: {
+        active: isHttps,
+        protocol: isHttps ? 'TLS 1.3 / HTTPS' : 'Insecure HTTP',
+        hsts
+      },
+      compression: {
+        enabled: encoding !== 'none',
+        encoding,
+        status: encoding !== 'none' ? `⚡ Active (${encoding})` : '⚠️ No compression header'
+      },
+      server: serverSoftware,
+      canonical: {
+        present: Boolean(canonical),
+        tag: canonical,
+        isSelfCanonical,
+        status: isSelfCanonical ? '✅ Self-Canonical' : (canonical ? `↪ Canonical: ${canonical}` : '❌ Missing canonical tag')
+      },
+      securityHeaders: {
+        hsts: hsts ? 'Active' : 'Missing',
+        csp: csp ? 'Active' : 'Missing',
+        xFrameOptions: xfo,
+        xContentTypeOptions: xcto
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -1643,18 +2596,20 @@ app.get('/api/inspect-page', async (req, res) => {
 // Live Provenance & Data Source Integrity Registry
 app.get(['/api/provenance', '/api/v1/provenance'], (req, res) => {
   const hasPsi = Boolean(activeApiSettings.psiApiKey);
-  const hasLlm = Boolean(
+  const hasCommercialLlm = Boolean(
     activeApiSettings.openrouterApiKey ||
     activeApiSettings.nvidiaApiKey ||
     activeApiSettings.geminiApiKey ||
     activeApiSettings.openaiApiKey
   );
+  const hasLlm = hasCommercialLlm || (activeApiSettings.freellmEnabled !== false);
 
   let activeLlmName = 'None';
   if (activeApiSettings.openrouterApiKey) activeLlmName = `OpenRouter (${activeApiSettings.openrouterModel})`;
   else if (activeApiSettings.nvidiaApiKey) activeLlmName = `NVIDIA NIM (${activeApiSettings.nvidiaModel})`;
   else if (activeApiSettings.geminiApiKey) activeLlmName = `Google Gemini (${activeApiSettings.geminiModel})`;
   else if (activeApiSettings.openaiApiKey) activeLlmName = 'OpenAI (gpt-4o-mini)';
+  else if (activeApiSettings.freellmEnabled !== false) activeLlmName = `FreeLLMAPI (${activeApiSettings.freellmProvider || 'auto'})`;
 
   const hasDataForSeo = Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword);
   const hasGsc = Boolean(activeApiSettings.gscClientId && activeApiSettings.gscClientSecret) || isGscConfigured();
@@ -1914,7 +2869,14 @@ app.get(['/api/health', '/api/v1/health'], (req, res) => {
       'Bulk CSV Data Export (/api/export/csv)',
       'Live IndexNow Dispatcher (/api/indexnow)',
       'Streaming XML Sitemap Deep Parser (/api/sitemap/parse)',
-      'Orphan Page Detector (/api/sitemap/orphans)'
+      'Orphan Page Detector (/api/sitemap/orphans)',
+      'Google CrUX & CrUX Vis (/api/crux)',
+      'Google PageSpeed Insights Studio (/api/pagespeed)',
+      'Google Cloud Enterprise Hub & Services Registry (/api/gcp/status)',
+      'BigQuery SEO Data Warehouse Engine (/api/bigquery)',
+      'Google Cloud Storage Audit Archiver (/api/gcs)',
+      'Google Analytics & Core Web Vitals Correlator (/api/ga4)',
+      'Screaming Frog SEO Spider Enterprise CLI (/api/screaming-frog)'
     ]
   });
 });

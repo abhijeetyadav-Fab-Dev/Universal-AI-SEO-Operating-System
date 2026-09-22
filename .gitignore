@@ -33,7 +33,12 @@ Thumbs.db
 __pycache__/
 *.py[cod]
 
-# Persistent Storage DB
+# Persistent Storage DB & Runtime Crawls
 data/*.json
 data/*.tmp
 !data/.gitkeep
+data/screaming_frog_crawls/*
+!data/screaming_frog_crawls/.gitkeep
+
+# Scratch directory
+scratch/

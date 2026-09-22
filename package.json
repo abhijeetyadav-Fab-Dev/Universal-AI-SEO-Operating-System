@@ -18,7 +18,14 @@
     "test:indexnow": "node test/test_indexnow_sitemap.js",
     "test:llm": "node test/test_openrouter_nvidia.js",
     "test:guardrail": "node test/test_helpful_content_guardrail.js",
-    "test:all": "node test/test_suite.js && node test/test_open_apis.js && node test/test_storage.js && node test/test_exporter.js && node test/test_gsc_real.js && node test/test_indexnow_sitemap.js && node test/test_openrouter_nvidia.js && node test/test_helpful_content_guardrail.js && node test/test_mcp.js && node test/ui_smoke_test.js"
+    "test:crux": "node test/test_crux.js",
+    "test:freellmapi": "node test/test_freellmapi.js",
+    "test:ecosystem": "node test/test_new_ecosystem.js",
+    "test:pagespeed": "node test/test_pagespeed_crux_features.js",
+    "test:gcp": "node test/test_google_cloud.js",
+    "test:sf": "node test/test_screaming_frog.js",
+    "test:14-apps": "node test/test_all_14_apps.js",
+    "test:all": "node test/test_suite.js && node test/test_open_apis.js && node test/test_storage.js && node test/test_exporter.js && node test/test_gsc_real.js && node test/test_indexnow_sitemap.js && node test/test_openrouter_nvidia.js && node test/test_helpful_content_guardrail.js && node test/test_mcp.js && node test/test_crux.js && node test/test_freellmapi.js && node test/test_new_ecosystem.js && node test/test_pagespeed_crux_features.js && node test/test_google_cloud.js && node test/test_screaming_frog.js && node test/test_all_14_apps.js && node test/ui_smoke_test.js"
   },
   "repository": {
     "type": "git",

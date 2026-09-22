@@ -1,11 +1,11 @@
 # Graph Report - OmniSEO-OS  (2026-09-21)
 
 ## Corpus Check
-- 68 files · ~171,745 words
+- 69 files · ~174,429 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 671 nodes · 1186 edges · 49 communities (47 shown, 2 thin omitted)
+- 677 nodes · 1194 edges · 49 communities (47 shown, 2 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 18 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
@@ -15,7 +15,7 @@
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- index.js
+- openseo.js
 - test_exporter.js
 - scripts
 - dependencies
@@ -28,14 +28,14 @@
 - mcp.js
 - storage.js
 - gsc_real.js
-- indexnow_sitemap.js
+- test_all_14_apps.js
 - Install
 - crux.js
 - Awesome Harness Engineering [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 - Anthropic Cybersecurity Skills
 - Diagram Design
 - Skill Categories
-- google_cloud.js
+- index.js
 - openviking.md
 - Scientific Agent Skills
 - browser-use.md
@@ -57,7 +57,7 @@
 ## God Nodes (most connected - your core abstractions)
 1. `Install` - 33 edges
 2. `handleToolCall()` - 31 edges
-3. `scripts` - 21 edges
+3. `scripts` - 22 edges
 4. `Anthropic Cybersecurity Skills` - 21 edges
 5. `Scientific Agent Skills` - 20 edges
 6. `Skill Categories` - 20 edges
@@ -69,13 +69,13 @@
 ## Surprising Connections (you probably didn't know these)
 - `runTestSuite()` --calls--> `auditBacklinks()`  [EXTRACTED]
   test/test_suite.js → server/adapters/backlinks.js
+- `runTestSuite()` --calls--> `auditHeadAndEeat()`  [EXTRACTED]
+  test/test_suite.js → server/adapters/head_eeat.js
 - `runTestSuite()` --calls--> `executeOrchestratedPlan()`  [EXTRACTED]
   test/test_suite.js → server/engine/orchestrator.js
 - `runCruxTestSuite()` --calls--> `extractOrigin()`  [EXTRACTED]
   test/test_crux.js → server/adapters/crux.js
 - `runTestSuite()` --calls--> `formatCruxDate()`  [EXTRACTED]
-  test/test_pagespeed_crux_features.js → server/adapters/crux.js
-- `runTestSuite()` --calls--> `formatCruxMonth()`  [EXTRACTED]
   test/test_pagespeed_crux_features.js → server/adapters/crux.js
 
 ## Import Cycles
@@ -83,17 +83,17 @@
 
 ## Communities (49 total, 2 thin omitted)
 
-### Community 0 - "index.js"
-Cohesion: 0.08
-Nodes (41): callAiHorde(), callCustomGateway(), callPollinations(), FREELLM_ENDPOINTS, getFreeLlmCatalog(), queryFreeLlm(), testFreeLlmConnection(), auditHeadAndEeat() (+33 more)
+### Community 0 - "openseo.js"
+Cohesion: 0.12
+Nodes (26): callAiHorde(), callCustomGateway(), callPollinations(), FREELLM_ENDPOINTS, getFreeLlmCatalog(), queryFreeLlm(), testFreeLlmConnection(), analyzeCompetitorGap() (+18 more)
 
 ### Community 1 - "test_exporter.js"
 Cohesion: 0.08
 Nodes (28): escapeCsvField(), escapeHtml(), exportToCsv(), generateExecutiveReportHtml(), getScoreTier(), RFC-4180, altLines, backlinkLines (+20 more)
 
 ### Community 2 - "scripts"
-Cohesion: 0.10
-Nodes (21): scripts, dev, mcp, start, test, test:all, test:crux, test:ecosystem (+13 more)
+Cohesion: 0.09
+Nodes (22): scripts, dev, mcp, start, test, test:14-apps, test:all, test:crux (+14 more)
 
 ### Community 3 - "dependencies"
 Cohesion: 0.18
@@ -117,7 +117,7 @@ Nodes (3): make_request(), run_tests(), scan_for_markers()
 
 ### Community 19 - "mcp.js"
 Cohesion: 0.08
-Nodes (47): forget(), getMemoryStats(), MEMORY_FILE, memoryStore, recall(), remember(), savePersistedMemory(), auditBacklinks() (+39 more)
+Nodes (50): forget(), getMemoryStats(), MEMORY_FILE, memoryStore, recall(), remember(), savePersistedMemory(), auditBacklinks() (+42 more)
 
 ### Community 20 - "storage.js"
 Cohesion: 0.23
@@ -127,17 +127,17 @@ Nodes (24): clearHistory(), compareSnapshots(), deleteSnapshot(), __dirname, ens
 Cohesion: 0.31
 Nodes (16): exchangeCodeForTokens(), extractDomainFromSiteUrl(), generateGoogleAuthUrl(), generateMockSearchAnalyticsData(), getDefaultDateRange(), GOOGLE_OAUTH_ENDPOINTS, GSC_SCOPES, isGscConfigured() (+8 more)
 
-### Community 22 - "indexnow_sitemap.js"
-Cohesion: 0.31
-Nodes (10): cleanTagContent(), decompressIfNeeded(), detectOrphanPages(), extractRawUrls(), fetchAndParseSitemap(), generateIndexNowKey(), INDEXNOW_ENDPOINTS, normalizeUrl() (+2 more)
+### Community 22 - "test_all_14_apps.js"
+Cohesion: 0.70
+Nodes (4): assert(), httpGet(), httpPost(), runTests()
 
 ### Community 25 - "Install"
 Cohesion: 0.05
 Nodes (37): 4-Tier Memory Consolidation, 54 Tools, 6 Resources · 3 Prompts · 17 Skills, Claude Code (one block, paste it), Claude Code without the plugin install (MCP-standalone path), Codex CLI (Codex plugin platform), Codex Desktop: plugin hooks currently silent (workaround available), Config File (+29 more)
 
 ### Community 26 - "crux.js"
-Cohesion: 0.20
-Nodes (27): auditCruxFull(), callCruxApi(), computeMonthlyAggregations(), CRUX_ENDPOINTS, cruxCache, DEFAULT_CRUX_KEY, DEFAULT_CRUX_VIS_KEY, evaluateCruxThreshold() (+19 more)
+Cohesion: 0.15
+Nodes (30): auditCruxFull(), callCruxApi(), computeMonthlyAggregations(), CRUX_ENDPOINTS, cruxCache, DEFAULT_CRUX_VIS_KEY, evaluateCruxThreshold(), extractLcpSubMetrics() (+22 more)
 
 ### Community 27 - "Awesome Harness Engineering [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)"
 Cohesion: 0.06
@@ -155,9 +155,9 @@ Nodes (27): About, Accessible by default, Architecture, Contrast checks happen a
 Cohesion: 0.10
 Nodes (20): 🧬 **Bioinformatics & Genomics** (28 skills), 🧪 **Cheminformatics & Drug Discovery** (10 skills), 🏥 **Clinical Research & Evidence Workflows** (8 skills), 📊 **Data Analysis & Visualization** (22 skills), ⚙️ **Engineering & Simulation** (6 skills), 🔧 **Infrastructure & Platforms** (12 skills), 🧪 **Laboratory Automation** (6 skills), 🤖 **Machine Learning & AI** (14 core skills) (+12 more)
 
-### Community 31 - "google_cloud.js"
-Cohesion: 0.16
-Nodes (21): buildGa4OrganicReportRequest(), correlateCwvWithGa4(), DEFAULT_GCP_PROJECT_ID, DEFAULT_GCS_BUCKET, ENABLED_GOOGLE_CLOUD_APIS, executeBigQueryQuery(), formatCloudLogEntry(), formatGcsUrls() (+13 more)
+### Community 31 - "index.js"
+Cohesion: 0.08
+Nodes (40): DEFAULT_CRUX_KEY, buildGa4OrganicReportRequest(), correlateCwvWithGa4(), DEFAULT_GCP_PROJECT_ID, DEFAULT_GCS_BUCKET, ENABLED_GOOGLE_CLOUD_APIS, executeBigQueryQuery(), formatCloudLogEntry() (+32 more)
 
 ### Community 32 - "openviking.md"
 Cohesion: 0.12
@@ -228,7 +228,7 @@ Cohesion: 0.17
 Nodes (24): buildScreamingFrogCommand(), CRAWL_STORAGE_DIR, crawlJobs, __dirname, __filename, findScreamingFrogBinary(), getScreamingFrogCrawlById(), getScreamingFrogCrawlSummary() (+16 more)
 
 ## Knowledge Gaps
-- **339 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+334 more)
+- **340 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+335 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -242,10 +242,10 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `exportToCsv()` connect `test_exporter.js` to `index.js`?**
   _High betweenness centrality (0.010) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
-  _339 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `index.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.0768361581920904 - nodes in this community are weakly interconnected._
+  _340 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `openseo.js` be split into smaller, more focused modules?**
+  _Cohesion score 0.12312312312312312 - nodes in this community are weakly interconnected._
 - **Should `test_exporter.js` be split into smaller, more focused modules?**
   _Cohesion score 0.08275862068965517 - nodes in this community are weakly interconnected._
 - **Should `scripts` be split into smaller, more focused modules?**
-  _Cohesion score 0.09523809523809523 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._

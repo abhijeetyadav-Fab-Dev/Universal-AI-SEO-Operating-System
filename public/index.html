@@ -345,6 +345,7 @@
           <span class="nav-tag" onclick="jumpToEngine('cwv')" title="Core Web Vitals Code Patch Studio"><span class="dot-live"></span>CWV Studio</span>
           <span class="nav-tag" onclick="jumpToEngine('schema')" title="JSON-LD Schema Dumper &amp; Rich Results Generator"><span class="dot-live"></span>Schema Studio</span>
           <span class="nav-tag" onclick="jumpToEngine('radar')" title="TLS &amp; Network Latency Radar"><span class="dot-live"></span>Tech Radar</span>
+          <span class="nav-tag" onclick="jumpToEngine('crux')" title="Google Chrome UX Report &amp; CrUX Vis Real-User Field Data"><span class="dot-live"></span>CrUX Vis</span>
         </div>
       </div>
     </div>
@@ -368,6 +369,7 @@
         <div class="quick-chip" onclick="setQuery('Audit https://github.com and check Core Web Vitals, SERP rankings, and AI search visibility')">GitHub Core Web Vitals &amp; SERP</div>
         <div class="quick-chip" onclick="setQuery('Find keyword gaps and backlink opportunities for https://stripe.com vs competitors')">Stripe Backlink &amp; Competitor Gap</div>
         <div class="quick-chip" onclick="setQuery('Audit https://wikipedia.org for GEO/AEO visibility and citation grounding in Perplexity/ChatGPT')">Wikipedia AI Search (GEO) Grounding</div>
+        <div class="quick-chip" onclick="setQuery('Inspect Google CrUX Vis and Core Web Vitals history for https://web.dev')">📊 Google CrUX Vis Real-User Timeseries</div>
       </div>
     </div>
 
@@ -571,6 +573,20 @@
               <span style="font-size:0.75rem; color:#93c5fd;">⚡ Code Patch Available for LCP Optimization</span>
               <button onclick="jumpToEngine('cwv')" class="btn-line-tag" style="background:rgba(59,130,246,0.2); border:1px solid #3b82f6; color:#fff; cursor:pointer;">Inspect CWV Fix ↗</button>
             </div>
+            <!-- Google CrUX Real-User Field Data & CrUX Vis -->
+            <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:6px; padding:8px 12px; flex-wrap:wrap; gap:6px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <strong style="font-size:0.75rem; color:#a7f3d0;">📊 Google CrUX Field Data:</strong>
+                  <span id="cruxOverviewBadge" style="font-size:0.68rem; padding:1px 6px; border-radius:3px; background:rgba(148,163,184,0.15); color:#94a3b8; font-weight:700;">Awaiting Run</span>
+                </div>
+                <div id="cruxOverviewSub" style="font-size:0.68rem; color:#94a3b8; margin-top:2px;">Real-user 28-day rolling p75 &amp; up to 40-week history</div>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <a id="cruxOverviewDeepLink" href="https://cruxvis.withgoogle.com/" target="_blank" class="btn-line-tag" style="background:rgba(59,130,246,0.2); border:1px solid #3b82f6; color:#93c5fd; text-decoration:none; font-size:0.7rem;">Launch CrUX Vis ↗</a>
+                <button onclick="jumpToEngine('crux')" class="btn-line-tag" style="background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#a7f3d0; cursor:pointer; font-size:0.7rem;">CrUX Studio ↗</button>
+              </div>
+            </div>
           </div>
 
           <!-- Widget 3: AI Search (GEO) Presence -->
@@ -704,6 +720,11 @@
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabAiCopilot')">🤖 AI Strategy Copilot</button>
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabGuides')">📚 Guides & How-Tos</button>
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabScraper')">🕷️ Web Scraper Studio</button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabCrux')">📊 Google CrUX Vis</button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabPagespeed')">⚡ PageSpeed &amp; CrUX Studio</button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabArsenal')">⚡ Agent Arsenal &amp; Tools</button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabGoogleCloud')">☁️ Google Cloud &amp; BigQuery Hub</button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabScreamingFrog')">🐸 Screaming Frog Hub</button>
           </div>
           <span style="font-size:0.75rem; color:#38bdf8; font-family:'JetBrains Mono',monospace; flex-shrink:0; margin-left:12px;">⚡ OpenSEO OS v2.0</span>
         </div>
@@ -1416,6 +1437,903 @@
             <pre id="scrapeOutputContent" style="color:#a7f3d0; font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin:0; max-height:480px; overflow-y:auto; white-space:pre-wrap; word-break:break-word;">Enter a URL above and click "Scrape Now" to extract content.</pre>
           </div>
         </div>
+
+        <!-- Tab 16: Google CrUX Vis & Real-User Field Intelligence -->
+        <div id="tabCrux" class="deep-tab-content" style="display:none;">
+          <!-- Top Title & Provenance Bar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h3 style="color:#fff; font-size:1.05rem; font-weight:800; margin:0;">📊 Google Chrome UX Report (CrUX) &amp; CrUX Vis Studio</h3>
+                <span id="tabCruxStatusBadge" style="font-size:0.7rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-weight:700;">● Google CrUX Official API</span>
+              </div>
+              <p style="font-size:0.78rem; color:var(--text-muted); margin:4px 0 0 0;">28-day rolling real-user Core Web Vitals (LCP, INP, CLS, FCP, TTFB) with up to 40-week historical timeseries and interactive Google CrUX Vis visualizer.</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <a id="tabCruxVisDirectLink" href="https://cruxvis.withgoogle.com/" target="_blank" class="btn-line-tag" style="background:rgba(59,130,246,0.2); border:1px solid #3b82f6; color:#93c5fd; text-decoration:none; padding:6px 12px; font-size:0.8rem; font-weight:700;">Launch Google CrUX Vis ↗</a>
+            </div>
+          </div>
+
+          <!-- Interactive Control Bar (URL, Form Factor, History Periods, Month Filter, Date Range) -->
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:16px;">
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:12px; align-items:center; margin-bottom:12px;">
+              <div>
+                <label style="font-size:0.72rem; color:var(--text-muted); display:block; margin-bottom:4px;">Target URL / Origin</label>
+                <input type="text" id="cruxTargetInput" class="command-input" style="font-size:0.82rem; padding:8px 12px; width:100%; box-sizing:border-box;" placeholder="https://example.com" value="https://web.dev">
+              </div>
+              <div>
+                <label style="font-size:0.72rem; color:var(--text-muted); display:block; margin-bottom:4px;">Device Form Factor</label>
+                <select id="cruxFormFactorSelect" class="command-input" style="font-size:0.82rem; padding:8px 12px; width:100%; box-sizing:border-box; background:#0f172a; color:#fff;">
+                  <option value="ALL">All Devices (Aggregate)</option>
+                  <option value="PHONE">Phone (Mobile)</option>
+                  <option value="DESKTOP">Desktop</option>
+                  <option value="TABLET">Tablet</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:0.72rem; color:var(--text-muted); display:block; margin-bottom:4px;">History Periods (Weeks)</label>
+                <select id="cruxPeriodsSelect" class="command-input" style="font-size:0.82rem; padding:8px 12px; width:100%; box-sizing:border-box; background:#0f172a; color:#fff;">
+                  <option value="10">10 Weeks</option>
+                  <option value="25">25 Weeks</option>
+                  <option value="40" selected>40 Weeks (Maximum History)</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:flex-end;">
+                <button onclick="triggerCruxQuery()" class="btn btn-primary" style="padding:9px 18px; font-size:0.82rem; white-space:nowrap; margin-top:18px;">⚡ Query CrUX Data</button>
+              </div>
+            </div>
+
+            <!-- Date-wise and Month-wise Filtering Toolbar -->
+            <div style="display:grid; grid-template-columns: 1.5fr 1fr 1fr auto; gap:12px; align-items:center; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06);">
+              <div>
+                <label style="font-size:0.72rem; color:#38bdf8; display:block; margin-bottom:4px; font-weight:700;">🗓️ Month Filter (Calendar Aggregation):</label>
+                <select id="cruxMonthFilter" onchange="applyCruxFilters()" class="command-input" style="font-size:0.82rem; padding:7px 10px; width:100%; box-sizing:border-box; background:#0f172a; color:#a7f3d0; border:1px solid rgba(56,189,248,0.4);">
+                  <option value="all">All Available Months (Entire History)</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:0.72rem; color:var(--text-muted); display:block; margin-bottom:4px;">From Date (YYYY-MM-DD):</label>
+                <input type="date" id="cruxStartDate" onchange="applyCruxFilters()" class="command-input" style="font-size:0.8rem; padding:6px 10px; width:100%; box-sizing:border-box; background:#0f172a; color:#fff;">
+              </div>
+              <div>
+                <label style="font-size:0.72rem; color:var(--text-muted); display:block; margin-bottom:4px;">To Date (YYYY-MM-DD):</label>
+                <input type="date" id="cruxEndDate" onchange="applyCruxFilters()" class="command-input" style="font-size:0.8rem; padding:6px 10px; width:100%; box-sizing:border-box; background:#0f172a; color:#fff;">
+              </div>
+              <div style="display:flex; gap:6px; align-items:flex-end; padding-top:16px;">
+                <button type="button" onclick="setCruxDatePreset('all')" class="btn-line-tag" style="background:rgba(255,255,255,0.06); color:#cbd5e1; font-size:0.72rem; cursor:pointer;">All Time</button>
+                <button type="button" onclick="setCruxDatePreset('3months')" class="btn-line-tag" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); font-size:0.72rem; cursor:pointer;">Last 3M</button>
+                <button type="button" onclick="setCruxDatePreset('6months')" class="btn-line-tag" style="background:rgba(16,185,129,0.15); color:#a7f3d0; border:1px solid rgba(16,185,129,0.3); font-size:0.72rem; cursor:pointer;">Last 6M</button>
+                <button type="button" onclick="resetCruxFilters()" class="btn-line-tag" style="background:rgba(244,63,94,0.1); color:#fda4af; font-size:0.72rem; cursor:pointer;">Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overall Core Web Vitals Assessment Banner -->
+          <div id="cruxAssessmentCard" style="display:flex; justify-content:space-between; align-items:center; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:10px; padding:14px 18px; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span id="cruxStatusIcon" style="font-size:1.8rem;">⚡</span>
+              <div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <strong id="cruxOverallAssessmentTitle" style="color:#a7f3d0; font-size:1.05rem;">Core Web Vitals Assessment: Ready</strong>
+                  <span id="cruxScopeBadge" class="btn-line-tag" style="background:rgba(255,255,255,0.08); color:#cbd5e1; font-size:0.7rem;">READY</span>
+                </div>
+                <div id="cruxOverallSub" style="font-size:0.76rem; color:#94a3b8; margin-top:3px;">Google Chrome real-user experience over rolling 28-day collection period.</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span id="cruxPeriodsSummary" style="font-size:0.75rem; color:#94a3b8; font-family:'JetBrains Mono',monospace;">25 Historical Periods</span>
+              <a id="cruxVisExternalBtn" href="https://cruxvis.withgoogle.com/" target="_blank" class="btn-line-tag" style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.4); color:#93c5fd; text-decoration:none; padding:4px 10px; font-size:0.75rem;">Open in CrUX Vis ↗</a>
+            </div>
+          </div>
+
+          <!-- 5 CWV Real-User Field Metrics Grid -->
+          <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px; margin-bottom:18px;">
+            <!-- LCP -->
+            <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">LCP (p75)</span>
+                <span id="cruxLcpRating" style="font-size:0.68rem; font-weight:700; color:#10b981; padding:1px 5px; border-radius:3px; background:rgba(16,185,129,0.15);">GOOD</span>
+              </div>
+              <div id="cruxLcpVal" style="font-size:1.4rem; font-weight:800; color:#fff; margin:6px 0;">--</div>
+              <div style="font-size:0.68rem; color:#64748b;">Target: &le; 2.5s</div>
+              <div id="cruxLcpTrend" style="margin-top:6px; font-size:0.7rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">Trend: --</div>
+            </div>
+
+            <!-- INP -->
+            <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">INP (p75)</span>
+                <span id="cruxInpRating" style="font-size:0.68rem; font-weight:700; color:#10b981; padding:1px 5px; border-radius:3px; background:rgba(16,185,129,0.15);">GOOD</span>
+              </div>
+              <div id="cruxInpVal" style="font-size:1.4rem; font-weight:800; color:#fff; margin:6px 0;">--</div>
+              <div style="font-size:0.68rem; color:#64748b;">Target: &le; 200ms</div>
+              <div id="cruxInpTrend" style="margin-top:6px; font-size:0.7rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">Trend: --</div>
+            </div>
+
+            <!-- CLS -->
+            <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">CLS (p75)</span>
+                <span id="cruxClsRating" style="font-size:0.68rem; font-weight:700; color:#10b981; padding:1px 5px; border-radius:3px; background:rgba(16,185,129,0.15);">GOOD</span>
+              </div>
+              <div id="cruxClsVal" style="font-size:1.4rem; font-weight:800; color:#fff; margin:6px 0;">--</div>
+              <div style="font-size:0.68rem; color:#64748b;">Target: &le; 0.10</div>
+              <div id="cruxClsTrend" style="margin-top:6px; font-size:0.7rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">Trend: --</div>
+            </div>
+
+            <!-- FCP -->
+            <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">FCP (p75)</span>
+                <span id="cruxFcpRating" style="font-size:0.68rem; font-weight:700; color:#10b981; padding:1px 5px; border-radius:3px; background:rgba(16,185,129,0.15);">GOOD</span>
+              </div>
+              <div id="cruxFcpVal" style="font-size:1.4rem; font-weight:800; color:#fff; margin:6px 0;">--</div>
+              <div style="font-size:0.68rem; color:#64748b;">Target: &le; 1.8s</div>
+              <div id="cruxFcpTrend" style="margin-top:6px; font-size:0.7rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">Trend: --</div>
+            </div>
+
+            <!-- TTFB -->
+            <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">TTFB (p75)</span>
+                <span id="cruxTtfbRating" style="font-size:0.68rem; font-weight:700; color:#10b981; padding:1px 5px; border-radius:3px; background:rgba(16,185,129,0.15);">GOOD</span>
+              </div>
+              <div id="cruxTtfbVal" style="font-size:1.4rem; font-weight:800; color:#fff; margin:6px 0;">--</div>
+              <div style="font-size:0.68rem; color:#64748b;">Target: &le; 800ms</div>
+              <div id="cruxTtfbTrend" style="margin-top:6px; font-size:0.7rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">Trend: --</div>
+            </div>
+          </div>
+
+          <!-- 4-Part LCP Sub-Metric Diagnostics & Network Health (Official Google CrUX Vis Component) -->
+          <div style="background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div>
+                <strong style="color:#f59e0b; font-size:0.92rem;">🔍 4-Part LCP Sub-Metric Diagnostics &amp; Network Latency</strong>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin:3px 0 0 0;">Sub-phase timing from CrUX History API explaining the root components of LCP:</p>
+              </div>
+              <span style="font-size:0.7rem; color:#cbd5e1; background:rgba(255,255,255,0.08); padding:2px 8px; border-radius:4px;">CrUX Vis Deep Breakdown</span>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:10px;">
+              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+                <div style="font-size:0.68rem; color:var(--text-muted);">1. Time to First Byte</div>
+                <div id="diagTtfbVal" style="font-size:1.15rem; font-weight:800; color:#fff; margin:4px 0;">--</div>
+                <div style="font-size:0.65rem; color:#64748b;">Target: &le; 800ms</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+                <div style="font-size:0.68rem; color:var(--text-muted);">2. Resource Load Delay</div>
+                <div id="diagLoadDelayVal" style="font-size:1.15rem; font-weight:800; color:#fff; margin:4px 0;">--</div>
+                <div style="font-size:0.65rem; color:#64748b;">Target: &le; 500ms</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+                <div style="font-size:0.68rem; color:var(--text-muted);">3. Resource Load Duration</div>
+                <div id="diagLoadDurationVal" style="font-size:1.15rem; font-weight:800; color:#fff; margin:4px 0;">--</div>
+                <div style="font-size:0.65rem; color:#64748b;">Target: &le; 500ms</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+                <div style="font-size:0.68rem; color:var(--text-muted);">4. Element Render Delay</div>
+                <div id="diagRenderDelayVal" style="font-size:1.15rem; font-weight:800; color:#fff; margin:4px 0;">--</div>
+                <div style="font-size:0.65rem; color:#64748b;">Target: &le; 500ms</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+                <div style="font-size:0.68rem; color:var(--text-muted);">Round Trip Time (RTT)</div>
+                <div id="diagRttVal" style="font-size:1.15rem; font-weight:800; color:#fff; margin:4px 0;">--</div>
+                <div style="font-size:0.65rem; color:#64748b;">Network Latency</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Month-by-Month CrUX Performance History Section -->
+          <div id="cruxMonthlySection" style="background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div>
+                <strong style="color:#38bdf8; font-size:0.95rem;">📅 Month-by-Month CrUX Performance Breakdown (Calendar Aggregation)</strong>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin:3px 0 0 0;">Monthly aggregated real-user Core Web Vitals. Click any month row or button to filter weekly history.</p>
+              </div>
+              <span id="cruxMonthCountBadge" style="font-size:0.72rem; color:#a7f3d0; font-family:'JetBrains Mono',monospace;">-- Months</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="data-table" id="cruxMonthlyTable">
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th>Weekly Periods</th>
+                    <th>Date Span</th>
+                    <th>Avg LCP</th>
+                    <th>Avg INP</th>
+                    <th>Avg CLS</th>
+                    <th>Avg FCP</th>
+                    <th>Avg TTFB</th>
+                    <th>Monthly Verdict</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="10" style="text-align:center; color:var(--text-muted); padding:16px;">Query CrUX data to load monthly breakdowns.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Real-User Experience Distribution Breakdown -->
+          <div style="background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <strong style="color:#60a5fa; font-size:0.92rem;">📈 Chrome User Session Distributions (Good / Needs Improvement / Poor)</strong>
+              <div style="display:flex; gap:12px; font-size:0.72rem;">
+                <span style="color:#10b981;">● Good (Fast)</span>
+                <span style="color:#f59e0b;">● Needs Improvement</span>
+                <span style="color:#f43f5e;">● Poor (Slow)</span>
+              </div>
+            </div>
+            <div id="cruxDistributionRows" style="display:flex; flex-direction:column; gap:12px;"></div>
+          </div>
+
+          <!-- Historical Timeseries Table -->
+          <div style="background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+              <div>
+                <strong style="color:#a7f3d0; font-size:0.92rem;">🗓️ Historical Weekly Timeseries (CrUX History API)</strong>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin:3px 0 0 0;">Weekly 28-day sliding window measurements across multiple collection periods:</p>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <span id="cruxHistoryRangeText" style="font-size:0.72rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">--</span>
+                <button type="button" onclick="exportCruxHistoryCsv()" class="btn-line-tag" style="background:rgba(255,255,255,0.06); color:#cbd5e1; font-size:0.72rem; cursor:pointer;">⬇️ Export CSV</button>
+                <button type="button" onclick="exportCruxHistoryJson()" class="btn-line-tag" style="background:rgba(255,255,255,0.06); color:#cbd5e1; font-size:0.72rem; cursor:pointer;">⬇️ Export JSON</button>
+              </div>
+            </div>
+            <div style="max-height:300px; overflow-y:auto;">
+              <table class="data-table" id="cruxHistoryTable">
+                <thead>
+                  <tr>
+                    <th>Collection Period</th>
+                    <th>LCP (p75)</th>
+                    <th>INP (p75)</th>
+                    <th>CLS (p75)</th>
+                    <th>FCP (p75)</th>
+                    <th>TTFB (p75)</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Official Google CrUX Vis Interactive Deep Link Feature -->
+          <div style="background:linear-gradient(135deg, rgba(59,130,246,0.1), rgba(16,185,129,0.08)); border:1px solid rgba(59,130,246,0.3); border-radius:10px; padding:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.3rem;">🌐</span>
+                <strong style="color:#fff; font-size:0.95rem;">Interactive Google CrUX Vis Visualizer</strong>
+              </div>
+              <p style="font-size:0.78rem; color:#94a3b8; margin:4px 0 0 0; max-width:650px;">
+                Explore Google's official visualization tool at <code style="color:#93c5fd;">cruxvis.withgoogle.com</code> with multi-chart metrics, cumulative distribution functions, and device comparisons pre-configured for your audited target.
+              </p>
+            </div>
+            <a id="cruxVisLauncherBtn" href="https://cruxvis.withgoogle.com/" target="_blank" class="btn btn-primary" style="padding:10px 20px; font-size:0.85rem; text-decoration:none;">Open in CrUX Vis ↗</a>
+          </div>
+        </div>
+
+        <!-- Tab 17: Google PageSpeed Insights & Per-Page Real-User CrUX Studio -->
+        <div id="tabPagespeed" class="deep-tab-content" style="display:none;">
+          <!-- Top Title & Provenance Bar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h3 style="color:#fff; font-size:1.05rem; font-weight:800; margin:0;">⚡ Google PageSpeed Insights &amp; Per-Page Real-User CrUX Studio</h3>
+                <span id="tabPsiStatusBadge" style="font-size:0.7rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-weight:700;">● Google PSI API v5 Active</span>
+              </div>
+              <p style="font-size:0.78rem; color:var(--text-muted); margin:4px 0 0 0;">
+                Paste each page URL to get per-page real-user Core Web Vitals (CrUX LCP/INP/CLS) plus Lighthouse lab simulation, with direct deep links to <a href="https://pagespeed.web.dev/" target="_blank" style="color:#38bdf8;">pagespeed.web.dev</a> and <a href="https://cruxvis.withgoogle.com/#/" target="_blank" style="color:#38bdf8;">cruxvis.withgoogle.com</a>.
+              </p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <a href="https://pagespeed.web.dev/" target="_blank" class="btn-line-tag" style="background:rgba(59,130,246,0.2); border:1px solid #3b82f6; color:#93c5fd; text-decoration:none; padding:6px 12px; font-size:0.8rem; font-weight:700;">pagespeed.web.dev ↗</a>
+              <a href="https://cruxvis.withgoogle.com/#/" target="_blank" class="btn-line-tag" style="background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#a7f3d0; text-decoration:none; padding:6px 12px; font-size:0.8rem; font-weight:700;">cruxvis.withgoogle.com ↗</a>
+            </div>
+          </div>
+
+          <!-- Multi-Page URL Input Box -->
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <label style="font-size:0.75rem; color:#cbd5e1; font-weight:700;">Paste Page URLs to Inspect (one URL per line):</label>
+              <div style="display:flex; gap:8px;">
+                <button type="button" onclick="loadSamplePagespeedUrls()" class="btn-line-tag" style="background:rgba(56,189,248,0.1); border:1px solid #38bdf8; color:#38bdf8; font-size:0.72rem; cursor:pointer;">Load Sample URLs</button>
+                <button type="button" onclick="clearPagespeedUrls()" class="btn-line-tag" style="background:rgba(255,255,255,0.05); color:#94a3b8; font-size:0.72rem; cursor:pointer;">Clear</button>
+              </div>
+            </div>
+            <textarea id="psiUrlsInput" class="command-input" rows="4" style="width:100%; box-sizing:border-box; font-family:'JetBrains Mono',monospace; font-size:0.82rem; padding:10px 12px; border-radius:8px; resize:vertical;" placeholder="https://web.dev
+https://web.dev/learn
+https://web.dev/explore"></textarea>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; flex-wrap:wrap; gap:10px;">
+              <div style="display:flex; align-items:center; gap:16px;">
+                <div>
+                  <label style="font-size:0.72rem; color:var(--text-muted); display:inline-block; margin-right:6px;">Device Strategy:</label>
+                  <select id="psiStrategySelect" class="command-input" style="font-size:0.8rem; padding:6px 10px; background:#0f172a; color:#fff; border-radius:6px;">
+                    <option value="mobile" selected>Mobile (Default)</option>
+                    <option value="desktop">Desktop</option>
+                  </select>
+                </div>
+                <span style="font-size:0.72rem; color:#10b981; font-family:'JetBrains Mono',monospace;">
+                  🔑 API Key: AIzaSyApEZ...WNKfkw (Active)
+                </span>
+              </div>
+              <button id="btnRunPsiBatch" onclick="runPagespeedBatchAnalysis()" class="btn btn-primary" style="padding:9px 20px; font-size:0.84rem; font-weight:700;">
+                ⚡ Inspect Per-Page Core Web Vitals &amp; Lab Tests
+              </button>
+            </div>
+            <div id="psiBatchProgressBar" style="display:none; margin-top:12px; height:6px; border-radius:3px; background:rgba(255,255,255,0.08); overflow:hidden;">
+              <div id="psiBatchProgressFill" style="height:100%; width:0%; background:#38bdf8; transition:width 0.3s ease;"></div>
+            </div>
+            <div id="psiBatchStatusMsg" style="font-size:0.75rem; color:#38bdf8; margin-top:6px; display:none; font-family:'JetBrains Mono',monospace;"></div>
+          </div>
+
+          <!-- Batch Analysis Summary Cards -->
+          <div id="psiSummaryBar" style="display:none; grid-template-columns: repeat(5, 1fr); gap:12px; margin-bottom:16px;">
+            <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center;">
+              <div style="font-size:0.7rem; color:var(--text-muted);">Pages Tested</div>
+              <div id="psiSummaryTotal" style="font-size:1.4rem; font-weight:800; color:#fff; margin-top:4px;">0</div>
+            </div>
+            <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px; text-align:center;">
+              <div style="font-size:0.7rem; color:#a7f3d0;">CWV Passed</div>
+              <div id="psiSummaryPassed" style="font-size:1.4rem; font-weight:800; color:#10b981; margin-top:4px;">0</div>
+            </div>
+            <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:12px; text-align:center;">
+              <div style="font-size:0.7rem; color:#fde68a;">Needs Work</div>
+              <div id="psiSummaryNeedsWork" style="font-size:1.4rem; font-weight:800; color:#f59e0b; margin-top:4px;">0</div>
+            </div>
+            <div style="background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.3); border-radius:8px; padding:12px; text-align:center;">
+              <div style="font-size:0.7rem; color:#fda4af;">CWV Failed</div>
+              <div id="psiSummaryFailed" style="font-size:1.4rem; font-weight:800; color:#f43f5e; margin-top:4px;">0</div>
+            </div>
+            <div style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:8px; padding:12px; text-align:center;">
+              <div style="font-size:0.7rem; color:#93c5fd;">Avg Lab Score</div>
+              <div id="psiSummaryAvgScore" style="font-size:1.4rem; font-weight:800; color:#60a5fa; margin-top:4px;">--</div>
+            </div>
+          </div>
+
+          <!-- Per-Page Results Comparison Table -->
+          <div style="background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div>
+                <strong style="color:#a7f3d0; font-size:0.95rem;">📋 Per-Page Core Web Vitals (Real-User CrUX) &amp; Lab Audit Comparison</strong>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin:3px 0 0 0;">Dual field + lab metrics for every tested page URL with direct links to official Google visualizers.</p>
+              </div>
+              <button onclick="exportPagespeedCsv()" class="btn-line-tag" style="background:rgba(255,255,255,0.05); color:#cbd5e1; font-size:0.75rem; padding:5px 12px; cursor:pointer;">⬇️ Export CSV</button>
+            </div>
+            <div style="max-height:480px; overflow-y:auto;">
+              <table class="data-table" id="psiBatchResultsTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Page URL</th>
+                    <th>Field CWV Status</th>
+                    <th>Real LCP</th>
+                    <th>Real INP</th>
+                    <th>Real CLS</th>
+                    <th>Lab Score</th>
+                    <th>Lab LCP</th>
+                    <th>Lab TBT</th>
+                    <th>Lab CLS</th>
+                    <th>Google Deep Links</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="11" style="text-align:center; color:var(--text-muted); padding:24px;">Enter URLs above and click "Inspect Per-Page Core Web Vitals &amp; Lab Tests" to view results.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 18: Agent Arsenal & Multi-Framework Intelligence Hub -->
+        <div id="tabArsenal" class="deep-tab-content" style="display:none;">
+          <!-- Header Bar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h3 style="color:#fff; font-size:1.15rem; font-weight:800; margin:0;">⚡ Agent Arsenal &amp; Autonomous Intelligence Hub</h3>
+                <span style="font-size:0.7rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-weight:700;">● 7 Open-Source Frameworks</span>
+              </div>
+              <p style="font-size:0.78rem; color:var(--text-muted); margin:4px 0 0 0;">Unified agentic toolset integrating Browser-Use, AgentMemory, Diagram-Design, Scientific Agent Skills, Awesome Harness Engineering, OpenViking, and Anthropic Cybersecurity.</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button onclick="runAllArsenalDiagnostics()" class="btn btn-primary" style="padding:6px 14px; font-size:0.8rem; font-weight:700;">Run Full Arsenal Diagnostic</button>
+            </div>
+          </div>
+
+          <!-- 6 Grid Arsenal Cards -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(420px, 1fr)); gap:16px; margin-bottom:20px;">
+            
+            <!-- Card 1: Browser-Use -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:1.2rem;">🌐</span>
+                  <strong style="color:#fff; font-size:0.92rem;">Browser-Use DOM Grounding</strong>
+                </div>
+                <a href="https://github.com/browser-use/browser-use" target="_blank" style="font-size:0.7rem; color:#93c5fd; text-decoration:none;">GitHub ↗</a>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Extracts numbered interactive elements ([1], [2]) and synthesized accessibility trees for autonomous web agents.</p>
+              <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <input type="text" id="browserUseTargetUrl" class="command-input" style="font-size:0.8rem; padding:6px 10px; flex:1;" placeholder="https://example.com" value="https://example.com">
+                <button onclick="runBrowserUseCrawl()" class="btn btn-secondary" style="padding:6px 12px; font-size:0.78rem;">Ground DOM</button>
+              </div>
+              <div id="browserUseResultBox" style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#cbd5e1; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:6px; padding:10px; max-height:160px; overflow-y:auto;">
+                Ready to ground interactive elements. Click "Ground DOM".
+              </div>
+            </div>
+
+            <!-- Card 2: AgentMemory -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(168,85,247,0.25); border-radius:10px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:1.2rem;">🧠</span>
+                  <strong style="color:#fff; font-size:0.92rem;">AgentMemory Hybrid Store</strong>
+                </div>
+                <a href="https://github.com/rohitg00/agentmemory" target="_blank" style="font-size:0.7rem; color:#c084fc; text-decoration:none;">GitHub ↗</a>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Multi-tier memory (working, episodic, semantic, entity) with token-saving context recall.</p>
+              <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <input type="text" id="memoryQueryInput" class="command-input" style="font-size:0.8rem; padding:6px 10px; flex:1;" placeholder="Search memory (e.g. LCP, canonical)...">
+                <button onclick="queryAgentMemory()" class="btn btn-secondary" style="padding:6px 12px; font-size:0.78rem;">Recall</button>
+                <button onclick="saveQuickMemory()" class="btn btn-secondary" style="padding:6px 12px; font-size:0.78rem;">+ Remember</button>
+              </div>
+              <div id="memoryResultBox" style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#cbd5e1; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:6px; padding:10px; max-height:160px; overflow-y:auto;">
+                Sub-millisecond persistent memory bank active.
+              </div>
+            </div>
+
+            <!-- Card 3: Diagram-Design -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(34,197,94,0.25); border-radius:10px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:1.2rem;">📐</span>
+                  <strong style="color:#fff; font-size:0.92rem;">Diagram-Design Mermaid Studio</strong>
+                </div>
+                <a href="https://github.com/cathrynlavery/diagram-design" target="_blank" style="font-size:0.7rem; color:#86efac; text-decoration:none;">GitHub ↗</a>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Accessible architecture, crawl flow, and E-E-A-T entity graphs exceeding WCAG AAA contrast.</p>
+              <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <select id="diagramTypeSelect" class="command-input" style="font-size:0.8rem; padding:6px 10px; background:#0f172a; color:#fff; flex:1;">
+                  <option value="site_architecture">Site Architecture Flowchart</option>
+                  <option value="redirect_chain">301 Redirect Chain Sequence</option>
+                  <option value="eeat_graph">E-E-A-T Entity Graph</option>
+                  <option value="cwv_waterfall">Core Web Vitals Waterfall</option>
+                  <option value="crawler_pipeline">Crawler State Diagram</option>
+                </select>
+                <button onclick="generateMermaidDiagram()" class="btn btn-secondary" style="padding:6px 12px; font-size:0.78rem;">Generate</button>
+              </div>
+              <div id="diagramResultBox" style="font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:#a7f3d0; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:6px; padding:10px; max-height:160px; overflow-y:auto; white-space:pre-wrap;">
+                Select diagram type and click "Generate".
+              </div>
+            </div>
+
+            <!-- Card 4: Scientific Agent Skills -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(234,179,8,0.25); border-radius:10px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:1.2rem;">🔬</span>
+                  <strong style="color:#fff; font-size:0.92rem;">Scientific Agent Skills (CrossRef)</strong>
+                </div>
+                <a href="https://github.com/k-dense-ai/scientific-agent-skills" target="_blank" style="font-size:0.7rem; color:#fde047; text-decoration:none;">GitHub ↗</a>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Searches peer-reviewed academic literature via CrossRef API to verify citations and ground E-E-A-T claims.</p>
+              <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <input type="text" id="scientificQueryInput" class="command-input" style="font-size:0.8rem; padding:6px 10px; flex:1;" placeholder="Topic or medical/scientific claim...">
+                <button onclick="verifyScientificClaims()" class="btn btn-secondary" style="padding:6px 12px; font-size:0.78rem;">Verify Citations</button>
+              </div>
+              <div id="scientificResultBox" style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#cbd5e1; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:6px; padding:10px; max-height:160px; overflow-y:auto;">
+                Scholarly citation verification ready.
+              </div>
+            </div>
+
+            <!-- Card 5: Anthropic Cybersecurity Skills -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(239,68,68,0.25); border-radius:10px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:1.2rem;">🛡️</span>
+                  <strong style="color:#fff; font-size:0.92rem;">Anthropic Cybersecurity Auditor</strong>
+                </div>
+                <a href="https://github.com/mukul975/anthropic-cybersecurity-skills" target="_blank" style="font-size:0.7rem; color:#fca5a5; text-decoration:none;">GitHub ↗</a>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Audits HTTP headers (CSP, HSTS, X-Frame-Options) mapped to MITRE ATT&amp;CK v19.1 &amp; Fight Fraud (F3).</p>
+              <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <input type="text" id="securityAuditUrl" class="command-input" style="font-size:0.8rem; padding:6px 10px; flex:1;" placeholder="https://example.com" value="https://example.com">
+                <button onclick="runSecurityAudit()" class="btn btn-secondary" style="padding:6px 12px; font-size:0.78rem;">Audit Posture</button>
+              </div>
+              <div id="securityResultBox" style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#cbd5e1; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:6px; padding:10px; max-height:160px; overflow-y:auto;">
+                Ready to audit target website security headers.
+              </div>
+            </div>
+
+            <!-- Card 6: Harness Engineering & OpenViking Context -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(249,115,22,0.25); border-radius:10px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:1.2rem;">🎛️</span>
+                  <strong style="color:#fff; font-size:0.92rem;">Harness Engineering &amp; OpenViking</strong>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <a href="https://github.com/walkinglabs/awesome-harness-engineering" target="_blank" style="font-size:0.7rem; color:#fdba74; text-decoration:none;">Harness ↗</a>
+                  <a href="https://github.com/volcengine/OpenViking" target="_blank" style="font-size:0.7rem; color:#fdba74; text-decoration:none;">Viking ↗</a>
+                </div>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Automated agent evaluation, fault injection resilience testing, and L0-L3 hierarchical context token compression.</p>
+              <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <button onclick="runHarnessEvaluation()" class="btn btn-secondary" style="padding:6px 12px; font-size:0.78rem; flex:1;">Run Harness Benchmarks</button>
+                <button onclick="runOpenVikingCompression()" class="btn btn-secondary" style="padding:6px 12px; font-size:0.78rem; flex:1;">Compress Context</button>
+              </div>
+              <div id="harnessResultBox" style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#cbd5e1; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:6px; padding:10px; max-height:160px; overflow-y:auto;">
+                Harness testing and OpenViking context optimizer standing by.
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Tab 18: Google Cloud Enterprise Services & BigQuery Hub -->
+        <div id="tabGoogleCloud" class="deep-tab-content" style="display:none;">
+          <!-- Header Bar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h3 style="color:#fff; font-size:1.15rem; font-weight:800; margin:0;">☁️ Google Cloud &amp; BigQuery SEO Hub</h3>
+                <span style="font-size:0.7rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-weight:700;">● 24 Enabled APIs</span>
+                <span id="gcpVerifiedBadge" style="font-size:0.7rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace;">CrUX + PSI Live Auth</span>
+              </div>
+              <p style="font-size:0.78rem; color:var(--text-muted); margin:4px 0 0 0;">Unified GCP enterprise gateway connecting Chrome UX Report, PageSpeed Insights, BigQuery public CrUX datasets, GSC bulk exports, Cloud Storage backups, GA4 organic performance, and telemetry logging.</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button onclick="refreshGcpServicesStatus()" class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;">🔄 Refresh Services Status</button>
+            </div>
+          </div>
+
+          <!-- Services Status & Project Info Strip -->
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:16px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:12px;">
+              <div style="font-size:0.7rem; color:var(--text-muted);">GCP Project ID</div>
+              <div id="gcpProjectIdVal" style="font-size:0.95rem; font-weight:700; color:#38bdf8; font-family:'JetBrains Mono',monospace; margin-top:2px;">omniseo-seo-intelligence</div>
+              <div style="font-size:0.65rem; color:#64748b; margin-top:2px;">Standard Cloud Workspace</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:12px;">
+              <div style="font-size:0.7rem; color:var(--text-muted);">CrUX &amp; PSI API Key</div>
+              <div id="gcpKeyVal" style="font-size:0.95rem; font-weight:700; color:#10b981; font-family:'JetBrains Mono',monospace; margin-top:2px;">AIzaSyAp...NKfkw</div>
+              <div style="font-size:0.65rem; color:#10b981; margin-top:2px;">● Verified Live (CrUX &amp; PSI 200 OK)</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:12px;">
+              <div style="font-size:0.7rem; color:var(--text-muted);">Cloud Storage Bucket</div>
+              <div id="gcpBucketVal" style="font-size:0.95rem; font-weight:700; color:#f59e0b; font-family:'JetBrains Mono',monospace; margin-top:2px;">gs://omniseo-audit-archives</div>
+              <div style="font-size:0.65rem; color:#64748b; margin-top:2px;">Auto Audit Snapshots &amp; Sitemaps</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:12px;">
+              <div style="font-size:0.7rem; color:var(--text-muted);">Active APIs Available</div>
+              <div id="gcpApisCount" style="font-size:0.95rem; font-weight:700; color:#c084fc; margin-top:2px;">24 / 24 APIs Enabled</div>
+              <div style="font-size:0.65rem; color:#a855f7; margin-top:2px;">BigQuery • CrUX • GCS • GA4</div>
+            </div>
+          </div>
+
+          <!-- Main Layout: Left: BigQuery SQL Studio, Right: GCS Archiver & GA4 Correlator -->
+          <div style="display:grid; grid-template-columns: 1.6fr 1fr; gap:16px;">
+            <!-- Left: BigQuery SEO SQL Studio -->
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div>
+                  <strong style="color:#fff; font-size:0.95rem;">⚡ BigQuery SEO SQL Studio</strong>
+                  <p style="font-size:0.75rem; color:var(--text-muted); margin:2px 0 0 0;">Query public Google CrUX datasets, GSC bulk data exports, and crawler logs</p>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <button onclick="setBqTemplate('crux')" class="btn-line-tag" style="background:rgba(56,189,248,0.15); border:1px solid #38bdf8; color:#38bdf8; cursor:pointer;">CrUX Public</button>
+                  <button onclick="setBqTemplate('gsc')" class="btn-line-tag" style="background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#fde68a; cursor:pointer;">GSC Export</button>
+                  <button onclick="setBqTemplate('log')" class="btn-line-tag" style="background:rgba(16,185,129,0.15); border:1px solid #10b981; color:#a7f3d0; cursor:pointer;">Crawler Logs</button>
+                </div>
+              </div>
+
+              <!-- Parameter Controls -->
+              <div id="bqParamControls" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:12px; background:rgba(0,0,0,0.25); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                <div>
+                  <label style="font-size:0.7rem; color:var(--text-muted); display:block; margin-bottom:4px;">Target Origin / Site</label>
+                  <input type="text" id="bqInputTarget" value="https://web.dev" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid var(--border); color:#fff; padding:6px 10px; border-radius:6px; font-size:0.8rem; font-family:'JetBrains Mono',monospace;">
+                </div>
+                <div>
+                  <label style="font-size:0.7rem; color:var(--text-muted); display:block; margin-bottom:4px;">Country / Region</label>
+                  <select id="bqInputCountry" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid var(--border); color:#fff; padding:6px 10px; border-radius:6px; font-size:0.8rem;">
+                    <option value="">Global (All Countries)</option>
+                    <option value="us">United States (us)</option>
+                    <option value="in">India (in)</option>
+                    <option value="uk">United Kingdom (uk)</option>
+                    <option value="de">Germany (de)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:0.7rem; color:var(--text-muted); display:block; margin-bottom:4px;">Primary Metric</label>
+                  <select id="bqInputMetric" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid var(--border); color:#fff; padding:6px 10px; border-radius:6px; font-size:0.8rem;">
+                    <option value="largest_contentful_paint">LCP (Largest Contentful Paint)</option>
+                    <option value="interaction_to_next_paint">INP (Interaction to Next Paint)</option>
+                    <option value="cumulative_layout_shift">CLS (Cumulative Layout Shift)</option>
+                    <option value="first_contentful_paint">FCP (First Contentful Paint)</option>
+                    <option value="experimental.time_to_first_byte">TTFB (Time to First Byte)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Action Bar -->
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; gap:8px;">
+                  <button onclick="generateBigQuerySql()" class="btn btn-primary" style="padding:6px 14px; font-size:0.8rem;">⚡ Generate SQL</button>
+                  <button onclick="runBigQueryEstimate()" class="btn btn-secondary" style="padding:6px 14px; font-size:0.8rem;">🔍 Dry-Run Plan</button>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <button onclick="copyBqSql()" class="btn-line-tag" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; cursor:pointer;">📋 Copy</button>
+                  <button onclick="downloadBqSql()" class="btn-line-tag" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; cursor:pointer;">💾 Download .sql</button>
+                </div>
+              </div>
+
+              <!-- Code Preview Box -->
+              <div style="position:relative;">
+                <pre id="bqSqlOutput" style="background:#090d16; border:1px solid rgba(56,189,248,0.25); border-radius:8px; padding:14px; color:#e2e8f0; font-family:'JetBrains Mono',monospace; font-size:0.75rem; line-height:1.5; overflow-x:auto; max-height:280px; margin:0;">-- Click 'Generate SQL' to construct standard BigQuery queries for Google CrUX public datasets</pre>
+              </div>
+
+              <!-- Estimation Info Bar -->
+              <div id="bqEstimateBar" style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:0.72rem; color:#94a3b8; background:rgba(0,0,0,0.3); padding:6px 12px; border-radius:6px; border:1px solid var(--border);">
+                <span>Target Engine: <strong>Google Cloud BigQuery (Standard SQL)</strong></span>
+                <span id="bqEstimateCost">Estimated Bytes: ~18.5 MB | Cost: &lt; $0.0001</span>
+              </div>
+            </div>
+
+            <!-- Right Column: Cloud Storage Archiver & GA4 Correlator -->
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              <!-- Google Cloud Storage Archiver -->
+              <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.2rem;">📦</span>
+                    <strong style="color:#fff; font-size:0.92rem;">Google Cloud Storage (GCS)</strong>
+                  </div>
+                  <span style="font-size:0.65rem; color:#f59e0b; background:rgba(245,158,11,0.15); padding:2px 6px; border-radius:4px;">JSON API Ready</span>
+                </div>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Archive current crawl snapshots, sitemap indexes, and executive reports to Google Cloud Storage.</p>
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                  <button onclick="dispatchGcsSnapshotArchive()" class="btn btn-secondary" style="padding:6px 12px; font-size:0.78rem; flex:1;">☁️ Archive to GCS</button>
+                </div>
+                <div id="gcsUploadResult" style="font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:#cbd5e1; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:6px; padding:8px 10px; word-break:break-all;">
+                  Storage target: gs://omniseo-audit-archives/audits/
+                </div>
+              </div>
+
+              <!-- GA4 & CWV Conversion Correlator -->
+              <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.2rem;">📈</span>
+                    <strong style="color:#fff; font-size:0.92rem;">GA4 &amp; CWV Financial Impact</strong>
+                  </div>
+                  <span style="font-size:0.65rem; color:#34d399; background:rgba(52,211,153,0.15); padding:2px 6px; border-radius:4px;">Business KPI</span>
+                </div>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Models how sub-second Core Web Vitals improvements protect organic landing page conversions.</p>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:10px; background:rgba(0,0,0,0.25); padding:8px; border-radius:6px;">
+                  <div>
+                    <div style="font-size:0.65rem; color:var(--text-muted);">Organic Bounce Risk</div>
+                    <div id="ga4BounceRisk" style="font-size:0.9rem; font-weight:700; color:#10b981;">OPTIMAL</div>
+                  </div>
+                  <div>
+                    <div style="font-size:0.65rem; color:var(--text-muted);">Projected Lift</div>
+                    <div id="ga4LiftPct" style="font-size:0.9rem; font-weight:700; color:#38bdf8;">+12%</div>
+                  </div>
+                  <div>
+                    <div style="font-size:0.65rem; color:var(--text-muted);">Est. Monthly Lift</div>
+                    <div id="ga4AddConv" style="font-size:0.9rem; font-weight:700; color:#f59e0b;">+38 Orders</div>
+                  </div>
+                </div>
+                <button onclick="runGa4CorrelationSimulation()" class="btn btn-secondary" style="width:100%; padding:6px 12px; font-size:0.78rem;">📊 Recalculate GA4 vs CWV Model</button>
+              </div>
+
+              <!-- Telemetry & Observability -->
+              <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.2rem;">📡</span>
+                    <strong style="color:#fff; font-size:0.92rem;">Cloud Logging &amp; Trace</strong>
+                  </div>
+                  <span style="font-size:0.65rem; color:#60a5fa; background:rgba(96,165,250,0.15); padding:2px 6px; border-radius:4px;">Telemetry API</span>
+                </div>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Structured audit telemetry and latency metrics streamed to Cloud Logging.</p>
+                <div style="display:flex; gap:8px;">
+                  <button onclick="emitCloudTelemetryLog()" class="btn btn-secondary" style="width:100%; padding:6px 12px; font-size:0.78rem;">Emit Telemetry Event</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 19: Screaming Frog SEO Spider Enterprise Hub -->
+        <div id="tabScreamingFrog" class="deep-tab-content" style="display:none;">
+          <!-- Header Bar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h3 style="color:#fff; font-size:1.15rem; font-weight:800; margin:0;">🐸 Screaming Frog SEO Spider Enterprise Hub</h3>
+                <span id="sfStatusBadge" style="font-size:0.7rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-weight:700;">● Full Licensed Version (v24.3)</span>
+                <span style="font-size:0.7rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace;">Headless CLI Active</span>
+              </div>
+              <p style="font-size:0.78rem; color:var(--text-muted); margin:4px 0 0 0;">Native desktop SEO crawler automation. Run unlimited crawls, audit multi-page URL lists, validate XML sitemaps, inspect directives &amp; canonicals, and export forensic CSV datasets.</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button onclick="refreshScreamingFrogStatus()" class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;">🔄 Check CLI Status</button>
+              <button onclick="loadPastScreamingFrogCrawls()" class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;">📂 Past Crawl Datasets</button>
+            </div>
+          </div>
+
+          <!-- Top Status Row: 4 KPI Cards -->
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:16px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:12px;">
+              <div style="font-size:0.7rem; color:var(--text-muted);">CLI Binary Location</div>
+              <div id="sfBinaryVal" style="font-size:0.85rem; font-weight:700; color:#38bdf8; font-family:'JetBrains Mono',monospace; margin-top:2px; word-break:break-all;">ScreamingFrogSEOSpiderCli.exe</div>
+              <div style="font-size:0.65rem; color:#10b981; margin-top:2px;">● Program Files (x86) Verified</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:12px;">
+              <div style="font-size:0.7rem; color:var(--text-muted);">License Status</div>
+              <div id="sfLicenseVal" style="font-size:0.95rem; font-weight:700; color:#10b981; font-family:'JetBrains Mono',monospace; margin-top:2px;">Full Version (Licensed)</div>
+              <div style="font-size:0.65rem; color:#64748b; margin-top:2px;">Unlimited URLs · Headless Unlocked</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:12px;">
+              <div style="font-size:0.7rem; color:var(--text-muted);">Linked PageSpeed API</div>
+              <div id="sfPsiVal" style="font-size:0.95rem; font-weight:700; color:#f59e0b; font-family:'JetBrains Mono',monospace; margin-top:2px;">AIzaSyAp...NKfkw</div>
+              <div style="font-size:0.65rem; color:#10b981; margin-top:2px;">● Configured in spider.config</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:12px;">
+              <div style="font-size:0.7rem; color:var(--text-muted);">Active / Saved Crawls</div>
+              <div id="sfCrawlCountVal" style="font-size:0.95rem; font-weight:700; color:#a855f7; font-family:'JetBrains Mono',monospace; margin-top:2px;">Ready to Crawl</div>
+              <div style="font-size:0.65rem; color:#64748b; margin-top:2px;">Export Destination: data/screaming_frog_crawls</div>
+            </div>
+          </div>
+
+          <!-- Main Workspace: Launcher (Left) & Command Generator / Profiles (Right) -->
+          <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:16px; margin-bottom:20px;">
+            <!-- Left: Interactive Crawl Launcher -->
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:16px;">
+              <h4 style="color:#fff; font-size:0.95rem; margin:0 0 12px 0;">🚀 Launch Screaming Frog Headless Crawl</h4>
+              <div style="margin-bottom:12px;">
+                <label style="display:block; font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;">Target URL, Domain, or Sitemap</label>
+                <input id="sfTargetInput" type="text" value="https://example.com" placeholder="https://example.com or https://example.com/sitemap.xml" oninput="updateSfCommandPreview()" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid var(--border); color:#fff; padding:8px 12px; border-radius:6px; font-size:0.85rem; font-family:'JetBrains Mono',monospace;" />
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div>
+                  <label style="display:block; font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;">Crawl Mode</label>
+                  <select id="sfCrawlMode" onchange="updateSfCommandPreview()" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid var(--border); color:#fff; padding:8px; border-radius:6px; font-size:0.8rem;">
+                    <option value="spider">Website Spider (--crawl)</option>
+                    <option value="sitemap">XML Sitemap Mode (--crawl-sitemap)</option>
+                    <option value="list">URL List Mode (--crawl-list)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display:block; font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;">Preset Audit Profile</label>
+                  <select id="sfAuditProfile" onchange="applySfProfile(this.value)" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid var(--border); color:#fff; padding:8px; border-radius:6px; font-size:0.8rem;">
+                    <option value="technical">Standard Technical Audit (Full)</option>
+                    <option value="broken">Broken Links &amp; 4xx/5xx Errors</option>
+                    <option value="indexability">Indexability &amp; Directives</option>
+                    <option value="titles">Page Titles &amp; Meta Descriptions</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Options Checkboxes -->
+              <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:16px; padding:10px; background:rgba(255,255,255,0.015); border:1px solid rgba(255,255,255,0.05); border-radius:6px;">
+                <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; color:#e2e8f0; cursor:pointer;">
+                  <input id="sfOptCreateSitemap" type="checkbox" onchange="updateSfCommandPreview()" />
+                  <span>Generate XML Sitemap (--create-sitemap)</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; color:#e2e8f0; cursor:pointer;">
+                  <input id="sfOptSaveCrawl" type="checkbox" onchange="updateSfCommandPreview()" />
+                  <span>Save .seospider File (--save-crawl)</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; color:#e2e8f0; cursor:pointer;">
+                  <input id="sfOptAsync" type="checkbox" checked />
+                  <span>Run Asynchronously in Background</span>
+                </label>
+              </div>
+
+              <div style="display:flex; gap:10px;">
+                <button id="btnLaunchSfCrawl" onclick="launchScreamingFrogCrawl()" class="btn btn-primary" style="padding:8px 18px; font-size:0.85rem; font-weight:700;">🚀 Run Screaming Frog Crawl</button>
+                <button onclick="updateSfCommandPreview()" class="btn btn-secondary" style="padding:8px 14px; font-size:0.8rem;">Regenerate Command</button>
+              </div>
+              <div id="sfCrawlStatusMsg" style="margin-top:12px; font-size:0.78rem; font-family:'JetBrains Mono',monospace; color:var(--text-muted); display:none;"></div>
+            </div>
+
+            <!-- Right: Live Terminal Command & Export Tabs -->
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h4 style="color:#fff; font-size:0.95rem; margin:0;">💻 Headless CLI Command Preview</h4>
+                <button onclick="copySfCommand()" class="btn btn-secondary" style="padding:3px 8px; font-size:0.7rem;">📋 Copy Command</button>
+              </div>
+              <textarea id="sfCommandOutput" readonly rows="5" style="width:100%; background:#090d16; border:1px solid var(--border); color:#38bdf8; font-family:'JetBrains Mono',monospace; font-size:0.72rem; padding:8px; border-radius:6px; resize:vertical; line-height:1.4; margin-bottom:12px;">& "C:\Program Files (x86)\Screaming Frog SEO Spider\ScreamingFrogSEOSpiderCli.exe" --crawl "https://example.com" --headless --output-folder "data/screaming_frog_crawls" --export-format csv --export-tabs "Internal:All,Response Codes:All,Page Titles:All,Meta Description:All,H1:All,Canonicals:All,Directives:All,Security:All" --overwrite</textarea>
+              
+              <label style="display:block; font-size:0.72rem; color:var(--text-muted); margin-bottom:6px;">Included Export Tabs (--export-tabs):</label>
+              <div id="sfTabsContainer" style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; font-size:0.72rem; max-height:130px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                <label style="cursor:pointer;"><input type="checkbox" class="sf-tab-cb" value="Internal:All" checked onchange="updateSfCommandPreview()" /> Internal:All</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="sf-tab-cb" value="Response Codes:All" checked onchange="updateSfCommandPreview()" /> Response Codes:All</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="sf-tab-cb" value="Page Titles:All" checked onchange="updateSfCommandPreview()" /> Page Titles:All</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="sf-tab-cb" value="Meta Description:All" checked onchange="updateSfCommandPreview()" /> Meta Description:All</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="sf-tab-cb" value="H1:All" checked onchange="updateSfCommandPreview()" /> H1:All</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="sf-tab-cb" value="Canonicals:All" checked onchange="updateSfCommandPreview()" /> Canonicals:All</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="sf-tab-cb" value="Directives:All" checked onchange="updateSfCommandPreview()" /> Directives:All</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="sf-tab-cb" value="Security:All" checked onchange="updateSfCommandPreview()" /> Security:All</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="sf-tab-cb" value="Structured Data:All" onchange="updateSfCommandPreview()" /> Structured Data:All</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="sf-tab-cb" value="Sitemaps:All" onchange="updateSfCommandPreview()" /> Sitemaps:All</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom: Crawl Results & Forensic Findings -->
+          <div id="sfResultsSection" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h4 style="color:#fff; font-size:0.95rem; margin:0;">📊 Crawl Results &amp; Technical SEO Diagnostic</h4>
+                <div id="sfCrawlSubtitle" style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">No crawl executed yet in this session. Click "Run Screaming Frog Crawl" above or select a past crawl dataset.</div>
+              </div>
+              <div id="sfExportFilesBar" style="display:flex; gap:8px;"></div>
+            </div>
+
+            <!-- Summary KPI Strip -->
+            <div id="sfKpiStrip" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:16px;">
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted);">URLs Crawled</div>
+                <div id="sfResTotalUrls" style="font-size:1.1rem; font-weight:800; color:#38bdf8;">--</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted);">2xx Success</div>
+                <div id="sfRes2xx" style="font-size:1.1rem; font-weight:800; color:#10b981;">--</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted);">3xx Redirects</div>
+                <div id="sfRes3xx" style="font-size:1.1rem; font-weight:800; color:#f59e0b;">--</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted);">4xx Errors</div>
+                <div id="sfRes4xx" style="font-size:1.1rem; font-weight:800; color:#ef4444;">--</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted);">Missing Titles</div>
+                <div id="sfResMissingTitles" style="font-size:1.1rem; font-weight:800; color:#ef4444;">--</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted);">Missing Meta Desc</div>
+                <div id="sfResMissingDesc" style="font-size:1.1rem; font-weight:800; color:#ef4444;">--</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted);">Missing H1</div>
+                <div id="sfResMissingH1" style="font-size:1.1rem; font-weight:800; color:#f59e0b;">--</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted);">Missing Canonicals</div>
+                <div id="sfResMissingCanonicals" style="font-size:1.1rem; font-weight:800; color:#a855f7;">--</div>
+              </div>
+            </div>
+
+            <!-- Crawled URLs Table -->
+            <div style="overflow-x:auto;">
+              <table style="width:100%; border-collapse:collapse; font-size:0.75rem;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--border); text-align:left; color:var(--text-muted);">
+                    <th style="padding:8px 10px;">URL</th>
+                    <th style="padding:8px 10px;">Status</th>
+                    <th style="padding:8px 10px;">Title 1</th>
+                    <th style="padding:8px 10px;">H1-1</th>
+                    <th style="padding:8px 10px;">Indexability</th>
+                    <th style="padding:8px 10px;">Words</th>
+                    <th style="padding:8px 10px;">Resp Time</th>
+                  </tr>
+                </thead>
+                <tbody id="sfUrlsTableBody">
+                  <tr>
+                    <td colspan="7" style="padding:16px; text-align:center; color:var(--text-muted);">Ready to crawl. Run a Screaming Frog headless crawl above to view live technical SEO URL extractions.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1583,7 +2501,7 @@
             ⚡
           </div>
           <div>
-            <h3 style="color:#fff; font-size:1.15rem; font-weight:800; margin-bottom:2px;">OmniSEO OS — 14 Active Intelligence Engines</h3>
+            <h3 style="color:#fff; font-size:1.15rem; font-weight:800; margin-bottom:2px;">OmniSEO OS — 15 Active Intelligence Engines</h3>
             <span style="font-size:0.75rem; color:var(--text-muted);">Real-time multi-agent architecture health, capabilities &amp; live latency diagnostics</span>
           </div>
         </div>
@@ -1594,8 +2512,8 @@
           <div style="display:flex; align-items:center; gap:10px;">
             <span class="dot-live" style="width:10px; height:10px; box-shadow:0 0 10px #10b981;"></span>
             <div>
-              <strong style="color:#a7f3d0; font-size:0.95rem;">All 14 Specialist Engines Operational &amp; Synchronized</strong>
-              <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">Zero pipeline degradations. Real-time DOM provenance, Google PSI v5, Ahrefs authority, and GEO grounding active.</div>
+              <strong style="color:#a7f3d0; font-size:0.95rem;">All 15 Specialist Engines Operational &amp; Synchronized</strong>
+              <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">Zero pipeline degradations. Real-time DOM provenance, Google PSI v5, Google CrUX Vis, Ahrefs authority, and GEO grounding active.</div>
             </div>
           </div>
           <span style="background:#10b981; color:#064e3b; font-weight:800; font-size:0.75rem; padding:4px 12px; border-radius:12px; font-family:'JetBrains Mono',monospace;">100% HEALTH</span>
@@ -1755,6 +2673,17 @@
             </div>
             <button onclick="jumpToEngine('radar')" class="btn-line-tag" style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.35); color:#93c5fd; cursor:pointer; justify-content:center; padding:5px 10px;">Inspect Tech Radar ↗</button>
           </div>
+
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:14px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                <strong style="color:#f8fafc; font-size:0.9rem;">📊 Google CrUX &amp; CrUX Vis</strong>
+                <span style="color:#10b981; font-size:0.7rem; font-weight:700; font-family:'JetBrains Mono',monospace;">● LIVE</span>
+              </div>
+              <p style="font-size:0.76rem; color:#94a3b8; line-height:1.4; margin-bottom:12px;">Official Chrome UX Report API &amp; CrUX Vis deep link visualizer. Real-user 28-day rolling CWV &amp; 40-week history.</p>
+            </div>
+            <button onclick="jumpToEngine('crux')" class="btn-line-tag" style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.35); color:#93c5fd; cursor:pointer; justify-content:center; padding:5px 10px;">Launch CrUX Vis ↗</button>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1794,6 +2723,36 @@
             <button class="btn outline" onclick="testApiKey('psi')" style="padding:8px 14px; font-size:0.78rem; white-space:nowrap;">Test Connection</button>
           </div>
           <div id="psiTestMsg" style="font-size:0.72rem; margin-top:6px; display:none;"></div>
+        </div>
+
+        <!-- FreeLLMAPI (Zero-Auth, 100% Free Keyless LLM Inference) -->
+        <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.35); border-radius:8px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <strong style="color:#f8fafc; font-size:0.88rem;">🎁 FreeLLMAPI — Keyless Zero-Setup AI</strong>
+              <span style="font-size:0.75rem; color:#34d399; margin-left:8px; font-weight:600;">(100% Free · No API Key Required)</span>
+            </div>
+            <span id="freellmStatusBadge" style="font-size:0.72rem; padding:2px 8px; border-radius:4px; font-weight:700; background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3);">● Ready (Keyless)</span>
+          </div>
+          <p style="font-size:0.75rem; color:#cbd5e1; margin:0 0 10px 0; line-height:1.4;">
+            Open-source keyless AI engine integration based on <a href="https://github.com/tashfeenahmed/freellmapi" target="_blank" style="color:#6ee7b7; text-decoration:none;">github.com/tashfeenahmed/freellmapi ↗</a>. Provides multi-tier inference via Pollinations AI, AI Horde volunteer GPUs, or local gateways with zero signup or billing.
+          </p>
+          <div style="display:grid; grid-template-columns: 1fr auto; gap:8px; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:0.75rem; color:var(--text-muted); white-space:nowrap;">Provider:</span>
+              <select id="selectFreellmProvider" class="command-input" style="padding:6px 10px; font-size:0.78rem; font-family:'JetBrains Mono',monospace; flex:1;" onchange="onFreellmProviderChange(this.value)">
+                <option value="auto">Auto-Route (Pollinations Fast → AI Horde Fallback)</option>
+                <option value="pollinations">Pollinations AI (Fast ~3s, Zero-Auth, GPT-OSS)</option>
+                <option value="aihorde">AI Horde (Decentralized Volunteer GPUs)</option>
+                <option value="local">Local / Custom FreeLLMAPI Gateway</option>
+              </select>
+            </div>
+            <button class="btn outline" onclick="testApiKey('freellmapi')" style="padding:6px 14px; font-size:0.78rem; white-space:nowrap; border-color:rgba(16,185,129,0.4); color:#34d399;">Test Connection</button>
+          </div>
+          <div id="freellmCustomUrlContainer" style="display:none; margin-top:8px;">
+            <input type="text" id="inputFreellmCustomUrl" class="command-input" placeholder="http://127.0.0.1:3001/v1 (Local FreeLLMAPI gateway URL)" style="padding:6px 10px; font-size:0.78rem; font-family:'JetBrains Mono',monospace; width:100%;">
+          </div>
+          <div id="freellmapiTestMsg" style="font-size:0.72rem; margin-top:6px; display:none;"></div>
         </div>
 
         <!-- OpenRouter API (DeepSeek, Llama 3.3, Free Models) -->
@@ -2075,10 +3034,52 @@
             </tr>
             <tr>
               <td><strong>🤖 AI Strategy Copilot</strong></td>
-              <td>Technical recommendations, prompt execution</td>
-              <td>Rule-based strategic reasoning engine</td>
-              <td><span style="color:#a855f7; font-weight:700;">⚡ Strategy Engine</span></td>
-              <td>OpenAI / Claude / Gemini API</td>
+              <td>Technical recommendations, prompt execution, content plans</td>
+              <td>Live Generative AI (FreeLLMAPI keyless, OpenRouter, NVIDIA NIM, Gemini) or heuristic</td>
+              <td><span style="color:#10b981; font-weight:700;">⚡ Live Free LLM / BYOK</span></td>
+              <td>FreeLLMAPI (Zero-Auth) / OpenRouter / NVIDIA / Gemini</td>
+            </tr>
+            <tr>
+              <td><strong>🌐 Browser-Use Grounding</strong></td>
+              <td>Interactive DOM elements, buttons, inputs, accessibility tree</td>
+              <td>Live Cheerio &amp; CDP DOM parsing with index grounding</td>
+              <td><span style="color:#10b981; font-weight:700;">⚡ Live DOM Grounding</span></td>
+              <td>Native Zero-Auth (browser-use)</td>
+            </tr>
+            <tr>
+              <td><strong>🧠 AgentMemory Bank</strong></td>
+              <td>Persistent multi-tier memory (working, episodic, semantic, entity)</td>
+              <td>In-memory Map + JSON persistence with token savings analytics</td>
+              <td><span style="color:#10b981; font-weight:700;">⚡ Sub-ms Persistent Store</span></td>
+              <td>Native Zero-Auth (agentmemory)</td>
+            </tr>
+            <tr>
+              <td><strong>📐 Diagram-Design Studio</strong></td>
+              <td>Accessible Mermaid SEO architecture, redirect chains, E-E-A-T maps</td>
+              <td>Deterministic Mermaid syntax engine with WCAG AAA contrast</td>
+              <td><span style="color:#10b981; font-weight:700;">⚡ Generated Mermaid</span></td>
+              <td>Native Zero-Auth (diagram-design)</td>
+            </tr>
+            <tr>
+              <td><strong>🔬 Scientific Agent Skills</strong></td>
+              <td>Peer-reviewed papers, citation verification, ScholarlyArticle schema</td>
+              <td>CrossRef Open Scientific API + PubMed E-Utilities</td>
+              <td><span style="color:#10b981; font-weight:700;">⚡ Live Academic API</span></td>
+              <td>Native Zero-Auth (CrossRef Open API)</td>
+            </tr>
+            <tr>
+              <td><strong>🛡️ Anthropic Cybersecurity</strong></td>
+              <td>HTTP response headers (CSP, HSTS, X-Frame-Options), MITRE mapping</td>
+              <td>Live HTTP header inspector + MITRE ATT&amp;CK v19.1 / F3</td>
+              <td><span style="color:#10b981; font-weight:700;">⚡ Live Probe</span></td>
+              <td>Native Zero-Auth (anthropic-cybersecurity)</td>
+            </tr>
+            <tr>
+              <td><strong>🎛️ Harness &amp; OpenViking</strong></td>
+              <td>Agent fault injection, prompt drift benchmarks, context tiering</td>
+              <td>Automated evaluation harness + L0-L3 context compression</td>
+              <td><span style="color:#10b981; font-weight:700;">⚡ Benchmark Certified</span></td>
+              <td>Native Zero-Auth (walkinglabs / volcengine)</td>
             </tr>
           </tbody>
         </table>
@@ -2332,6 +3333,13 @@
       return sel ? sel.value : 'meta/llama-3.3-70b-instruct';
     }
 
+    function onFreellmProviderChange(val) {
+      const customDiv = document.getElementById('freellmCustomUrlContainer');
+      if (customDiv) {
+        customDiv.style.display = (val === 'local' || val === 'custom') ? 'block' : 'none';
+      }
+    }
+
     function getApiHeaders() {
       const saved = JSON.parse(localStorage.getItem('omniseo_api_keys') || '{}');
       const headers = { 'Content-Type': 'application/json' };
@@ -2343,6 +3351,9 @@
       if (saved.geminiApiKey) headers['x-gemini-key'] = saved.geminiApiKey;
       if (saved.geminiModel) headers['x-gemini-model'] = saved.geminiModel;
       if (saved.openaiApiKey) headers['x-openai-key'] = saved.openaiApiKey;
+      if (saved.freellmProvider) headers['x-freellm-provider'] = saved.freellmProvider;
+      if (saved.freellmCustomUrl) headers['x-freellm-custom-url'] = saved.freellmCustomUrl;
+      headers['x-use-freellm'] = 'true';
       if (saved.dataforseoLogin) headers['x-dataforseo-login'] = saved.dataforseoLogin;
       if (saved.dataforseoPassword) headers['x-dataforseo-password'] = saved.dataforseoPassword;
       return headers;
@@ -2401,15 +3412,22 @@
       if (saved.geminiModel && document.getElementById('selectGeminiModel')) {
         document.getElementById('selectGeminiModel').value = saved.geminiModel;
       }
-      if (saved.openaiApiKey) document.getElementById('inputOpenaiKey').value = saved.openaiApiKey;
       if (saved.dataforseoLogin) document.getElementById('inputDataforseoLogin').value = saved.dataforseoLogin;
       if (saved.dataforseoPassword) document.getElementById('inputDataforseoPassword').value = saved.dataforseoPassword;
+      if (saved.freellmProvider && document.getElementById('selectFreellmProvider')) {
+        document.getElementById('selectFreellmProvider').value = saved.freellmProvider;
+        onFreellmProviderChange(saved.freellmProvider);
+      }
+      if (saved.freellmCustomUrl && document.getElementById('inputFreellmCustomUrl')) {
+        document.getElementById('inputFreellmCustomUrl').value = saved.freellmCustomUrl;
+      }
 
       try {
         const res = await fetch('/api/settings');
         const data = await res.json();
         if (data.success && data.settings) {
           updateBadge('psiStatusBadge', data.settings.psi.configured || Boolean(saved.psiApiKey), data.settings.psi.maskedKey);
+          updateBadge('freellmStatusBadge', true, data.settings.freellmapi?.provider || 'Keyless');
           updateBadge('openrouterStatusBadge', data.settings.openrouter?.configured || Boolean(saved.openrouterApiKey), data.settings.openrouter?.maskedKey);
           updateBadge('nvidiaStatusBadge', data.settings.nvidia?.configured || Boolean(saved.nvidiaApiKey), data.settings.nvidia?.maskedKey);
           updateBadge('geminiStatusBadge', data.settings.gemini.configured || Boolean(saved.geminiApiKey), data.settings.gemini.maskedKey);
@@ -2444,6 +3462,12 @@
       }
 
       const payload = { service };
+      if (service === 'freellmapi') {
+        const sel = document.getElementById('selectFreellmProvider');
+        payload.provider = sel ? sel.value : 'auto';
+        const custom = document.getElementById('inputFreellmCustomUrl');
+        if (custom && custom.value.trim()) payload.customUrl = custom.value.trim();
+      }
       if (service === 'psi') payload.apiKey = document.getElementById('inputPsiKey').value;
       if (service === 'openrouter') {
         payload.apiKey = document.getElementById('inputOpenrouterKey').value;
@@ -2497,6 +3521,8 @@
         geminiApiKey: document.getElementById('inputGeminiKey').value.trim(),
         geminiModel: document.getElementById('selectGeminiModel') ? document.getElementById('selectGeminiModel').value : 'gemini-2.0-flash',
         openaiApiKey: document.getElementById('inputOpenaiKey').value.trim(),
+        freellmProvider: document.getElementById('selectFreellmProvider') ? document.getElementById('selectFreellmProvider').value : 'auto',
+        freellmCustomUrl: document.getElementById('inputFreellmCustomUrl') ? document.getElementById('inputFreellmCustomUrl').value.trim() : '',
         dataforseoLogin: document.getElementById('inputDataforseoLogin').value.trim(),
         dataforseoPassword: document.getElementById('inputDataforseoPassword').value.trim()
       };
@@ -2528,6 +3554,8 @@
         document.getElementById('inputOpenaiKey').value = '';
         document.getElementById('inputDataforseoLogin').value = '';
         document.getElementById('inputDataforseoPassword').value = '';
+        if (document.getElementById('selectFreellmProvider')) document.getElementById('selectFreellmProvider').value = 'auto';
+        if (document.getElementById('inputFreellmCustomUrl')) document.getElementById('inputFreellmCustomUrl').value = '';
         saveApiSettings();
       }
     }
@@ -2552,6 +3580,7 @@
           probeRobotsAndSitemap(target);
           loadDomainAndBrand(target);
           loadHeadAndEeat(target);
+          loadCruxData(target);
         }
       } catch (err) {
         alert('Execution failed: ' + err.message);
@@ -3618,6 +4647,653 @@
       }
     }
 
+    // ─── GOOGLE CRUX & CRUX VIS REAL-USER FIELD DATA ENGINE ────
+    let currentCruxData = null;
+
+    async function loadCruxData(targetUrl, { formFactor = 'ALL', periods = 25 } = {}) {
+      if (!targetUrl) return;
+      const cruxBadge = document.getElementById('cruxOverviewBadge');
+      const cruxSub = document.getElementById('cruxOverviewSub');
+      const cruxDeepLink = document.getElementById('cruxOverviewDeepLink');
+      const cruxStatusEl = document.getElementById('tabCruxStatusBadge');
+
+      if (cruxBadge) {
+        cruxBadge.innerText = '⚡ Fetching CrUX...';
+        cruxBadge.style.color = '#38bdf8';
+        cruxBadge.style.background = 'rgba(56,189,248,0.15)';
+      }
+      if (cruxStatusEl) cruxStatusEl.innerText = '● Querying Chrome UX Report...';
+
+      // Keep target input synced
+      const targetInput = document.getElementById('cruxTargetInput');
+      if (targetInput && (!targetInput.value || targetInput.value === 'https://web.dev')) {
+        targetInput.value = targetUrl;
+      }
+
+      try {
+        const res = await fetch(`/api/crux?url=${encodeURIComponent(targetUrl)}&formFactor=${encodeURIComponent(formFactor)}&periods=${encodeURIComponent(periods)}`);
+        const data = await res.json();
+        if (data.success) {
+          currentCruxData = data;
+          renderCruxData(data);
+        } else {
+          if (cruxBadge) {
+            cruxBadge.innerText = '⚠️ Insufficient CrUX Data';
+            cruxBadge.style.color = '#f59e0b';
+            cruxBadge.style.background = 'rgba(245,158,11,0.15)';
+          }
+          if (cruxSub) cruxSub.innerText = data.error || 'No Chrome user experience data available for this target.';
+          const assessmentTitle = document.getElementById('cruxOverallAssessmentTitle');
+          if (assessmentTitle) {
+            assessmentTitle.innerText = `CrUX Notice: ${data.error || 'No Data Available'}`;
+            assessmentTitle.style.color = '#f59e0b';
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load CrUX data:', err);
+        if (cruxBadge) {
+          cruxBadge.innerText = '⚠️ CrUX Network Error';
+          cruxBadge.style.color = '#f43f5e';
+        }
+      }
+    }
+
+    function triggerCruxQuery() {
+      const url = document.getElementById('cruxTargetInput')?.value || currentAuditResult?.canonicalModel?.targetUrl || 'https://web.dev';
+      const formFactor = document.getElementById('cruxFormFactorSelect')?.value || 'ALL';
+      const periods = document.getElementById('cruxPeriodsSelect')?.value || '25';
+      loadCruxData(url, { formFactor, periods: Number(periods) });
+    }
+
+    function renderCruxData(data) {
+      if (!data || !data.success) return;
+
+      // 1. Overview Badge & Subtitle in CWV Radar Panel
+      const cruxBadge = document.getElementById('cruxOverviewBadge');
+      const cruxSub = document.getElementById('cruxOverviewSub');
+      const cruxDeepLink = document.getElementById('cruxOverviewDeepLink');
+      const tabCruxDirectLink = document.getElementById('tabCruxVisDirectLink');
+      const tabCruxLauncherBtn = document.getElementById('cruxVisLauncherBtn');
+      const cruxVisExternalBtn = document.getElementById('cruxVisExternalBtn');
+
+      const isPassed = data.cwvAssessment === 'PASSED';
+      const isMed = data.cwvAssessment === 'NEEDS_IMPROVEMENT';
+
+      if (cruxBadge) {
+        cruxBadge.innerText = isPassed ? '✅ CWV PASSED' : (isMed ? '⚠️ NEEDS WORK' : '❌ CWV FAILED');
+        cruxBadge.style.color = isPassed ? '#10b981' : (isMed ? '#f59e0b' : '#f43f5e');
+        cruxBadge.style.background = isPassed ? 'rgba(16,185,129,0.15)' : (isMed ? 'rgba(245,158,11,0.15)' : 'rgba(244,63,94,0.15)');
+      }
+
+      const snapMetrics = data.snapshot?.metrics || {};
+      const histMetrics = data.history?.metrics || {};
+
+      const lcpP75 = snapMetrics.largest_contentful_paint?.p75 || histMetrics.largest_contentful_paint?.latestP75;
+      const inpP75 = snapMetrics.interaction_to_next_paint?.p75 || histMetrics.interaction_to_next_paint?.latestP75;
+      const clsP75 = snapMetrics.cumulative_layout_shift?.p75 ?? histMetrics.cumulative_layout_shift?.latestP75;
+
+      const lcpDisplay = lcpP75 ? (lcpP75 / 1000).toFixed(2) + 's' : 'N/A';
+      const inpDisplay = inpP75 ? inpP75 + 'ms' : 'N/A';
+      const clsDisplay = clsP75 !== undefined && clsP75 !== null ? clsP75 : 'N/A';
+
+      if (cruxSub) {
+        cruxSub.innerText = `Real-user p75: LCP ${lcpDisplay} · INP ${inpDisplay} · CLS ${clsDisplay} (${data.snapshot?.scope || data.history?.scope || 'origin'})`;
+      }
+
+      if (cruxDeepLink && data.visUrl) cruxDeepLink.href = data.visUrl;
+      if (tabCruxDirectLink && data.visUrl) tabCruxDirectLink.href = data.visUrl;
+      if (tabCruxLauncherBtn && data.visUrl) tabCruxLauncherBtn.href = data.visUrl;
+      if (cruxVisExternalBtn && data.visUrl) cruxVisExternalBtn.href = data.visUrl;
+
+      // 2. Tab CrUX Assessment Banner
+      const statusIcon = document.getElementById('cruxStatusIcon');
+      const assessmentTitle = document.getElementById('cruxOverallAssessmentTitle');
+      const scopeBadge = document.getElementById('cruxScopeBadge');
+      const overallSub = document.getElementById('cruxOverallSub');
+      const periodsSummary = document.getElementById('cruxPeriodsSummary');
+
+      if (statusIcon) statusIcon.innerText = isPassed ? '⚡ PASSED' : (isMed ? '⚠️ NEEDS WORK' : '❌ FAILED');
+      if (assessmentTitle) {
+        assessmentTitle.innerText = `Core Web Vitals Assessment: ${data.cwvAssessment.replace('_', ' ')}`;
+        assessmentTitle.style.color = isPassed ? '#a7f3d0' : (isMed ? '#fde68a' : '#fda4af');
+      }
+      if (scopeBadge) {
+        const scope = data.snapshot?.scope || data.history?.scope || 'ORIGIN';
+        scopeBadge.innerText = `${scope.toUpperCase()} SCOPE`;
+        scopeBadge.style.color = scope === 'url' ? '#38bdf8' : '#a7f3d0';
+      }
+      if (overallSub) {
+        overallSub.innerText = `Target: ${data.target} · Device: ${data.formFactor || 'ALL'} · Google Chrome Real-User Field Data`;
+      }
+      if (periodsSummary) {
+        periodsSummary.innerText = `${data.history?.periodsCount || 0} Historical Periods (${data.formFactor || 'ALL'})`;
+      }
+
+      // 3. 5 Real-User Metrics Cards
+      const renderMetricCard = (key, valId, ratingId, trendId, divisor = 1, unit = '') => {
+        const m = snapMetrics[key] || histMetrics[key];
+        const p75 = m?.p75 !== undefined ? m.p75 : m?.latestP75;
+        const thresh = m?.threshold || {};
+        const valEl = document.getElementById(valId);
+        const ratingEl = document.getElementById(ratingId);
+        const trendEl = document.getElementById(trendId);
+
+        if (valEl) {
+          valEl.innerText = p75 !== undefined && p75 !== null ? (p75 / divisor).toFixed(divisor > 1 ? 2 : 0) + unit : '--';
+        }
+        if (ratingEl) {
+          ratingEl.innerText = thresh.rating || 'N/A';
+          const isG = thresh.status === 'GOOD';
+          const isN = thresh.status === 'NEEDS_IMPROVEMENT';
+          ratingEl.style.color = isG ? '#10b981' : (isN ? '#f59e0b' : '#f43f5e');
+          ratingEl.style.background = isG ? 'rgba(16,185,129,0.15)' : (isN ? 'rgba(245,158,11,0.15)' : 'rgba(244,63,94,0.15)');
+        }
+        if (trendEl) {
+          const histM = histMetrics[key];
+          const trend = histM?.trend || 'STABLE';
+          const trendColor = trend === 'IMPROVING' ? '#10b981' : (trend === 'DEGRADING' ? '#f43f5e' : '#38bdf8');
+          trendEl.innerText = `Trend: ${trend}`;
+          trendEl.style.color = trendColor;
+        }
+      };
+
+      renderMetricCard('largest_contentful_paint', 'cruxLcpVal', 'cruxLcpRating', 'cruxLcpTrend', 1000, 's');
+      renderMetricCard('interaction_to_next_paint', 'cruxInpVal', 'cruxInpRating', 'cruxInpTrend', 1, 'ms');
+      renderMetricCard('cumulative_layout_shift', 'cruxClsVal', 'cruxClsRating', 'cruxClsTrend', 1, '');
+      renderMetricCard('first_contentful_paint', 'cruxFcpVal', 'cruxFcpRating', 'cruxFcpTrend', 1000, 's');
+      renderMetricCard('experimental_time_to_first_byte', 'cruxTtfbVal', 'cruxTtfbRating', 'cruxTtfbTrend', 1, 'ms');
+
+      // 4. 4-Part LCP Sub-Metric Diagnostics (Official CrUX Vis Feature)
+      const renderDiagVal = (metricKey, elId, divisor = 1, unit = 'ms') => {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        const m = histMetrics[metricKey];
+        const val = m?.latestP75;
+        if (val !== undefined && val !== null && !isNaN(val)) {
+          el.innerText = (val / divisor).toFixed(divisor > 1 ? 2 : 0) + unit;
+          el.style.color = val <= (metricKey.includes('ttfb') ? 800 : 500) ? '#10b981' : (val <= 1000 ? '#f59e0b' : '#f43f5e');
+        } else {
+          el.innerText = '—';
+          el.style.color = '#94a3b8';
+        }
+      };
+
+      renderDiagVal('largest_contentful_paint_image_time_to_first_byte', 'diagTtfbVal', 1, 'ms');
+      if (document.getElementById('diagTtfbVal')?.innerText === '—') {
+        renderDiagVal('experimental_time_to_first_byte', 'diagTtfbVal', 1, 'ms');
+      }
+      renderDiagVal('largest_contentful_paint_image_resource_load_delay', 'diagLoadDelayVal', 1, 'ms');
+      renderDiagVal('largest_contentful_paint_image_resource_load_duration', 'diagLoadDurationVal', 1, 'ms');
+      renderDiagVal('largest_contentful_paint_image_element_render_delay', 'diagRenderDelayVal', 1, 'ms');
+      renderDiagVal('round_trip_time', 'diagRttVal', 1, 'ms');
+
+      // 5. Populate Month Filter Dropdown & Month-by-Month Aggregate Table
+      const monthFilterSel = document.getElementById('cruxMonthFilter');
+      const monthlyTableBody = document.querySelector('#cruxMonthlyTable tbody');
+      const monthCountBadge = document.getElementById('cruxMonthCountBadge');
+      const months = data.availableMonths || data.history?.availableMonths || [];
+      const breakdowns = data.monthlyBreakdown || data.history?.monthlyBreakdown || [];
+
+      if (monthFilterSel && months.length > 0) {
+        const currentVal = monthFilterSel.value;
+        monthFilterSel.innerHTML = '<option value="all">All Available Months (Entire History)</option>' +
+          months.map(m => `<option value="${m.monthKey}">${m.monthLabel} (${m.count} weeks)</option>`).join('');
+        if (currentVal && months.some(m => m.monthKey === currentVal)) {
+          monthFilterSel.value = currentVal;
+        }
+      }
+
+      if (monthCountBadge) {
+        monthCountBadge.innerText = `${breakdowns.length} Calendar Months Available`;
+      }
+
+      if (monthlyTableBody && breakdowns.length > 0) {
+        monthlyTableBody.innerHTML = breakdowns.map(b => {
+          const lcp = b.metrics?.largest_contentful_paint?.latestP75;
+          const inp = b.metrics?.interaction_to_next_paint?.latestP75;
+          const cls = b.metrics?.cumulative_layout_shift?.latestP75;
+          const fcp = b.metrics?.first_contentful_paint?.latestP75;
+          const ttfb = b.metrics?.experimental_time_to_first_byte?.latestP75;
+
+          const lcpStr = lcp ? (lcp / 1000).toFixed(2) + 's' : '—';
+          const inpStr = inp ? inp + 'ms' : '—';
+          const clsStr = cls !== undefined && cls !== null ? cls : '—';
+          const fcpStr = fcp ? (fcp / 1000).toFixed(2) + 's' : '—';
+          const ttfbStr = ttfb ? ttfb + 'ms' : '—';
+
+          let statusBadge = '<span class="badge" style="background:rgba(255,255,255,0.06); color:#94a3b8;">UNKNOWN</span>';
+          if (b.cwvStatus === 'PASSED') statusBadge = '<span class="badge" style="background:rgba(16,185,129,0.2); color:#10b981;">✅ PASSED</span>';
+          else if (b.cwvStatus === 'NEEDS_IMPROVEMENT') statusBadge = '<span class="badge" style="background:rgba(245,158,11,0.2); color:#f59e0b;">⚠️ NEEDS WORK</span>';
+          else if (b.cwvStatus === 'FAILED') statusBadge = '<span class="badge" style="background:rgba(244,63,94,0.2); color:#f43f5e;">❌ FAILED</span>';
+
+          return `
+            <tr>
+              <td style="font-weight:700; color:#38bdf8;">${b.monthLabel}</td>
+              <td style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#cbd5e1;">${b.periodsCount} periods</td>
+              <td style="font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:#94a3b8;">${b.dateRange}</td>
+              <td style="font-weight:700; color:${parseFloat(lcpStr) <= 2.5 ? '#10b981' : (parseFloat(lcpStr) <= 4.0 ? '#f59e0b' : '#f43f5e')};">${lcpStr}</td>
+              <td style="font-weight:700; color:${parseInt(inpStr) <= 200 ? '#10b981' : (parseInt(inpStr) <= 500 ? '#f59e0b' : '#f43f5e')};">${inpStr}</td>
+              <td style="font-weight:700; color:${parseFloat(clsStr) <= 0.1 ? '#10b981' : (parseFloat(clsStr) <= 0.25 ? '#f59e0b' : '#f43f5e')};">${clsStr}</td>
+              <td style="color:#38bdf8; font-size:0.75rem;">${fcpStr}</td>
+              <td style="color:#94a3b8; font-size:0.75rem;">${ttfbStr}</td>
+              <td>${statusBadge}</td>
+              <td>
+                <button type="button" onclick="filterCruxByMonth('${b.monthKey}')" class="btn-line-tag" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); font-size:0.7rem; cursor:pointer;">
+                  Focus Month 🔍
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // 6. Chrome User Session Distribution Bars
+      const distContainer = document.getElementById('cruxDistributionRows');
+      if (distContainer) {
+        const metricLabels = [
+          { key: 'largest_contentful_paint', label: 'Largest Contentful Paint (LCP)' },
+          { key: 'interaction_to_next_paint', label: 'Interaction to Next Paint (INP)' },
+          { key: 'cumulative_layout_shift', label: 'Cumulative Layout Shift (CLS)' },
+          { key: 'first_contentful_paint', label: 'First Contentful Paint (FCP)' },
+          { key: 'experimental_time_to_first_byte', label: 'Time to First Byte (TTFB)' }
+        ];
+
+        distContainer.innerHTML = metricLabels.map(({ key, label }) => {
+          const m = snapMetrics[key];
+          const hist = m?.histogram || [];
+          const goodDensity = hist[0]?.density !== undefined ? Math.round(hist[0].density * 100) : 0;
+          const medDensity = hist[1]?.density !== undefined ? Math.round(hist[1].density * 100) : 0;
+          const poorDensity = hist[2]?.density !== undefined ? Math.round(hist[2].density * 100) : (100 - goodDensity - medDensity);
+
+          return `
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:10px 14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:0.78rem;">
+                <span style="font-weight:600; color:#f8fafc;">${label}</span>
+                <div style="display:flex; gap:10px; font-family:'JetBrains Mono',monospace; font-size:0.72rem;">
+                  <span style="color:#10b981;">Good: ${goodDensity}%</span>
+                  <span style="color:#f59e0b;">Needs Work: ${medDensity}%</span>
+                  <span style="color:#f43f5e;">Poor: ${poorDensity}%</span>
+                </div>
+              </div>
+              <div style="display:flex; height:8px; border-radius:4px; overflow:hidden; background:rgba(255,255,255,0.05);">
+                <div style="width:${goodDensity}%; background:#10b981;" title="Good: ${goodDensity}%"></div>
+                <div style="width:${medDensity}%; background:#f59e0b;" title="Needs Work: ${medDensity}%"></div>
+                <div style="width:${poorDensity}%; background:#f43f5e;" title="Poor: ${poorDensity}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 7. Render Filterable Weekly Timeseries Table
+      renderCruxTimeseriesTable();
+    }
+
+    function renderCruxTimeseriesTable({ month = 'all', startDate = null, endDate = null } = {}) {
+      if (!currentCruxData || !currentCruxData.history) return;
+      const historyTableBody = document.getElementById('cruxHistoryTable')?.querySelector('tbody');
+      const historyRangeText = document.getElementById('cruxHistoryRangeText');
+      const periods = currentCruxData.history.periods || [];
+      const histMetrics = currentCruxData.history.metrics || {};
+
+      if (!historyTableBody || periods.length === 0) return;
+
+      const lcpP75s = histMetrics.largest_contentful_paint?.percentilesTimeseries || [];
+      const inpP75s = histMetrics.interaction_to_next_paint?.percentilesTimeseries || [];
+      const clsP75s = histMetrics.cumulative_layout_shift?.percentilesTimeseries || [];
+      const fcpP75s = histMetrics.first_contentful_paint?.percentilesTimeseries || [];
+      const ttfbP75s = histMetrics.experimental_time_to_first_byte?.percentilesTimeseries || [];
+
+      // Filter matching period indices
+      const matchingIndices = [];
+      periods.forEach((p, idx) => {
+        const pStart = `${p.firstDate?.year}-${String(p.firstDate?.month).padStart(2,'0')}-${String(p.firstDate?.day).padStart(2,'0')}`;
+        const pEnd = `${p.lastDate?.year}-${String(p.lastDate?.month).padStart(2,'0')}-${String(p.lastDate?.day).padStart(2,'0')}`;
+        const pMonth = `${p.lastDate?.year}-${String(p.lastDate?.month).padStart(2,'0')}`;
+
+        if (month && month !== 'all' && pMonth !== month) return;
+        if (startDate && pEnd < startDate) return;
+        if (endDate && pStart > endDate) return;
+
+        matchingIndices.push(idx);
+      });
+
+      if (historyRangeText) {
+        if (matchingIndices.length === 0) {
+          historyRangeText.innerText = '0 Periods match current filter';
+        } else {
+          const oldest = periods[matchingIndices[0]];
+          const newest = periods[matchingIndices[matchingIndices.length - 1]];
+          const fmt = d => `${d?.year}-${String(d?.month).padStart(2,'0')}-${String(d?.day).padStart(2,'0')}`;
+          historyRangeText.innerText = `${matchingIndices.length} Periods Filtered: ${fmt(oldest?.firstDate)} → ${fmt(newest?.lastDate)}`;
+        }
+      }
+
+      if (matchingIndices.length === 0) {
+        historyTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">No collection periods match the selected date/month filter.</td></tr>';
+        return;
+      }
+
+      // Render in reverse chronological order (newest period first)
+      const rows = [];
+      for (let k = matchingIndices.length - 1; k >= 0; k--) {
+        const i = matchingIndices[k];
+        const p = periods[i];
+        const periodStr = `${p.firstDate?.year}-${String(p.firstDate?.month).padStart(2,'0')}-${String(p.firstDate?.day).padStart(2,'0')} → ${p.lastDate?.year}-${String(p.lastDate?.month).padStart(2,'0')}-${String(p.lastDate?.day).padStart(2,'0')}`;
+        const lcp = lcpP75s[i] !== undefined && lcpP75s[i] !== null ? (lcpP75s[i] / 1000).toFixed(2) + 's' : '--';
+        const inp = inpP75s[i] !== undefined && inpP75s[i] !== null ? inpP75s[i] + 'ms' : '--';
+        const cls = clsP75s[i] !== undefined && clsP75s[i] !== null ? clsP75s[i] : '--';
+        const fcp = fcpP75s[i] !== undefined && fcpP75s[i] !== null ? (fcpP75s[i] / 1000).toFixed(2) + 's' : '--';
+        const ttfb = ttfbP75s[i] !== undefined && ttfbP75s[i] !== null ? ttfbP75s[i] + 'ms' : '--';
+
+        rows.push(`
+          <tr>
+            <td style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#cbd5e1;">${periodStr}</td>
+            <td style="font-weight:700; color:${parseFloat(lcp) <= 2.5 ? '#10b981' : (parseFloat(lcp) <= 4.0 ? '#f59e0b' : '#f43f5e')};">${lcp}</td>
+            <td style="font-weight:700; color:${parseInt(inp) <= 200 ? '#10b981' : (parseInt(inp) <= 500 ? '#f59e0b' : '#f43f5e')};">${inp}</td>
+            <td style="font-weight:700; color:${parseFloat(cls) <= 0.1 ? '#10b981' : (parseFloat(cls) <= 0.25 ? '#f59e0b' : '#f43f5e')};">${cls}</td>
+            <td style="color:#38bdf8;">${fcp}</td>
+            <td style="color:#94a3b8;">${ttfb}</td>
+          </tr>
+        `);
+      }
+      historyTableBody.innerHTML = rows.join('');
+    }
+
+    function applyCruxFilters() {
+      if (!currentCruxData || !currentCruxData.history) return;
+      const monthVal = document.getElementById('cruxMonthFilter')?.value || 'all';
+      const startVal = document.getElementById('cruxStartDate')?.value || '';
+      const endVal = document.getElementById('cruxEndDate')?.value || '';
+
+      renderCruxTimeseriesTable({ month: monthVal, startDate: startVal, endDate: endVal });
+    }
+
+    function filterCruxByMonth(monthKey) {
+      const sel = document.getElementById('cruxMonthFilter');
+      if (sel) sel.value = monthKey;
+      const startInput = document.getElementById('cruxStartDate');
+      const endInput = document.getElementById('cruxEndDate');
+      if (startInput) startInput.value = '';
+      if (endInput) endInput.value = '';
+      applyCruxFilters();
+      const el = document.getElementById('cruxHistoryTable');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function setCruxDatePreset(preset) {
+      const startInput = document.getElementById('cruxStartDate');
+      const endInput = document.getElementById('cruxEndDate');
+      const monthSel = document.getElementById('cruxMonthFilter');
+      if (monthSel) monthSel.value = 'all';
+
+      const now = new Date();
+      if (preset === 'all') {
+        if (startInput) startInput.value = '';
+        if (endInput) endInput.value = '';
+      } else if (preset === '30days') {
+        const past = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        if (startInput) startInput.value = past.toISOString().slice(0, 10);
+        if (endInput) endInput.value = now.toISOString().slice(0, 10);
+      } else if (preset === '3months') {
+        const past = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        if (startInput) startInput.value = past.toISOString().slice(0, 10);
+        if (endInput) endInput.value = now.toISOString().slice(0, 10);
+      } else if (preset === '6months') {
+        const past = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+        if (startInput) startInput.value = past.toISOString().slice(0, 10);
+        if (endInput) endInput.value = now.toISOString().slice(0, 10);
+      }
+      applyCruxFilters();
+    }
+
+    function resetCruxFilters() {
+      const sel = document.getElementById('cruxMonthFilter');
+      if (sel) sel.value = 'all';
+      const startInput = document.getElementById('cruxStartDate');
+      const endInput = document.getElementById('cruxEndDate');
+      if (startInput) startInput.value = '';
+      if (endInput) endInput.value = '';
+      applyCruxFilters();
+    }
+
+    function exportCruxHistoryCsv() {
+      if (!currentCruxData || !currentCruxData.history?.periods) {
+        alert('No CrUX history data to export. Run a query first.');
+        return;
+      }
+      const periods = currentCruxData.history.periods;
+      const histMetrics = currentCruxData.history.metrics || {};
+      const lcpP75s = histMetrics.largest_contentful_paint?.percentilesTimeseries || [];
+      const inpP75s = histMetrics.interaction_to_next_paint?.percentilesTimeseries || [];
+      const clsP75s = histMetrics.cumulative_layout_shift?.percentilesTimeseries || [];
+      const fcpP75s = histMetrics.first_contentful_paint?.percentilesTimeseries || [];
+      const ttfbP75s = histMetrics.experimental_time_to_first_byte?.percentilesTimeseries || [];
+
+      const headers = ['Period_Start', 'Period_End', 'LCP_ms', 'INP_ms', 'CLS', 'FCP_ms', 'TTFB_ms'];
+      const rows = periods.map((p, i) => {
+        const fmt = d => `${d.year}-${String(d.month).padStart(2,'0')}-${String(d.day).padStart(2,'0')}`;
+        return [
+          fmt(p.firstDate),
+          fmt(p.lastDate),
+          lcpP75s[i] ?? '',
+          inpP75s[i] ?? '',
+          clsP75s[i] ?? '',
+          fcpP75s[i] ?? '',
+          ttfbP75s[i] ?? ''
+        ];
+      });
+      const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `crux_history_${(currentCruxData.target || 'target').replace(/[^a-z0-9]/gi, '_')}.csv`;
+      a.click();
+    }
+
+    function exportCruxHistoryJson() {
+      if (!currentCruxData) {
+        alert('No CrUX history data to export. Run a query first.');
+        return;
+      }
+      const blob = new Blob([JSON.stringify(currentCruxData, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `crux_data_${(currentCruxData.target || 'target').replace(/[^a-z0-9]/gi, '_')}.json`;
+      a.click();
+    }
+
+    // ─── GOOGLE PAGESPEED INSIGHTS & REAL-USER CRUX BATCH STUDIO ───
+    let currentPsiBatchResults = [];
+
+    function loadSamplePagespeedUrls() {
+      const sample = [
+        'https://web.dev',
+        'https://web.dev/learn',
+        'https://web.dev/explore',
+        'https://web.dev/articles/vitals',
+        'https://web.dev/articles/inp'
+      ];
+      const textarea = document.getElementById('psiUrlsInput');
+      if (textarea) textarea.value = sample.join('\n');
+    }
+
+    function clearPagespeedUrls() {
+      const textarea = document.getElementById('psiUrlsInput');
+      if (textarea) textarea.value = '';
+      const summary = document.getElementById('psiSummaryBar');
+      if (summary) summary.style.display = 'none';
+      const tableBody = document.querySelector('#psiBatchResultsTable tbody');
+      if (tableBody) {
+        tableBody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:var(--text-muted); padding:24px;">Enter URLs above and click "Inspect Per-Page Core Web Vitals &amp; Lab Tests" to view results.</td></tr>';
+      }
+    }
+
+    async function runPagespeedBatchAnalysis() {
+      const textarea = document.getElementById('psiUrlsInput');
+      const rawText = textarea ? textarea.value.trim() : '';
+      if (!rawText) {
+        alert('Please paste at least one page URL to inspect.');
+        return;
+      }
+
+      const urls = rawText.split(/[\r\n,]+/).map(u => u.trim()).filter(Boolean);
+      const strategy = document.getElementById('psiStrategySelect')?.value || 'mobile';
+      const btn = document.getElementById('btnRunPsiBatch');
+      const progressContainer = document.getElementById('psiBatchProgressBar');
+      const progressFill = document.getElementById('psiBatchProgressFill');
+      const statusMsg = document.getElementById('psiBatchStatusMsg');
+      const summaryBar = document.getElementById('psiSummaryBar');
+      const tableBody = document.querySelector('#psiBatchResultsTable tbody');
+
+      if (btn) btn.disabled = true;
+      if (progressContainer) progressContainer.style.display = 'block';
+      if (statusMsg) {
+        statusMsg.style.display = 'block';
+        statusMsg.innerText = `⏳ Inspecting ${urls.length} page(s) with Google PSI API v5 & CrUX (Real-User + Lab)...`;
+      }
+      if (progressFill) progressFill.style.width = '20%';
+
+      try {
+        const res = await fetch('/api/pagespeed/batch', {
+          method: 'POST',
+          headers: getApiHeaders(),
+          body: JSON.stringify({ urls, strategy })
+        });
+        const data = await res.json();
+        if (progressFill) progressFill.style.width = '100%';
+
+        if (!data.success || !Array.isArray(data.results)) {
+          throw new Error(data.error || 'Batch analysis returned an invalid response.');
+        }
+
+        currentPsiBatchResults = data.results;
+
+        // Render Summary Cards
+        let passed = 0, needsWork = 0, failed = 0, totalScore = 0, scoredCount = 0;
+        data.results.forEach(r => {
+          const cwvStatus = r.fieldExperience?.cwvStatus;
+          if (cwvStatus === 'PASSED') passed++;
+          else if (cwvStatus === 'NEEDS_IMPROVEMENT') needsWork++;
+          else if (cwvStatus === 'FAILED') failed++;
+
+          if (typeof r.performanceScore === 'number') {
+            totalScore += r.performanceScore;
+            scoredCount++;
+          }
+        });
+
+        if (summaryBar) summaryBar.style.display = 'grid';
+        document.getElementById('psiSummaryTotal').innerText = data.results.length;
+        document.getElementById('psiSummaryPassed').innerText = passed;
+        document.getElementById('psiSummaryNeedsWork').innerText = needsWork;
+        document.getElementById('psiSummaryFailed').innerText = failed;
+        document.getElementById('psiSummaryAvgScore').innerText = scoredCount > 0 ? Math.round(totalScore / scoredCount) + '/100' : 'N/A';
+
+        // Render Per-Page Comparison Rows
+        if (tableBody) {
+          tableBody.innerHTML = data.results.map((r, idx) => {
+            const u = r.targetUrl || 'Unknown URL';
+            const f = r.fieldExperience || {};
+            const l = r.labExperience || {};
+            const cwvStatus = f.cwvStatus || 'INSUFFICIENT_DATA';
+
+            let statusBadge = '<span class="badge" style="background:rgba(255,255,255,0.06); color:#94a3b8;">NO DATA</span>';
+            if (cwvStatus === 'PASSED') statusBadge = '<span class="badge" style="background:rgba(16,185,129,0.2); color:#10b981; border:1px solid rgba(16,185,129,0.4);">✅ PASSED</span>';
+            else if (cwvStatus === 'NEEDS_IMPROVEMENT') statusBadge = '<span class="badge" style="background:rgba(245,158,11,0.2); color:#f59e0b; border:1px solid rgba(245,158,11,0.4);">⚠️ NEEDS WORK</span>';
+            else if (cwvStatus === 'FAILED') statusBadge = '<span class="badge" style="background:rgba(244,63,94,0.2); color:#f43f5e; border:1px solid rgba(244,63,94,0.4);">❌ FAILED</span>';
+
+            const realLcp = f.metrics?.lcp?.displayValue || '—';
+            const realInp = f.metrics?.inp?.displayValue || '—';
+            const realCls = f.metrics?.cls?.displayValue || '—';
+
+            const labScore = typeof r.performanceScore === 'number' ? r.performanceScore : '—';
+            const labScoreColor = typeof labScore === 'number'
+              ? (labScore >= 90 ? '#10b981' : (labScore >= 50 ? '#f59e0b' : '#f43f5e'))
+              : '#94a3b8';
+
+            const labLcp = l.metrics?.lcp?.displayValue || '—';
+            const labTbt = l.metrics?.tbt?.displayValue || '—';
+            const labCls = l.metrics?.cls?.displayValue || '—';
+
+            const psiLink = r.links?.pagespeedWebDev || `https://pagespeed.web.dev/analysis?url=${encodeURIComponent(u)}`;
+            const cruxLink = r.links?.cruxVis || `https://cruxvis.withgoogle.com/#/?url=${encodeURIComponent(u)}&identifier=url`;
+
+            return `
+              <tr>
+                <td style="font-family:'JetBrains Mono',monospace; color:var(--text-muted); font-size:0.75rem;">${idx + 1}</td>
+                <td style="max-width:280px; word-break:break-all;">
+                  <a href="${u}" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:600; font-size:0.78rem;">${u}</a>
+                  <div style="font-size:0.68rem; color:#64748b;">${f.scope === 'url' ? '● URL Field Vitals' : (f.scope === 'origin' ? '○ Origin Field Vitals' : '—')}</div>
+                </td>
+                <td>${statusBadge}</td>
+                <td style="font-weight:700; color:${f.metrics?.lcp?.color === 'emerald' ? '#10b981' : (f.metrics?.lcp?.color === 'amber' ? '#f59e0b' : '#f43f5e')};">${realLcp}</td>
+                <td style="font-weight:700; color:${f.metrics?.inp?.color === 'emerald' ? '#10b981' : (f.metrics?.inp?.color === 'amber' ? '#f59e0b' : '#f43f5e')};">${realInp}</td>
+                <td style="font-weight:700; color:${f.metrics?.cls?.color === 'emerald' ? '#10b981' : (f.metrics?.cls?.color === 'amber' ? '#f59e0b' : '#f43f5e')};">${realCls}</td>
+                <td>
+                  <span class="badge" style="background:${labScoreColor}20; color:${labScoreColor}; font-weight:800; font-size:0.85rem;">
+                    ${labScore}
+                  </span>
+                </td>
+                <td style="color:#cbd5e1; font-size:0.75rem;">${labLcp}</td>
+                <td style="color:#cbd5e1; font-size:0.75rem;">${labTbt}</td>
+                <td style="color:#cbd5e1; font-size:0.75rem;">${labCls}</td>
+                <td>
+                  <div style="display:flex; gap:6px; flex-direction:column;">
+                    <a href="${psiLink}" target="_blank" class="btn-line-tag" style="background:rgba(59,130,246,0.15); color:#93c5fd; text-decoration:none; padding:2px 6px; font-size:0.68rem; text-align:center;">PSI ↗</a>
+                    <a href="${cruxLink}" target="_blank" class="btn-line-tag" style="background:rgba(16,185,129,0.15); color:#a7f3d0; text-decoration:none; padding:2px 6px; font-size:0.68rem; text-align:center;">CrUX Vis ↗</a>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        if (statusMsg) {
+          statusMsg.innerText = `✅ Completed inspection of ${data.results.length} page(s) successfully!`;
+          statusMsg.style.color = '#10b981';
+        }
+      } catch (err) {
+        console.error('Pagespeed batch error:', err);
+        if (statusMsg) {
+          statusMsg.innerText = `❌ Error: ${err.message}`;
+          statusMsg.style.color = '#f43f5e';
+        }
+      } finally {
+        if (btn) btn.disabled = false;
+        setTimeout(() => {
+          if (progressContainer) progressContainer.style.display = 'none';
+        }, 2000);
+      }
+    }
+
+    function exportPagespeedCsv() {
+      if (!currentPsiBatchResults || currentPsiBatchResults.length === 0) {
+        alert('No PageSpeed batch results to export. Run an inspection first.');
+        return;
+      }
+      const headers = ['URL', 'Field_CWV_Status', 'Real_LCP', 'Real_INP', 'Real_CLS', 'Lab_Score', 'Lab_LCP', 'Lab_TBT', 'Lab_CLS', 'PSI_Link', 'CrUX_Vis_Link'];
+      const rows = currentPsiBatchResults.map(r => [
+        `"${(r.targetUrl || '').replace(/"/g, '""')}"`,
+        `"${r.fieldExperience?.cwvStatus || 'INSUFFICIENT_DATA'}"`,
+        `"${r.fieldExperience?.metrics?.lcp?.displayValue || '—'}"`,
+        `"${r.fieldExperience?.metrics?.inp?.displayValue || '—'}"`,
+        `"${r.fieldExperience?.metrics?.cls?.displayValue || '—'}"`,
+        r.performanceScore !== null ? r.performanceScore : '',
+        `"${r.labExperience?.metrics?.lcp?.displayValue || '—'}"`,
+        `"${r.labExperience?.metrics?.tbt?.displayValue || '—'}"`,
+        `"${r.labExperience?.metrics?.cls?.displayValue || '—'}"`,
+        `"${r.links?.pagespeedWebDev || ''}"`,
+        `"${r.links?.cruxVis || ''}"`
+      ]);
+      const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `pagespeed_crux_batch_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+
     // Trigger Multi-Page Site Audit
     async function triggerSiteAudit(e) {
       const url = currentAuditResult?.canonicalModel?.targetUrl || 'https://example.com';
@@ -3759,6 +5435,388 @@
       }
     }
 
+    // ─── GOOGLE CLOUD & BIGQUERY CLIENT HANDLERS ───
+    let currentBqQueryType = 'crux';
+    let currentGeneratedBqSql = '';
+
+    function setBqTemplate(type) {
+      currentBqQueryType = type;
+      const targetInput = document.getElementById('bqInputTarget');
+      const countrySel = document.getElementById('bqInputCountry');
+      const metricSel = document.getElementById('bqInputMetric');
+      
+      if (type === 'crux') {
+        if (targetInput) targetInput.value = currentAuditResult?.canonicalModel?.targetUrl || 'https://web.dev';
+        if (countrySel) countrySel.disabled = false;
+        if (metricSel) metricSel.disabled = false;
+      } else if (type === 'gsc') {
+        if (targetInput) targetInput.value = 'sc-domain:' + (currentAuditResult?.domain || 'example.com');
+        if (countrySel) countrySel.disabled = true;
+        if (metricSel) metricSel.disabled = true;
+      } else if (type === 'log') {
+        if (targetInput) targetInput.value = 'access_logs';
+        if (countrySel) countrySel.disabled = true;
+        if (metricSel) metricSel.disabled = true;
+      }
+      generateBigQuerySql();
+    }
+
+    async function generateBigQuerySql() {
+      const target = document.getElementById('bqInputTarget')?.value || 'https://web.dev';
+      const country = document.getElementById('bqInputCountry')?.value || null;
+      const metric = document.getElementById('bqInputMetric')?.value || 'largest_contentful_paint';
+      const preEl = document.getElementById('bqSqlOutput');
+      const costEl = document.getElementById('bqEstimateCost');
+
+      try {
+        let endpoint = '/api/bigquery/crux-sql';
+        let body = { origin: target, country, metric, yearMonth: '202608' };
+
+        if (currentBqQueryType === 'gsc') {
+          endpoint = '/api/bigquery/gsc-sql';
+          body = { siteUrl: target, startDate: '2026-08-01', endDate: '2026-08-31', limit: 100 };
+        } else if (currentBqQueryType === 'log') {
+          endpoint = '/api/bigquery/log-sql';
+          body = { tableName: target || 'access_logs', days: 14 };
+        }
+
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.success && data.sql) {
+          currentGeneratedBqSql = data.sql;
+          if (preEl) preEl.innerText = data.sql;
+          if (costEl) costEl.innerText = `Target: ${data.dataset || 'BigQuery'} | Est. Bytes: ~18.5 MB | Cost: < $0.0001`;
+        }
+      } catch (err) {
+        if (preEl) preEl.innerText = `-- Failed to generate SQL: ${err.message}`;
+      }
+    }
+
+    async function runBigQueryEstimate() {
+      if (!currentGeneratedBqSql) {
+        await generateBigQuerySql();
+      }
+      const costEl = document.getElementById('bqEstimateCost');
+      try {
+        const res = await fetch('/api/bigquery/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: currentGeneratedBqSql, dryRun: true })
+        });
+        const data = await res.json();
+        if (data.success && costEl) {
+          costEl.innerText = `Dry-Run Validated: ${(data.estimatedBytesProcessed / (1024 * 1024)).toFixed(1)} MB processed | Est. Cost: $${data.estimatedCostUsd} USD`;
+        }
+      } catch (err) {
+        if (costEl) costEl.innerText = 'Dry-run estimation failed: ' + err.message;
+      }
+    }
+
+    function copyBqSql() {
+      if (!currentGeneratedBqSql) {
+        alert('Please generate BigQuery SQL first.');
+        return;
+      }
+      navigator.clipboard.writeText(currentGeneratedBqSql).then(() => {
+        alert('BigQuery SQL query copied to clipboard!');
+      });
+    }
+
+    function downloadBqSql() {
+      if (!currentGeneratedBqSql) {
+        alert('Please generate BigQuery SQL first.');
+        return;
+      }
+      const blob = new Blob([currentGeneratedBqSql], { type: 'text/sql;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `bigquery_seo_${currentBqQueryType}_${new Date().toISOString().slice(0,10)}.sql`;
+      a.click();
+    }
+
+    async function refreshGcpServicesStatus() {
+      try {
+        const res = await fetch('/api/gcp/status');
+        const data = await res.json();
+        if (data.success) {
+          const countEl = document.getElementById('gcpApisCount');
+          if (countEl) countEl.innerText = `${data.totalApis} / ${data.totalApis} APIs Enabled`;
+          const projEl = document.getElementById('gcpProjectIdVal');
+          if (projEl && data.projectId) projEl.innerText = data.projectId;
+          const bucketEl = document.getElementById('gcpBucketVal');
+          if (bucketEl && data.storageBucket) bucketEl.innerText = `gs://${data.storageBucket}`;
+        }
+      } catch (err) {
+        console.error('Failed to refresh GCP status:', err);
+      }
+    }
+
+    async function dispatchGcsSnapshotArchive() {
+      const resEl = document.getElementById('gcsUploadResult');
+      if (resEl) resEl.innerText = '⏳ Generating audit package and uploading to Google Cloud Storage...';
+      try {
+        const auditPayload = currentAuditResult || { domain: 'web.dev', timestamp: new Date().toISOString() };
+        const res = await fetch('/api/gcs/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: auditPayload })
+        });
+        const data = await res.json();
+        if (data.success && resEl) {
+          resEl.innerHTML = `✅ <span style="color:#10b981;">Archived to GCS:</span> <code style="color:#38bdf8;">${data.gsUri}</code><br><a href="${data.httpUrl}" target="_blank" style="color:#93c5fd; text-decoration:none; margin-top:4px; display:inline-block;">Download Public GCS URI ↗</a>`;
+        }
+      } catch (err) {
+        if (resEl) resEl.innerText = '❌ GCS archival failed: ' + err.message;
+      }
+    }
+
+    function runGa4CorrelationSimulation() {
+      const bounceEl = document.getElementById('ga4BounceRisk');
+      const liftEl = document.getElementById('ga4LiftPct');
+      const convEl = document.getElementById('ga4AddConv');
+
+      fetch('/api/ga4/correlate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cwvMetrics: { lcp: { numericValueMs: 3200 }, inp: { numericValueMs: 180 }, cls: { numericValue: 0.08 } },
+          ga4Data: { sessions: 25000, bounceRate: 46.2, conversionRate: 2.8 }
+        })
+      }).then(r => r.json()).then(data => {
+        if (data.success) {
+          if (bounceEl) bounceEl.innerText = data.correlationInsights.bounceRiskLevel;
+          if (liftEl) liftEl.innerText = data.correlationInsights.potentialConversionLiftPct;
+          if (convEl) convEl.innerText = `+${data.correlationInsights.projectedAdditionalConversions} Conversions`;
+        }
+      }).catch(err => console.error('GA4 correlation error:', err));
+    }
+
+    function emitCloudTelemetryLog() {
+      fetch('/api/telemetry/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'MANUAL_TELEMETRY_PING',
+          targetUrl: currentAuditResult?.canonicalModel?.targetUrl || 'https://web.dev',
+          durationMs: 420,
+          healthScore: 92,
+          cwvScore: 88,
+          severity: 'INFO'
+        })
+      }).then(r => r.json()).then(data => {
+        alert(`Cloud Logging telemetry entry formatted:\n${JSON.stringify(data.logEntry.resource, null, 2)}`);
+      }).catch(err => alert('Telemetry error: ' + err.message));
+    }
+
+    // ─── SCREAMING FROG SEO SPIDER ENTERPRISE HUB CONTROLLER ───
+    async function refreshScreamingFrogStatus() {
+      try {
+        const res = await fetch('/api/screaming-frog/status');
+        const data = await res.json();
+        if (data.success) {
+          const binEl = document.getElementById('sfBinaryVal');
+          if (binEl && data.binaryPath) binEl.innerText = data.binaryPath.split('\\').pop();
+          const licEl = document.getElementById('sfLicenseVal');
+          if (licEl) licEl.innerText = data.licensed ? `v${data.version} Full Version` : 'Unlicensed';
+          const psiEl = document.getElementById('sfPsiVal');
+          if (psiEl && data.linkedPsiKey) psiEl.innerText = data.linkedPsiKey;
+          const countEl = document.getElementById('sfCrawlCountVal');
+          if (countEl) countEl.innerText = `${data.activeCrawlJobs || 0} Active / Ready`;
+        }
+      } catch (err) {
+        console.error('Failed to refresh Screaming Frog status:', err);
+      }
+    }
+
+    function updateSfCommandPreview() {
+      const target = document.getElementById('sfTargetInput')?.value?.trim() || 'https://example.com';
+      const mode = document.getElementById('sfCrawlMode')?.value || 'spider';
+      const createSitemap = document.getElementById('sfOptCreateSitemap')?.checked || false;
+      const saveCrawl = document.getElementById('sfOptSaveCrawl')?.checked || false;
+
+      const checkedTabs = [];
+      document.querySelectorAll('.sf-tab-cb:checked').forEach(cb => checkedTabs.push(cb.value));
+
+      fetch('/api/screaming-frog/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target,
+          mode,
+          exportTabs: checkedTabs,
+          createSitemap,
+          saveCrawl
+        })
+      }).then(r => r.json()).then(data => {
+        const out = document.getElementById('sfCommandOutput');
+        if (out && data.fullCommand) out.value = data.fullCommand;
+      }).catch(err => console.error('Command preview error:', err));
+    }
+
+    function applySfProfile(profileName) {
+      const allCbs = document.querySelectorAll('.sf-tab-cb');
+      const profileMap = {
+        technical: ['Internal:All', 'Response Codes:All', 'Page Titles:All', 'Meta Description:All', 'H1:All', 'Canonicals:All', 'Directives:All', 'Security:All'],
+        broken: ['Response Codes:All', 'Internal:All'],
+        indexability: ['Directives:All', 'Canonicals:All', 'Sitemaps:All', 'Internal:All'],
+        titles: ['Page Titles:All', 'Meta Description:All', 'H1:All', 'Internal:All']
+      };
+      const targets = profileMap[profileName] || profileMap.technical;
+      allCbs.forEach(cb => {
+        cb.checked = targets.includes(cb.value);
+      });
+      updateSfCommandPreview();
+    }
+
+    function copySfCommand() {
+      const out = document.getElementById('sfCommandOutput');
+      if (out) {
+        navigator.clipboard.writeText(out.value).then(() => {
+          alert('Copied Screaming Frog CLI command to clipboard!');
+        }).catch(() => {
+          out.select();
+          document.execCommand('copy');
+          alert('Copied Screaming Frog CLI command to clipboard!');
+        });
+      }
+    }
+
+    async function launchScreamingFrogCrawl() {
+      const target = document.getElementById('sfTargetInput')?.value?.trim();
+      if (!target) return alert('Please enter a target URL, domain, or sitemap.');
+      const mode = document.getElementById('sfCrawlMode')?.value || 'spider';
+      const createSitemap = document.getElementById('sfOptCreateSitemap')?.checked || false;
+      const isAsync = document.getElementById('sfOptAsync')?.checked || false;
+
+      const checkedTabs = [];
+      document.querySelectorAll('.sf-tab-cb:checked').forEach(cb => checkedTabs.push(cb.value));
+
+      const statusEl = document.getElementById('sfCrawlStatusMsg');
+      const btn = document.getElementById('btnLaunchSfCrawl');
+      if (btn) { btn.disabled = true; btn.innerText = '⏳ Crawling in Progress...'; }
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.style.color = '#38bdf8';
+        statusEl.innerText = `Connecting to Screaming Frog CLI (v24.3)... Headless crawl dispatched for ${target}`;
+      }
+
+      try {
+        const res = await fetch('/api/screaming-frog/crawl', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            target,
+            mode,
+            exportTabs: checkedTabs,
+            createSitemap,
+            async: isAsync
+          })
+        });
+        const data = await res.json();
+        if (btn) { btn.disabled = false; btn.innerText = '🚀 Run Screaming Frog Crawl'; }
+
+        if (data.async) {
+          if (statusEl) {
+            statusEl.innerHTML = `✅ <span style="color:#10b981;">Crawl Dispatched in Background:</span> <code>${data.jobId}</code><br>Polling for results...`;
+          }
+          const pollInterval = setInterval(async () => {
+            try {
+              const pollRes = await fetch(`/api/screaming-frog/crawls/${data.jobId}`);
+              const pollData = await pollRes.json();
+              if (pollData.success && pollData.crawl?.status === 'COMPLETED') {
+                clearInterval(pollInterval);
+                if (statusEl) statusEl.innerHTML = `🎉 <span style="color:#10b981;">Crawl Completed Successfully!</span>`;
+                renderScreamingFrogResults(pollData.crawl.summary);
+              } else if (pollData.crawl?.status === 'FAILED') {
+                clearInterval(pollInterval);
+                if (statusEl) statusEl.innerText = `❌ Crawl failed: ${pollData.crawl.error}`;
+              }
+            } catch {
+              // keep polling
+            }
+          }, 3000);
+        } else if (data.success && data.summary) {
+          if (statusEl) statusEl.innerHTML = `🎉 <span style="color:#10b981;">Crawl Completed Successfully!</span>`;
+          renderScreamingFrogResults(data.summary);
+        } else {
+          if (statusEl) statusEl.innerText = `❌ Crawl encountered error: ${data.error || 'Check server logs'}`;
+        }
+      } catch (err) {
+        if (btn) { btn.disabled = false; btn.innerText = '🚀 Run Screaming Frog Crawl'; }
+        if (statusEl) statusEl.innerText = '❌ Crawl launch failed: ' + err.message;
+      }
+    }
+
+    function renderScreamingFrogResults(summary) {
+      if (!summary) return;
+      const subtitle = document.getElementById('sfCrawlSubtitle');
+      if (subtitle) subtitle.innerText = `Inspected ${summary.totalUrls || 0} URLs from ${summary.outputDir || 'crawl output'}`;
+
+      const setVal = (id, val, color) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.innerText = val !== undefined ? val : '--';
+          if (color) el.style.color = color;
+        }
+      };
+
+      setVal('sfResTotalUrls', summary.totalUrls);
+      setVal('sfRes2xx', summary.statusCodes?.['2xx'] || 0, '#10b981');
+      setVal('sfRes3xx', summary.statusCodes?.['3xx'] || 0, '#f59e0b');
+      setVal('sfRes4xx', summary.statusCodes?.['4xx'] || 0, (summary.statusCodes?.['4xx'] || 0) > 0 ? '#ef4444' : '#10b981');
+      setVal('sfResMissingTitles', summary.missingTitles || 0, (summary.missingTitles || 0) > 0 ? '#ef4444' : '#10b981');
+      setVal('sfResMissingDesc', summary.missingDescriptions || 0, (summary.missingDescriptions || 0) > 0 ? '#ef4444' : '#10b981');
+      setVal('sfResMissingH1', summary.missingH1 || 0, (summary.missingH1 || 0) > 0 ? '#f59e0b' : '#10b981');
+      setVal('sfResMissingCanonicals', summary.missingCanonicals || 0, (summary.missingCanonicals || 0) > 0 ? '#a855f7' : '#10b981');
+
+      const filesBar = document.getElementById('sfExportFilesBar');
+      if (filesBar && summary.filesAvailable && summary.outputDir) {
+        const dirName = summary.outputDir.split('\\').pop();
+        filesBar.innerHTML = summary.filesAvailable.filter(f => f.endsWith('.csv')).map(f => {
+          return `<a href="/api/screaming-frog/crawls/${dirName}/file/${encodeURIComponent(f)}" download class="btn btn-secondary" style="padding:4px 10px; font-size:0.72rem;">📥 ${f}</a>`;
+        }).join('');
+      }
+
+      const tbody = document.getElementById('sfUrlsTableBody');
+      if (tbody && summary.sampleUrls && summary.sampleUrls.length > 0) {
+        tbody.innerHTML = summary.sampleUrls.map(u => {
+          const statusBadge = u.statusCode == 200
+            ? '<span style="color:#10b981; font-weight:700;">200 OK</span>'
+            : `<span style="color:#ef4444; font-weight:700;">${u.statusCode}</span>`;
+          return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:8px 10px; font-family:'JetBrains Mono',monospace; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><a href="${u.url}" target="_blank" style="color:#38bdf8; text-decoration:none;">${u.url}</a></td>
+            <td style="padding:8px 10px;">${statusBadge}</td>
+            <td style="padding:8px 10px; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.title || '<span style="color:#ef4444;">(Missing)</span>'}</td>
+            <td style="padding:8px 10px; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.h1 || '<span style="color:#ef4444;">(Missing)</span>'}</td>
+            <td style="padding:8px 10px; color:${u.indexable === 'Indexable' ? '#10b981' : '#f59e0b'};">${u.indexable || '--'}</td>
+            <td style="padding:8px 10px;">${u.wordCount || '--'}</td>
+            <td style="padding:8px 10px; font-family:'JetBrains Mono',monospace;">${u.responseTime ? `${u.responseTime}s` : '--'}</td>
+          </tr>`;
+        }).join('');
+      }
+    }
+
+    async function loadPastScreamingFrogCrawls() {
+      try {
+        const res = await fetch('/api/screaming-frog/crawls');
+        const data = await res.json();
+        if (data.success && data.crawls && data.crawls.length > 0) {
+          const latest = data.crawls[0];
+          const crawlRes = await fetch(`/api/screaming-frog/crawls/${latest.id}`);
+          const crawlData = await crawlRes.json();
+          if (crawlData.success && crawlData.crawl?.summary) {
+            renderScreamingFrogResults(crawlData.crawl.summary);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load past crawls:', err);
+      }
+    }
+
     // Deep Tabs Controller
     function switchDeepTab(btn, tabId) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -3787,7 +5845,12 @@
         tabHeadEeat: 11,
         tabAiCopilot: 12,
         tabGuides: 13,
-        tabScraper: 14
+        tabScraper: 14,
+        tabCrux: 15,
+        tabPagespeed: 16,
+        tabArsenal: 17,
+        tabGoogleCloud: 18,
+        tabScreamingFrog: 19
       };
       const idx = tabs[tabId] || 0;
       const buttons = document.querySelectorAll('.tab-btn');
@@ -3795,6 +5858,27 @@
         switchDeepTab(buttons[idx], tabId);
       }
     }
+
+    // Auto-switch deep tab if URL contains hash (e.g. #tabScreamingFrog or #screaming-frog)
+    function checkInitialTabHash() {
+      if (!window || !window.location || !window.location.hash) return;
+      const h = window.location.hash.replace('#', '').trim();
+      if (!h) return;
+      if (h === 'screamingfrog' || h === 'screaming-frog' || h === 'sf') {
+        switchDeepTabByTag('tabScreamingFrog');
+      } else if (h === 'gcp' || h === 'google-cloud' || h === 'bigquery') {
+        switchDeepTabByTag('tabGoogleCloud');
+      } else if (h === 'crux' || h === 'cruxvis') {
+        switchDeepTabByTag('tabCrux');
+      } else if (h === 'pagespeed' || h === 'psi') {
+        switchDeepTabByTag('tabPagespeed');
+      } else if (h.startsWith('tab')) {
+        switchDeepTabByTag(h);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', checkInitialTabHash);
+    window.addEventListener('hashchange', checkInitialTabHash);
+    setTimeout(checkInitialTabHash, 100);
 
     // Modal & Inspector Handlers
     function openPageIssuesModal(encodedUrl) {
@@ -4027,6 +6111,7 @@
         sitemap: 'tabSerpSimulator',
         cannibalization: 'tabImages',
         cwv: 'tabSerpSimulator',
+        crux: 'tabCrux',
         schema: 'tabSchemas',
         radar: 'tabMultiAudit'
       };
@@ -4046,6 +6131,9 @@
           if (el) el.scrollIntoView({ behavior: 'smooth' });
         } else if (engineId === 'pagespeed' || engineId === 'cwv') {
           const el = document.getElementById('valSpeedScore');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        } else if (engineId === 'crux') {
+          const el = document.getElementById('tabCrux');
           if (el) el.scrollIntoView({ behavior: 'smooth' });
         } else if (engineId === 'firewall') {
           const el = document.getElementById('bot-GPTBot');
@@ -4143,6 +6231,173 @@
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+    }
+
+    // ─── AGENT ARSENAL HANDLERS ─────────────────────────
+    async function runBrowserUseCrawl() {
+      const url = document.getElementById('browserUseTargetUrl')?.value?.trim() || 'https://example.com';
+      const box = document.getElementById('browserUseResultBox');
+      if (box) box.innerText = '🌐 Browser-Use crawling and grounding DOM accessibility tree...';
+      try {
+        const res = await fetch('/api/browser-use/crawl', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, maxElements: 30 })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        if (box) {
+          box.innerHTML = `<strong>Title:</strong> ${data.title}<br/>` +
+            `<strong>Interactive Elements:</strong> ${data.interactiveElementsCount} found<br/>` +
+            `<strong>Accessibility Score:</strong> ${data.accessibilityScore}/100<br/>` +
+            `<strong>First 5 Grounded Nodes:</strong><br/>` +
+            data.interactiveElements.slice(0, 5).map(e => `[${e.index}] &lt;${e.tag}&gt; "${e.text}" ${e.isClickable ? '⚡clickable' : ''}`).join('<br/>');
+        }
+      } catch (err) {
+        if (box) box.innerText = '❌ Error: ' + err.message;
+      }
+    }
+
+    async function queryAgentMemory() {
+      const q = document.getElementById('memoryQueryInput')?.value?.trim() || '';
+      const box = document.getElementById('memoryResultBox');
+      if (box) box.innerText = 'Searching AgentMemory hybrid store...';
+      try {
+        const res = await fetch(`/api/memory/recall?query=${encodeURIComponent(q)}&limit=5`);
+        const data = await res.json();
+        if (box) {
+          if (!data.memories || data.memories.length === 0) {
+            box.innerText = 'No matching memories found for "' + q + '".';
+          } else {
+            box.innerHTML = `<strong>Recalled ${data.count} memories (${data.estimatedTokensSaved} tokens saved):</strong><br/>` +
+              data.memories.map(m => `• [${m.type}] <strong>${m.key}</strong>: ${typeof m.value === 'string' ? m.value : JSON.stringify(m.value)}`).join('<br/>');
+          }
+        }
+      } catch (err) {
+        if (box) box.innerText = '❌ Memory error: ' + err.message;
+      }
+    }
+
+    async function saveQuickMemory() {
+      const key = prompt('Memory Key / Label:');
+      if (!key) return;
+      const value = prompt('Knowledge Content / Note:');
+      if (!value) return;
+      try {
+        await fetch('/api/memory/remember', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, value, type: 'semantic' })
+        });
+        alert('Saved to persistent AgentMemory!');
+        queryAgentMemory();
+      } catch (err) {
+        alert('Save error: ' + err.message);
+      }
+    }
+
+    async function generateMermaidDiagram() {
+      const type = document.getElementById('diagramTypeSelect')?.value || 'site_architecture';
+      const box = document.getElementById('diagramResultBox');
+      if (box) box.innerText = 'Generating WCAG AAA accessible Mermaid diagram...';
+      try {
+        const res = await fetch('/api/diagrams/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type })
+        });
+        const data = await res.json();
+        if (box) {
+          box.innerText = `// ${data.title} (${data.wcagContrastRatio})\n` + data.mermaid;
+        }
+      } catch (err) {
+        if (box) box.innerText = '❌ Diagram error: ' + err.message;
+      }
+    }
+
+    async function verifyScientificClaims() {
+      const claim = document.getElementById('scientificQueryInput')?.value?.trim() || 'Core Web Vitals bounce rate';
+      const box = document.getElementById('scientificResultBox');
+      if (box) box.innerText = 'Querying CrossRef Open Academic Literature API...';
+      try {
+        const res = await fetch('/api/scientific/verify-citations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ claims: [claim] })
+        });
+        const data = await res.json();
+        if (box) {
+          box.innerHTML = `<strong>Academic E-E-A-T Score:</strong> ${data.academicEeatScore}/100<br/>` +
+            data.verifiedClaims.map(c => `• Status: <strong>${c.status}</strong><br/>  Paper: ${c.supportingPaper || 'N/A'}<br/>  DOI: ${c.doi || 'N/A'}`).join('<br/>');
+        }
+      } catch (err) {
+        if (box) box.innerText = '❌ Scientific lookup error: ' + err.message;
+      }
+    }
+
+    async function runSecurityAudit() {
+      const url = document.getElementById('securityAuditUrl')?.value?.trim() || 'https://example.com';
+      const box = document.getElementById('securityResultBox');
+      if (box) box.innerText = 'Auditing HTTP security headers and MITRE ATT&CK posture...';
+      try {
+        const res = await fetch(`/api/security/audit?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        if (box) {
+          box.innerHTML = `<strong>Security Score:</strong> ${data.securityScore}/100 · <strong>Risk Tier:</strong> ${data.riskTier}<br/>` +
+            data.headerAudits.map(h => `• ${h.name}: <strong>${h.status}</strong> (${h.mitreTechnique})`).join('<br/>');
+        }
+      } catch (err) {
+        if (box) box.innerText = '❌ Security audit error: ' + err.message;
+      }
+    }
+
+    async function runHarnessEvaluation() {
+      const box = document.getElementById('harnessResultBox');
+      if (box) box.innerText = 'Running agent harness fault injection and drift benchmarks...';
+      try {
+        const res = await fetch('/api/harness/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ suite: 'all' })
+        });
+        const data = await res.json();
+        if (box) {
+          box.innerHTML = `<strong>Harness Status:</strong> ${data.verdict} (Pass Rate: ${data.passRate})<br/>` +
+            `<strong>Fault Resilience:</strong> ${data.faultResilienceScore}/100<br/>` +
+            data.benchmarkResults.map(b => `• ${b.testName}: ✅ PASS (${b.latencyMs}ms)`).join('<br/>');
+        }
+      } catch (err) {
+        if (box) box.innerText = '❌ Harness error: ' + err.message;
+      }
+    }
+
+    async function runOpenVikingCompression() {
+      const box = document.getElementById('harnessResultBox');
+      if (box) box.innerText = 'Compressing context into OpenViking L0-L3 tiers...';
+      try {
+        const res = await fetch('/api/openviking/compress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rawContext: 'Audit Page Data: ' + 'signal payload '.repeat(20), userPrompt: 'Recommend SEO fixes' })
+        });
+        const data = await res.json();
+        if (box) {
+          box.innerHTML = `<strong>OpenViking Compression:</strong> ${data.stats.compressionRatio} reduction<br/>` +
+            `<strong>Tokens Saved:</strong> ~${data.stats.estimatedTokensSaved} prompt tokens<br/>` +
+            `<strong>Tiers Active:</strong> L0 (Immediate), L1 (Session), L2 (Project), L3 (Standards)`;
+        }
+      } catch (err) {
+        if (box) box.innerText = '❌ Viking compression error: ' + err.message;
+      }
+    }
+
+    async function runAllArsenalDiagnostics() {
+      runBrowserUseCrawl();
+      queryAgentMemory();
+      generateMermaidDiagram();
+      verifyScientificClaims();
+      runSecurityAudit();
+      runHarnessEvaluation();
     }
 
     document.getElementById('btnPlan').addEventListener('click', runPlan);

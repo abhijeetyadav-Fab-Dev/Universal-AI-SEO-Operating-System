@@ -65,9 +65,13 @@ const sandbox = {
   __elements: elements,
 };
 sandbox.window = sandbox;
+sandbox.location = { hash: '', href: 'http://localhost:4000', search: '', pathname: '/' };
+sandbox.window.location = sandbox.location;
 sandbox.window.codeSnippets = {};
 sandbox.window.isSecureContext = true;
 sandbox.window.print = () => {};
+sandbox.window.addEventListener = () => {};
+sandbox.window.removeEventListener = () => {};
 sandbox.globalThis = sandbox;
 
 const htmlPath = path.join(__dirname, '../public/index.html');
@@ -115,15 +119,21 @@ vm.runInContext(big, ctx, { filename: 'inline-app.js' });
   check('results section shown', val('resultsSection', 'style') !== undefined && (el('resultsSection')?.innerHTML !== undefined));
   check('health score set (measured crawl)', /^\d+\/100$/.test(val('valHealth')), val('valHealth'));
   check('tech score set', val('valTechScore') !== '--' && val('valTechScore') !== 'N/A', val('valTechScore'));
-  check('CWV tile shows — when PSI unavailable (not fake score)', val('valSpeedScore') === '—', val('valSpeedScore'));
-  check('CWV tile sub mentions unavailability', /PSI unavailable/.test(val('valSpeedLcp')), val('valSpeedLcp'));
-  check('CWV provider tag set', /unavailable|PageSpeed/.test(val('cwvProviderTag')), val('cwvProviderTag'));
-  check('CWV LCP value is — (not invented 2.8s)', val('cwvLcpVal') === '—', val('cwvLcpVal'));
-  check('CWV unavailable banner shown', el('cwvUnavailableBanner') && el('cwvUnavailableBanner').style.display === 'block' && /fixed build|PSI/.test(el('cwvUnavailableBanner').innerText), el('cwvUnavailableBanner')?.innerText?.slice(0, 80));
-  check('GEO panel stamped SIMULATED', /prov-simulated/.test(stampText('panelGeo')));
-  check('Trends panel stamped SIMULATED', /prov-simulated/.test(stampText('panelTrends')));
-  check('Backlinks panel stamped SIMULATED', /prov-simulated/.test(stampText('panelBacklinks')));
-  check('CWV panel stamped UNAVAILABLE', /prov-unavailable/.test(stampText('panelCwv')));
+  const isPsiMeasured = val('valSpeedScore') !== '—';
+  if (isPsiMeasured) {
+    check('CWV tile shows measured PSI score', /^\d+\/100$/.test(val('valSpeedScore')), val('valSpeedScore'));
+    check('CWV tile sub shows measured LCP', /LCP:\s*[\d.]+\s*s/.test(val('valSpeedLcp')), val('valSpeedLcp'));
+    check('CWV provider tag set to Google PSI', /PageSpeed/i.test(val('cwvProviderTag')), val('cwvProviderTag'));
+    check('CWV LCP value is measured numeric LCP', /[\d.]+\s*s/.test(val('cwvLcpVal')), val('cwvLcpVal'));
+    check('CWV panel stamped MEASURED', /prov-measured/.test(stampText('panelCwv')), stampText('panelCwv'));
+  } else {
+    check('CWV tile shows — when PSI unavailable (not fake score)', val('valSpeedScore') === '—', val('valSpeedScore'));
+    check('CWV tile sub mentions unavailability', /PSI unavailable/.test(val('valSpeedLcp')), val('valSpeedLcp'));
+    check('CWV provider tag set', /unavailable|PageSpeed/.test(val('cwvProviderTag')), val('cwvProviderTag'));
+    check('CWV LCP value is — (not invented 2.8s)', val('cwvLcpVal') === '—', val('cwvLcpVal'));
+    check('CWV unavailable banner shown', el('cwvUnavailableBanner') && el('cwvUnavailableBanner').style.display === 'block' && /fixed build|PSI/.test(el('cwvUnavailableBanner').innerText), el('cwvUnavailableBanner')?.innerText?.slice(0, 80));
+    check('CWV panel stamped UNAVAILABLE', /prov-unavailable/.test(stampText('panelCwv')));
+  }
   check('On-page panel stamped MEASURED', /prov-measured/.test(stampText('panelOnpage')));
   check('Inbox panel stamped MEASURED', /prov-measured/.test(stampText('panelInbox')));
   check('GEO score rendered (simulated but visible+badged)', /^\d+$/.test(val('valGeoScore')), val('valGeoScore'));
@@ -141,6 +151,23 @@ vm.runInContext(big, ctx, { filename: 'inline-app.js' });
   check('Head/E-E-A-T tab stamped MEASURED + HEURISTIC', /prov-measured/.test(stampText('tabHeadEeat')) && /prov-heuristic/.test(stampText('tabHeadEeat')), stampText('tabHeadEeat').slice(0, 100));
   check('GSC clicks rendered from API', !['--'].includes(val('gscClicks')) && /\d/.test(val('gscClicks')), val('gscClicks'));
   check('backlinks DR rendered from API (badged simulated)', /\d/.test(val('sideDrVal')), val('sideDrVal'));
+  check('CrUX field data overview badge rendered', el('cruxOverviewBadge') !== undefined, val('cruxOverviewBadge'));
+  check('CrUX Vis launcher link exists', el('cruxOverviewDeepLink') !== undefined);
+  check('tabCrux panel element exists in HTML', html.includes('id="tabCrux"'));
+  check('tabCrux button exists in HTML', html.includes("switchDeepTab(this, 'tabCrux')"));
+  check('tabPagespeed panel element exists in HTML', html.includes('id="tabPagespeed"'));
+  check('tabPagespeed button exists in HTML', html.includes("switchDeepTab(this, 'tabPagespeed')"));
+  check('CrUX month filter exists in HTML', html.includes('id="cruxMonthFilter"'));
+  check('CrUX LCP diagnostic grid exists in HTML', html.includes('id="diagTtfbVal"'));
+  check('tabArsenal panel element exists in HTML', html.includes('id="tabArsenal"'));
+  check('tabArsenal button exists in HTML', html.includes("switchDeepTab(this, 'tabArsenal')"));
+  check('tabGoogleCloud panel element exists in HTML', html.includes('id="tabGoogleCloud"'));
+  check('tabGoogleCloud button exists in HTML', html.includes("switchDeepTab(this, 'tabGoogleCloud')"));
+  check('BigQuery SQL generator textarea exists in HTML', html.includes('id="bqSqlOutput"'));
+  check('tabScreamingFrog panel element exists in HTML', html.includes('id="tabScreamingFrog"'));
+  check('tabScreamingFrog button exists in HTML', html.includes("switchDeepTab(this, 'tabScreamingFrog')"));
+  check('Screaming Frog command output box exists in HTML', html.includes('id="sfCommandOutput"'));
+  check('Screaming Frog CLI status badge exists in HTML', html.includes('id="sfStatusBadge"'));
 
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

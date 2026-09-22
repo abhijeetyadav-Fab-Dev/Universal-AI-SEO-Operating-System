@@ -38,6 +38,14 @@ import {
 } from './adapters/open_apis.js';
 import { auditHelpfulContentGuardrail } from './adapters/head_eeat.js';
 import { submitToIndexNow, detectOrphanPages } from './adapters/indexnow_sitemap.js';
+import { auditCruxFull } from './adapters/crux.js';
+import { queryFreeLlm } from './adapters/freellmapi.js';
+import { crawlInteractive } from './adapters/browser_use.js';
+import { remember, recall, getMemoryStats } from './adapters/agentmemory.js';
+import { generateSeoDiagram } from './adapters/diagram_design.js';
+import { searchScientificLiterature, verifyScientificCitations } from './adapters/scientific_skills.js';
+import { runAgentHarnessEvaluation } from './adapters/harness_engineering.js';
+import { auditSecurityPosture } from './adapters/cybersecurity.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -208,6 +216,178 @@ export const TOOLS = [
         }
       },
       required: ['sitemapUrls', 'crawledUrls']
+    }
+  },
+  {
+    name: 'get_crux_history',
+    description: 'Queries real-user performance data from the Google Chrome User Experience Report (CrUX) and CrUX Vis for a target URL or domain. Returns 28-day rolling snapshot metrics, 25-40 week historical timeseries for Core Web Vitals (LCP, INP, CLS, FCP, TTFB), pass/fail CWV assessment, and official Google CrUX Vis interactive deep links.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'The target website URL or origin to query in CrUX (e.g. https://example.com)'
+        },
+        formFactor: {
+          type: 'string',
+          enum: ['ALL', 'PHONE', 'DESKTOP', 'TABLET'],
+          description: 'Device form factor breakdown (default: ALL)',
+          default: 'ALL'
+        },
+        collectionPeriodCount: {
+          type: 'number',
+          description: 'Number of weekly collection periods to retrieve (default: 25, max: 40)',
+          default: 25
+        }
+      },
+      required: ['url']
+    }
+  },
+  {
+    name: 'query_free_llm',
+    description: 'Executes 100% free, zero-auth, keyless LLM reasoning and generative strategy queries via FreeLLMAPI (Pollinations AI, AI Horde volunteer GPUs, or local gateway). Automatically enforces Google Helpful Content & E-E-A-T guardrails.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        prompt: {
+          type: 'string',
+          description: 'The SEO or content strategy task / prompt to submit to the free LLM'
+        },
+        context: {
+          type: 'string',
+          description: 'Optional target page context (e.g. title, headings, meta description) to ground reasoning'
+        },
+        provider: {
+          type: 'string',
+          enum: ['auto', 'pollinations', 'aihorde', 'local'],
+          description: 'Free LLM provider to route query to (default: auto)',
+          default: 'auto'
+        },
+        model: {
+          type: 'string',
+          description: 'Optional specific model name (e.g. openai-fast, qwen, or custom)'
+        }
+      },
+      required: ['prompt']
+    }
+  },
+  {
+    name: 'browser_use_crawl',
+    description: 'Executes an autonomous interactive DOM crawl and accessibility tree extraction based on Browser-Use (https://github.com/browser-use/browser-use). Extracts clickable targets, buttons, form fields with numbered IDs, and landmark accessibility semantics.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'Target website URL to interactively crawl and ground'
+        },
+        maxElements: {
+          type: 'number',
+          description: 'Maximum interactive elements to extract (default: 50)',
+          default: 50
+        }
+      },
+      required: ['url']
+    }
+  },
+  {
+    name: 'manage_agent_memory',
+    description: 'Interacts with the hybrid AgentMemory bank (https://github.com/rohitg00/agentmemory). Supports storing knowledge (action="remember"), recalling indexed memories (action="recall"), and inspecting allocation (action="stats").',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        action: {
+          type: 'string',
+          enum: ['remember', 'recall', 'stats'],
+          description: 'Memory operation to perform'
+        },
+        key: {
+          type: 'string',
+          description: 'Memory key or identifier'
+        },
+        value: {
+          type: 'string',
+          description: 'Memory content / value to store'
+        },
+        query: {
+          type: 'string',
+          description: 'Search query for recall action'
+        },
+        type: {
+          type: 'string',
+          enum: ['working', 'episodic', 'semantic', 'entity'],
+          description: 'Memory tier'
+        }
+      },
+      required: ['action']
+    }
+  },
+  {
+    name: 'generate_seo_diagram',
+    description: 'Generates production-grade, accessible Mermaid architecture diagrams based on Diagram-Design (https://github.com/cathrynlavery/diagram-design). Types: site_architecture, redirect_chain, eeat_graph, cwv_waterfall, crawler_pipeline.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        type: {
+          type: 'string',
+          enum: ['site_architecture', 'redirect_chain', 'eeat_graph', 'cwv_waterfall', 'crawler_pipeline'],
+          description: 'Type of diagram to generate',
+          default: 'site_architecture'
+        },
+        title: {
+          type: 'string',
+          description: 'Optional diagram title'
+        }
+      },
+      required: ['type']
+    }
+  },
+  {
+    name: 'verify_scientific_citations',
+    description: 'Searches peer-reviewed academic literature across CrossRef and open scientific repositories based on Scientific Agent Skills (https://github.com/k-dense-ai/scientific-agent-skills) to verify factual, medical, or scientific claims for Google E-E-A-T audits.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        claims: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Array of factual or scientific claim strings to verify against peer-reviewed literature'
+        },
+        domain: {
+          type: 'string',
+          description: 'Optional domain name'
+        }
+      },
+      required: ['claims']
+    }
+  },
+  {
+    name: 'run_agent_harness',
+    description: 'Runs automated agent evaluation, fault injection resilience testing, and prompt drift detection benchmarks based on Awesome Harness Engineering (https://github.com/walkinglabs/awesome-harness-engineering).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        suite: {
+          type: 'string',
+          enum: ['all', 'fault_injection', 'prompt_drift', 'schema_integrity'],
+          description: 'Evaluation benchmark suite to execute',
+          default: 'all'
+        }
+      }
+    }
+  },
+  {
+    name: 'audit_security_posture',
+    description: 'Audits HTTP security response headers (CSP, HSTS, X-Frame-Options, Permissions-Policy) and TLS posture mapped to MITRE ATT&CK and F3 based on Anthropic Cybersecurity Skills (https://github.com/mukul975/anthropic-cybersecurity-skills).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'Target website URL to audit for security posture and headers'
+        }
+      },
+      required: ['url']
     }
   }
 ];
@@ -386,6 +566,105 @@ export async function handleToolCall(name, args = {}) {
       const sitemapUrls = Array.isArray(args?.sitemapUrls) ? args.sitemapUrls : [];
       const crawledUrls = Array.isArray(args?.crawledUrls) ? args.crawledUrls : [];
       return detectOrphanPages(crawledUrls, sitemapUrls);
+    }
+
+    case 'get_crux_history': {
+      const rawUrl = args?.url || args?.origin;
+      if (!rawUrl) {
+        throw new Error("Missing required parameter: 'url'");
+      }
+      const targetUrl = normalizeUrl(rawUrl);
+      const formFactor = args?.formFactor || 'ALL';
+      const collectionPeriodCount = Number(args?.collectionPeriodCount) || 25;
+      return await auditCruxFull(targetUrl, { formFactor, collectionPeriodCount });
+    }
+
+    case 'query_free_llm': {
+      const prompt = args?.prompt;
+      if (!prompt) {
+        throw new Error("Missing required parameter: 'prompt'");
+      }
+      return await queryFreeLlm({
+        prompt,
+        context: args?.context || '',
+        provider: args?.provider || 'auto',
+        model: args?.model || null
+      });
+    }
+
+    case 'browser_use_crawl': {
+      const rawUrl = args?.url;
+      if (!rawUrl) {
+        throw new Error("Missing required parameter: 'url'");
+      }
+      return await crawlInteractive({
+        url: normalizeUrl(rawUrl),
+        maxElements: args?.maxElements || 50
+      });
+    }
+
+    case 'manage_agent_memory': {
+      const action = args?.action;
+      if (!action) {
+        throw new Error("Missing required parameter: 'action' ('remember', 'recall', or 'stats')");
+      }
+      if (action === 'remember') {
+        if (!args.value) throw new Error("Missing required parameter: 'value' for remember");
+        return remember({
+          key: args.key,
+          value: args.value,
+          type: args.type || 'semantic',
+          tags: args.tags || []
+        });
+      } else if (action === 'recall') {
+        return recall({
+          query: args.query || '',
+          type: args.type || null,
+          limit: args.limit || 10
+        });
+      } else if (action === 'stats') {
+        return getMemoryStats();
+      } else {
+        throw new Error(`Invalid memory action: ${action}`);
+      }
+    }
+
+    case 'generate_seo_diagram': {
+      const type = args?.type;
+      if (!type) {
+        throw new Error("Missing required parameter: 'type'");
+      }
+      return generateSeoDiagram({
+        type,
+        data: args?.data || {},
+        title: args?.title || 'SEO Architecture Diagram'
+      });
+    }
+
+    case 'verify_scientific_citations': {
+      const claims = args?.claims;
+      if (!claims || !Array.isArray(claims)) {
+        throw new Error("Missing required parameter: 'claims' (must be an array of claim strings)");
+      }
+      return await verifyScientificCitations({
+        claims,
+        domain: args?.domain || ''
+      });
+    }
+
+    case 'run_agent_harness': {
+      return await runAgentHarnessEvaluation({
+        suite: args?.suite || 'all',
+        targetUrl: args?.targetUrl || 'https://example.com'
+      });
+    }
+
+    case 'audit_security_posture': {
+      const rawUrl = args?.url;
+      if (!rawUrl) {
+        throw new Error("Missing required parameter: 'url'");
+      }
+      return await auditSecurityPosture(normalizeUrl(rawUrl));
     }
 
     default:
