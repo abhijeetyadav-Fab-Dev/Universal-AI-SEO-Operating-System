@@ -235,10 +235,36 @@ app.use(rateLimiter);
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Static Asset Serving with 1-day Browser Caching
+// Disable aggressive caching for HTML entry points so UI updates reflect immediately
+app.use((req, res, next) => {
+  if (req.path === '/' || req.path.endsWith('.html')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
+// Explicit root route with zero-caching to guarantee instant UI updates
+app.get(['/', '/index.html'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Static Asset Serving with intelligent caching (no-cache for HTML, 1d for static assets)
 app.use(express.static(path.join(__dirname, '../public'), {
-  maxAge: '1d',
-  etag: true
+  etag: true,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
+  }
 }));
 
 // ─── DEDICATED SEO & DISCOVERY ROUTES ─────────────────────
