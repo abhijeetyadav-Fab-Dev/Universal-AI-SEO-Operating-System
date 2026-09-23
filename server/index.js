@@ -182,7 +182,7 @@ const MAX_GENERAL_API_PER_MIN = 120;
 const MAX_CRAWL_API_PER_MIN = 30;
 
 function rateLimiter(req, res, next) {
-  if (!req.path.startsWith('/api/')) return next();
+  if (!req.path.startsWith('/api/') || req.path.startsWith('/api/debug/')) return next();
   
   const clientIp = (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.socket?.remoteAddress || '127.0.0.1';
   const now = Date.now();
@@ -234,6 +234,52 @@ app.use(rateLimiter);
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+// ─── IN-MEMORY DEBUG LOG BUFFER & REQUEST RECORDER ──────────
+const MAX_DEBUG_LOGS = 300;
+export const serverDebugLogs = [];
+
+export function recordDebugLog(level, message, meta = null) {
+  const entry = {
+    id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    timestamp: new Date().toISOString(),
+    level: (level || 'info').toLowerCase(),
+    message: typeof message === 'string' ? message : JSON.stringify(message),
+    meta: meta || {}
+  };
+  serverDebugLogs.push(entry);
+  if (serverDebugLogs.length > MAX_DEBUG_LOGS) {
+    serverDebugLogs.shift();
+  }
+  return entry;
+}
+
+// Initial boot log entry
+recordDebugLog('info', 'OmniSEO-OS Universal Engine initialized. Telemetry and Debug logging active.');
+
+// Intercept all API requests to record latency, status code, and errors for the Debug Console
+app.use((req, res, next) => {
+  if (!req.path.startsWith('/api/') || req.path.startsWith('/api/debug/logs')) {
+    return next();
+  }
+  const startTime = Date.now();
+  const clientIp = (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.socket?.remoteAddress || '127.0.0.1';
+
+  res.on('finish', () => {
+    const duration = Date.now() - startTime;
+    const statusCode = res.statusCode;
+    const level = statusCode >= 500 ? 'error' : statusCode >= 400 ? 'warn' : 'network';
+    recordDebugLog(level, `${req.method} ${req.originalUrl || req.path} -> ${statusCode} (${duration}ms)`, {
+      method: req.method,
+      url: req.originalUrl || req.path,
+      statusCode,
+      durationMs: duration,
+      ip: clientIp,
+      userAgent: req.headers['user-agent'] || 'unknown'
+    });
+  });
+  next();
+});
 
 // Disable aggressive caching for HTML entry points so UI updates reflect immediately
 app.use((req, res, next) => {
@@ -2869,6 +2915,87 @@ app.post(['/api/sitemap/orphans', '/api/v1/sitemap/orphans'], (req, res) => {
   }
 });
 
+// ─── DEBUG CONSOLE BACKEND TELEMETRY & LOG ROUTES ─────────
+app.get(['/api/debug/state', '/api/v1/debug/state'], (req, res) => {
+  const mem = process.memoryUsage();
+  const uptimeSec = Math.floor(process.uptime());
+  let sfStatus = { installed: false, binaryPath: null };
+  try {
+    sfStatus = getScreamingFrogStatus();
+  } catch {}
+
+  res.json({
+    success: true,
+    server: {
+      uptimeSec,
+      uptimeFormatted: `${Math.floor(uptimeSec / 3600)}h ${Math.floor((uptimeSec % 3600) / 60)}m ${uptimeSec % 60}s`,
+      nodeVersion: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      pid: process.pid,
+      memory: {
+        rssMb: Math.round(mem.rss / 1024 / 1024 * 100) / 100,
+        heapUsedMb: Math.round(mem.heapUsed / 1024 / 1024 * 100) / 100,
+        heapTotalMb: Math.round(mem.heapTotal / 1024 / 1024 * 100) / 100,
+        externalMb: Math.round(mem.external / 1024 / 1024 * 100) / 100
+      }
+    },
+    providers: {
+      psi: Boolean(activeApiSettings.psiApiKey),
+      openrouter: Boolean(activeApiSettings.openrouterApiKey),
+      nvidia: Boolean(activeApiSettings.nvidiaApiKey),
+      gemini: Boolean(activeApiSettings.geminiApiKey),
+      openai: Boolean(activeApiSettings.openaiApiKey),
+      freellm: activeApiSettings.freellmEnabled,
+      dataforseo: Boolean(activeApiSettings.dataforseoLogin && activeApiSettings.dataforseoPassword),
+      screamingFrog: sfStatus.installed,
+      screamingFrogBinary: sfStatus.binaryPath
+    },
+    activeConfig: {
+      port: PORT,
+      openrouterModel: activeApiSettings.openrouterModel,
+      nvidiaModel: activeApiSettings.nvidiaModel,
+      geminiModel: activeApiSettings.geminiModel,
+      freellmModel: activeApiSettings.freellmModel,
+      totalBufferedLogs: serverDebugLogs.length
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get(['/api/debug/logs', '/api/v1/debug/logs'], (req, res) => {
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 100, 1), 300);
+  const levelFilter = req.query.level ? req.query.level.toLowerCase() : null;
+
+  let logs = serverDebugLogs;
+  if (levelFilter && levelFilter !== 'all') {
+    logs = logs.filter(l => l.level === levelFilter);
+  }
+
+  const sliced = logs.slice(-limit);
+  res.json({
+    success: true,
+    total: logs.length,
+    returned: sliced.length,
+    logs: sliced
+  });
+});
+
+app.post(['/api/debug/clear', '/api/v1/debug/clear'], (req, res) => {
+  serverDebugLogs.length = 0;
+  recordDebugLog('info', 'Server debug logs buffer cleared by operator');
+  res.json({ success: true, message: 'Server debug log buffer cleared' });
+});
+
+app.post(['/api/debug/log', '/api/v1/debug/log'], (req, res) => {
+  const { level = 'info', message = '', meta = {} } = req.body || {};
+  if (!message) {
+    return res.status(400).json({ error: 'Message is required' });
+  }
+  const entry = recordDebugLog(level, `[Client] ${message}`, meta);
+  res.json({ success: true, entry });
+});
+
 // Health check endpoint
 app.get(['/api/health', '/api/v1/health'], (req, res) => {
   res.json({
@@ -2902,7 +3029,8 @@ app.get(['/api/health', '/api/v1/health'], (req, res) => {
       'BigQuery SEO Data Warehouse Engine (/api/bigquery)',
       'Google Cloud Storage Audit Archiver (/api/gcs)',
       'Google Analytics & Core Web Vitals Correlator (/api/ga4)',
-      'Screaming Frog SEO Spider Enterprise CLI (/api/screaming-frog)'
+      'Screaming Frog SEO Spider Enterprise CLI (/api/screaming-frog)',
+      'Realtime Developer Debug Console & Telemetry (/api/debug/state, /api/debug/logs)'
     ]
   });
 });

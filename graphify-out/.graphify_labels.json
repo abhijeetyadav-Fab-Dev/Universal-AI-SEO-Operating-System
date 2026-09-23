@@ -24,7 +24,7 @@
   "22": "test_all_14_apps.js",
   "23": "cheerio",
   "24": "node-fetch",
-  "25": "orchestrator.js",
+  "25": "test_debug_console.js",
   "26": "crux.js",
   "27": "indexnow_sitemap.js",
   "31": "index.js",

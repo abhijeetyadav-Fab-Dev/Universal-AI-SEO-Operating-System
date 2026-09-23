@@ -168,6 +168,12 @@ vm.runInContext(big, ctx, { filename: 'inline-app.js' });
   check('tabScreamingFrog button exists in HTML', html.includes("switchDeepTab(this, 'tabScreamingFrog')"));
   check('Screaming Frog command output box exists in HTML', html.includes('id="sfCommandOutput"'));
   check('Screaming Frog CLI status badge exists in HTML', html.includes('id="sfStatusBadge"'));
+  check('Debug console floating button exists in HTML', html.includes('id="btnOpenDebugConsole"'));
+  check('Debug console drawer exists in HTML', html.includes('id="debugConsoleDrawer"'));
+  check('Debug logs container exists in HTML', html.includes('id="debugLogsContainer"'));
+  check('Debug REPL input exists in HTML', html.includes('id="debugReplInput"'));
+  check('Debug telemetry tab exists in HTML', html.includes('id="debugTabTelemetry"'));
+  check('Header error counter badge exists in HTML', html.includes('id="headerErrBadge"'));
 
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

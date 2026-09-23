@@ -468,8 +468,448 @@
 .prov-simulated{background:rgba(245,158,11,0.16);color:#fde68a;border:1px solid rgba(245,158,11,0.55);}
 .prov-unavailable{background:rgba(148,163,184,0.14);color:#cbd5e1;border:1px solid rgba(148,163,184,0.5);}
 .prov-note{font-size:0.66rem;color:#94a3b8;line-height:1.4;}
-.prov-banner{background:rgba(245,158,11,0.08);border:1px dashed rgba(245,158,11,0.5);color:#fde68a;border-radius:8px;padding:8px 12px;font-size:0.72rem;margin:0 0 12px 0;display:none;line-height:1.5;}
-.prov-legend{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:8px 12px;margin-bottom:16px;}
+  /* ══════════════════════════════════════════════════════════ */
+  /* REALTIME DEVELOPER DEBUG CONSOLE & REPL STYLES             */
+  /* ══════════════════════════════════════════════════════════ */
+  .debug-floating-pill {
+    position: fixed;
+    bottom: 20px;
+    right: 24px;
+    z-index: 99990;
+    background: rgba(10, 15, 29, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(168, 85, 247, 0.45);
+    color: #e2e8f0;
+    padding: 7px 15px;
+    border-radius: 30px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 12px rgba(168, 85, 247, 0.25);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+  }
+  .debug-floating-pill:hover {
+    background: rgba(15, 23, 42, 0.96);
+    border-color: #a855f7;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 18px rgba(168, 85, 247, 0.4);
+    color: #fff;
+  }
+  .debug-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #a855f7;
+    box-shadow: 0 0 8px #a855f7;
+    display: inline-block;
+    animation: debugPulse 2s infinite ease-in-out;
+  }
+  @keyframes debugPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+  .debug-badge {
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 12px;
+    line-height: 1.3;
+  }
+  .debug-count-pill {
+    background: rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 4px;
+  }
+  .debug-drawer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 380px;
+    max-height: 85vh;
+    background: #080c16;
+    border-top: 1px solid rgba(168, 85, 247, 0.4);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.7);
+    z-index: 99995;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(105%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), height 0.2s ease;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .debug-drawer.open {
+    transform: translateY(0);
+  }
+  .debug-drawer.maximized {
+    height: 80vh;
+  }
+  .debug-drawer-header {
+    background: #040711;
+    padding: 8px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .debug-drawer-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .debug-drawer-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #f8fafc;
+    letter-spacing: 0.3px;
+  }
+  .debug-ver-pill {
+    background: rgba(168, 85, 247, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    color: #c084fc;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .debug-tab-pills {
+    display: flex;
+    gap: 6px;
+  }
+  .debug-tab-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: #94a3b8;
+    font-family: inherit;
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.15s ease;
+  }
+  .debug-tab-btn:hover {
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .debug-tab-btn.active {
+    color: #fff;
+    background: rgba(168, 85, 247, 0.2);
+    border-color: rgba(168, 85, 247, 0.5);
+  }
+  .debug-drawer-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .debug-icon-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    font-family: inherit;
+    font-size: 0.82rem;
+    width: 26px;
+    height: 26px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .debug-icon-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #a855f7;
+  }
+  .debug-tab-panel {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .debug-tab-panel.active {
+    display: flex;
+  }
+  .debug-toolbar {
+    background: #090e1b;
+    padding: 7px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+  .debug-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .debug-filter-label {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    user-select: none;
+  }
+  .debug-filter-label input {
+    accent-color: #a855f7;
+    cursor: pointer;
+  }
+  .debug-search-group {
+    flex: 1;
+    max-width: 320px;
+  }
+  .debug-search-group input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 5px;
+    padding: 4px 9px;
+    color: #f1f5f9;
+    font-family: inherit;
+    font-size: 0.72rem;
+    outline: none;
+  }
+  .debug-search-group input:focus {
+    border-color: #a855f7;
+  }
+  .debug-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .debug-btn-sm {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+    font-family: inherit;
+    font-size: 0.7rem;
+    padding: 4px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .debug-btn-sm:hover {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: #a855f7;
+    color: #fff;
+  }
+  .debug-logs-stream {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: #060912;
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+  .debug-log-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    border-left: 2px solid transparent;
+    word-break: break-word;
+    transition: background 0.1s ease;
+  }
+  .debug-log-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .debug-log-row.level-info {
+    border-left-color: #38bdf8;
+  }
+  .debug-log-row.level-warn {
+    border-left-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.04);
+  }
+  .debug-log-row.level-error {
+    border-left-color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+    color: #fca5a5;
+  }
+  .debug-log-row.level-network {
+    border-left-color: #10b981;
+  }
+  .debug-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .debug-tag-info { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+  .debug-tag-warn { background: rgba(245, 158, 11, 0.18); color: #fbbf24; }
+  .debug-tag-error { background: rgba(239, 68, 68, 0.25); color: #f87171; }
+  .debug-tag-network { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+  .debug-time {
+    color: #64748b;
+    font-size: 0.68rem;
+    flex-shrink: 0;
+  }
+  .debug-msg {
+    flex: 1;
+    color: #e2e8f0;
+    white-space: pre-wrap;
+  }
+  .debug-repl-quickactions {
+    background: #090e1b;
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+  .debug-repl-qa-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #94a3b8;
+    white-space: nowrap;
+  }
+  .debug-chip-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-family: inherit;
+    font-size: 0.68rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+  .debug-chip-btn:hover {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: #a855f7;
+    color: #fff;
+  }
+  .debug-repl-output-stream {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #060912;
+    font-size: 0.76rem;
+  }
+  .debug-repl-welcome {
+    color: #a855f7;
+    background: rgba(168, 85, 247, 0.08);
+    border: 1px dashed rgba(168, 85, 247, 0.3);
+    padding: 8px 12px;
+    border-radius: 6px;
+    line-height: 1.5;
+  }
+  .debug-repl-entry-cmd {
+    color: #38bdf8;
+    font-weight: 700;
+  }
+  .debug-repl-entry-res {
+    color: #a7f3d0;
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 2px solid #10b981;
+    padding: 4px 8px;
+    border-radius: 0 4px 4px 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .debug-repl-entry-err {
+    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.05);
+    border-left: 2px solid #ef4444;
+    padding: 4px 8px;
+    border-radius: 0 4px 4px 0;
+    white-space: pre-wrap;
+  }
+  .debug-repl-input-bar {
+    background: #040711;
+    padding: 8px 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .debug-repl-prompt {
+    color: #a855f7;
+    font-weight: 800;
+    font-size: 0.95rem;
+  }
+  .debug-repl-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f8fafc;
+    font-family: inherit;
+    font-size: 0.78rem;
+  }
+  .debug-btn-repl-send {
+    background: #a855f7;
+    border: none;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .debug-btn-repl-send:hover {
+    background: #9333ea;
+  }
+  .debug-telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    padding: 14px 16px;
+    overflow-y: auto;
+    flex: 1;
+    background: #060912;
+  }
+  .debug-telemetry-card {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .debug-telemetry-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 0.78rem;
+    color: #38bdf8;
+    font-weight: 700;
+  }
+  .debug-telem-data {
+    font-size: 0.72rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+  }
 </style>
 </head>
 <body>
@@ -502,6 +942,7 @@
         <button class="header-nav-btn outline" onclick="openApiSettingsModal()" style="border-color:rgba(56,189,248,0.4); color:#38bdf8;" title="Configure Live API Keys: OpenRouter, NVIDIA NIM, Gemini, PSI, DataForSEO">⚙️ API Settings</button>
         <a href="/blog" class="header-nav-btn outline" style="text-decoration:none;" title="SEO Guides & Knowledge Base">📚 Guides</a>
         <button class="header-nav-btn outline" onclick="openEngineModal()">📊 Engine Matrix</button>
+        <button class="header-nav-btn outline" onclick="toggleDebugConsole()" style="border-color:rgba(168,85,247,0.4); color:#c084fc;" title="Open Realtime Developer Debug Console & REPL (Ctrl+` or F9)">💻 Debug <span id="headerErrBadge" style="display:none; background:#ef4444; color:#fff; font-size:0.65rem; border-radius:10px; padding:1px 5px; margin-left:4px; font-weight:800;">0</span></button>
         <button class="header-nav-btn" onclick="document.getElementById('queryInput').focus(); document.getElementById('queryInput').scrollIntoView({behavior:'smooth'});">⚡ Quick Audit</button>
       </div>
     </div>
@@ -6806,11 +7247,557 @@ https://web.dev/explore"></textarea>
       runHarnessEvaluation();
     }
 
+    // ══════════════════════════════════════════════════════════
+    // REALTIME DEVELOPER DEBUG CONSOLE & REPL ENGINE
+    // ══════════════════════════════════════════════════════════
+    const clientDebugLogs = [];
+    const replHistory = [];
+    let replHistoryIdx = -1;
+    let currentDebugFilter = 'all';
+    let isDebugOpen = false;
+    let isDebugFullscreen = false;
+    let errorCount = 0;
+
+    // Helper functions exposed for REPL
+    const gRoot = typeof window !== 'undefined' ? window : globalThis;
+    gRoot.inspectPlan = () => gRoot.currentPlan || "No active plan yet. Run an audit first.";
+    gRoot.inspectAudit = () => gRoot.lastAuditResult || "No audit executed yet.";
+    gRoot.testHealth = async () => await fetch('/api/health').then(r => r.json());
+    gRoot.inspectCrawled = () => gRoot.allCrawledUrls || [];
+    gRoot.dumpStorage = () => {
+      try { return { ...localStorage }; } catch { return {}; }
+    };
+    gRoot.checkScreamingFrog = async () => await fetch('/api/screaming-frog/status').then(r => r.json());
+    gRoot.clearConsole = () => clearDebugConsoleLogs();
+
+    function formatDebugTime() {
+      const now = new Date();
+      return now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+    }
+
+    function addDebugEntry(entry) {
+      entry.id = 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+      entry.time = entry.time || formatDebugTime();
+      clientDebugLogs.push(entry);
+      if (clientDebugLogs.length > 500) clientDebugLogs.shift();
+
+      if (entry.level === 'error') {
+        errorCount++;
+        updateErrorBadges();
+      }
+
+      const countBadge = document.getElementById('debugLogCountBadge');
+      if (countBadge) countBadge.innerText = clientDebugLogs.length;
+
+      renderDebugLogs();
+    }
+
+    function updateErrorBadges() {
+      const hBadge = document.getElementById('headerErrBadge');
+      const fBadge = document.getElementById('floatingErrBadge');
+      if (hBadge) {
+        hBadge.innerText = errorCount;
+        hBadge.style.display = errorCount > 0 ? 'inline-block' : 'none';
+      }
+      if (fBadge) {
+        fBadge.innerText = errorCount;
+        fBadge.style.display = errorCount > 0 ? 'inline-block' : 'none';
+      }
+    }
+
+    // Intercept console.log / warn / error / info safely
+    (function hookConsole() {
+      if (typeof console === 'undefined') return;
+      const _log = console.log;
+      const _warn = console.warn;
+      const _err = console.error;
+      const _info = console.info;
+
+      console.log = function(...args) {
+        try {
+          addDebugEntry({
+            level: 'info',
+            source: 'console',
+            message: args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')
+          });
+        } catch {}
+        if (_log) _log.apply(console, args);
+      };
+
+      console.warn = function(...args) {
+        try {
+          addDebugEntry({
+            level: 'warn',
+            source: 'console',
+            message: args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')
+          });
+        } catch {}
+        if (_warn) _warn.apply(console, args);
+      };
+
+      console.error = function(...args) {
+        try {
+          addDebugEntry({
+            level: 'error',
+            source: 'console',
+            message: args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')
+          });
+        } catch {}
+        if (_err) _err.apply(console, args);
+      };
+
+      console.info = function(...args) {
+        try {
+          addDebugEntry({
+            level: 'info',
+            source: 'console',
+            message: args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')
+          });
+        } catch {}
+        if (_info) _info.apply(console, args);
+      };
+    })();
+
+    // Intercept window.fetch to capture network telemetry
+    (function hookFetch() {
+      if (typeof window === 'undefined' || !window.fetch) return;
+      const _fetch = window.fetch;
+      window.fetch = async function(...args) {
+        const urlStr = typeof args[0] === 'string' ? args[0] : (args[0]?.url || 'unknown');
+        const method = (args[1]?.method || 'GET').toUpperCase();
+        const start = performance.now();
+
+        try {
+          const res = await _fetch.apply(this, args);
+          const duration = Math.round(performance.now() - start);
+
+          // Skip polling logs to avoid feedback loop
+          if (!urlStr.includes('/api/debug/logs')) {
+            addDebugEntry({
+              level: res.ok ? 'network' : (res.status >= 500 ? 'error' : 'warn'),
+              source: 'network',
+              message: `${method} ${urlStr} -> ${res.status} (${duration}ms)`
+            });
+          }
+          return res;
+        } catch (err) {
+          const duration = Math.round(performance.now() - start);
+          addDebugEntry({
+            level: 'error',
+            source: 'network',
+            message: `${method} ${urlStr} -> FAILED: ${err.message} (${duration}ms)`
+          });
+          throw err;
+        }
+      };
+    })();
+
+    // Toggle Console Drawer
+    function toggleDebugConsole() {
+      const drawer = document.getElementById('debugConsoleDrawer');
+      if (!drawer) return;
+      isDebugOpen = !isDebugOpen;
+      if (isDebugOpen) {
+        drawer.classList.add('open');
+        renderDebugLogs();
+        const replInput = document.getElementById('debugReplInput');
+        if (replInput) replInput.focus();
+      } else {
+        drawer.classList.remove('open');
+      }
+    }
+
+    // Toggle Fullscreen / Maximize
+    function toggleDebugFullscreen() {
+      const drawer = document.getElementById('debugConsoleDrawer');
+      if (!drawer) return;
+      isDebugFullscreen = !isDebugFullscreen;
+      if (isDebugFullscreen) {
+        drawer.classList.add('maximized');
+      } else {
+        drawer.classList.remove('maximized');
+      }
+    }
+
+    // Tab Switching
+    function switchDebugTab(tabName) {
+      const tabs = ['logs', 'repl', 'telemetry'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+        const panel = document.getElementById('debugTab' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (btn) btn.classList.toggle('active', t === tabName);
+        if (panel) panel.classList.toggle('active', t === tabName);
+      });
+      if (tabName === 'telemetry') {
+        refreshDebugTelemetry();
+      } else if (tabName === 'repl') {
+        const input = document.getElementById('debugReplInput');
+        if (input) input.focus();
+      }
+    }
+
+    // Filter Logs
+    function filterDebugLogs(level) {
+      currentDebugFilter = level;
+      renderDebugLogs();
+    }
+
+    // Render Logs Stream
+    function renderDebugLogs() {
+      const container = document.getElementById('debugLogsContainer');
+      if (!container) return;
+
+      const searchInput = document.getElementById('debugLogSearch');
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+      const filtered = clientDebugLogs.filter(item => {
+        if (currentDebugFilter !== 'all' && item.level !== currentDebugFilter) return false;
+        if (query && !item.message.toLowerCase().includes(query)) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="color:#64748b; font-style:italic; padding:12px;">No matching logs found in buffer.</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => {
+        const tagClass = 'debug-tag debug-tag-' + (item.level || 'info');
+        const rowClass = 'debug-log-row level-' + (item.level || 'info');
+        const tagLabel = item.level === 'network' ? 'NET' : (item.level || 'INFO').toUpperCase();
+        return `<div class="${rowClass}">
+          <span class="debug-time">${item.time}</span>
+          <span class="${tagClass}">[${tagLabel}]</span>
+          <span class="debug-msg">${escapeHtml(item.message)}</span>
+        </div>`;
+      }).join('');
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Clear Logs
+    async function clearDebugConsoleLogs() {
+      clientDebugLogs.length = 0;
+      errorCount = 0;
+      updateErrorBadges();
+      const countBadge = document.getElementById('debugLogCountBadge');
+      if (countBadge) countBadge.innerText = '0';
+      renderDebugLogs();
+
+      try {
+        await fetch('/api/debug/clear', { method: 'POST' });
+      } catch {}
+    }
+
+    // Export Logs as JSON
+    function exportDebugLogsJson() {
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(clientDebugLogs, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute('href', dataStr);
+      downloadAnchor.setAttribute('download', `omniseo-debug-logs-${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    // Sync Server Logs into stream
+    async function fetchServerDebugLogs() {
+      try {
+        const res = await fetch('/api/debug/logs?limit=100');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.logs)) {
+          data.logs.forEach(sLog => {
+            if (!clientDebugLogs.some(c => c.message === sLog.message && Math.abs(new Date(c.time) - new Date(sLog.timestamp)) < 2000)) {
+              clientDebugLogs.push({
+                id: sLog.id,
+                level: sLog.level,
+                source: 'server',
+                time: new Date(sLog.timestamp).toTimeString().split(' ')[0],
+                message: sLog.message
+              });
+            }
+          });
+          renderDebugLogs();
+        }
+      } catch (err) {
+        console.error('Failed to sync server logs: ' + err.message);
+      }
+    }
+
+    // REPL Handlers
+    function runReplSnippet(snippet) {
+      const input = document.getElementById('debugReplInput');
+      if (input) {
+        input.value = snippet;
+        executeReplCommand(snippet);
+      }
+    }
+
+    function handleReplSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('debugReplInput');
+      if (!input) return;
+      const cmd = input.value.trim();
+      if (!cmd) return;
+      replHistory.push(cmd);
+      replHistoryIdx = replHistory.length;
+      input.value = '';
+      executeReplCommand(cmd);
+    }
+
+    async function executeReplCommand(cmd) {
+      const output = document.getElementById('debugReplOutput');
+      if (!output) return;
+
+      const cmdEl = document.createElement('div');
+      cmdEl.className = 'debug-repl-entry-cmd';
+      cmdEl.innerText = '> ' + cmd;
+      output.appendChild(cmdEl);
+
+      try {
+        let result;
+        if (cmd.includes('await ')) {
+          result = await (0, eval)(`(async () => { return (${cmd}); })()`);
+        } else {
+          result = (0, eval)(cmd);
+        }
+
+        const resEl = document.createElement('div');
+        resEl.className = 'debug-repl-entry-res';
+        if (result === undefined) {
+          resEl.innerText = '<= undefined';
+        } else if (result === null) {
+          resEl.innerText = '<= null';
+        } else if (typeof result === 'object') {
+          try {
+            resEl.innerText = '<= ' + JSON.stringify(result, null, 2);
+          } catch {
+            resEl.innerText = '<= [Complex Object: ' + Object.prototype.toString.call(result) + ']';
+          }
+        } else {
+          resEl.innerText = '<= ' + String(result);
+        }
+        output.appendChild(resEl);
+      } catch (err) {
+        const errEl = document.createElement('div');
+        errEl.className = 'debug-repl-entry-err';
+        errEl.innerText = '❌ ' + err.name + ': ' + err.message;
+        output.appendChild(errEl);
+      }
+
+      output.scrollTop = output.scrollHeight;
+    }
+
+    // Command History Navigation
+    (function setupReplHistoryListener() {
+      if (typeof window === 'undefined') return;
+      window.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('debugReplInput');
+        if (!input) return;
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (replHistoryIdx > 0) {
+              replHistoryIdx--;
+              input.value = replHistory[replHistoryIdx] || '';
+            }
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (replHistoryIdx < replHistory.length - 1) {
+              replHistoryIdx++;
+              input.value = replHistory[replHistoryIdx] || '';
+            } else {
+              replHistoryIdx = replHistory.length;
+              input.value = '';
+            }
+          }
+        });
+      });
+    })();
+
+    // Refresh System Telemetry
+    async function refreshDebugTelemetry() {
+      const serverBox = document.getElementById('debugTelemServer');
+      const memBox = document.getElementById('debugTelemMemory');
+      const provBox = document.getElementById('debugTelemProviders');
+      const configBox = document.getElementById('debugTelemConfig');
+
+      try {
+        const res = await fetch('/api/debug/state');
+        const data = await res.json();
+        if (!data.success) throw new Error('Telemetry endpoint returned error');
+
+        if (serverBox) {
+          serverBox.innerHTML = `<strong>Uptime:</strong> ${data.server.uptimeFormatted}<br/>` +
+            `<strong>Node.js:</strong> ${data.server.nodeVersion} (${data.server.platform}-${data.server.arch})<br/>` +
+            `<strong>Process PID:</strong> ${data.server.pid}<br/>` +
+            `<strong>Status:</strong> <span style="color:#10b981; font-weight:700;">● HEALTHY &amp; LIVE</span>`;
+        }
+
+        if (memBox) {
+          const heapPct = Math.round((data.server.memory.heapUsedMb / data.server.memory.heapTotalMb) * 100);
+          memBox.innerHTML = `<strong>RSS:</strong> ${data.server.memory.rssMb} MB<br/>` +
+            `<strong>Heap Used:</strong> ${data.server.memory.heapUsedMb} MB / ${data.server.memory.heapTotalMb} MB (${heapPct}%)<br/>` +
+            `<div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; margin:6px 0; overflow:hidden;">` +
+            `  <div style="width:${heapPct}%; height:100%; background:#a855f7;"></div>` +
+            `</div>` +
+            `<strong>External:</strong> ${data.server.memory.externalMb} MB`;
+        }
+
+        if (provBox) {
+          provBox.innerHTML = `<strong>Google PSI:</strong> ${data.providers.psi ? '✅ Configured' : '⚠️ Default Key'}<br/>` +
+            `<strong>OpenRouter AI:</strong> ${data.providers.openrouter ? '✅ Active' : '⚪ Not Set'}<br/>` +
+            `<strong>NVIDIA NIM:</strong> ${data.providers.nvidia ? '✅ Active' : '⚪ Not Set'}<br/>` +
+            `<strong>Google Gemini:</strong> ${data.providers.gemini ? '✅ Active' : '⚪ Not Set'}<br/>` +
+            `<strong>FreeLLM:</strong> ${data.providers.freellm ? '✅ Enabled' : '⚪ Disabled'}<br/>` +
+            `<strong>Screaming Frog:</strong> ${data.providers.screamingFrog ? '✅ CLI Detected' : '⚪ Not Found'}`;
+        }
+
+        if (configBox) {
+          configBox.innerHTML = `<strong>HTTP Port:</strong> ${data.activeConfig.port}<br/>` +
+            `<strong>NVIDIA Model:</strong> ${data.activeConfig.nvidiaModel || 'Default'}<br/>` +
+            `<strong>OpenRouter Model:</strong> ${data.activeConfig.openrouterModel || 'Default'}<br/>` +
+            `<strong>Buffered Server Logs:</strong> ${data.activeConfig.totalBufferedLogs}<br/>` +
+            `<strong>Client Log Entries:</strong> ${clientDebugLogs.length}`;
+        }
+      } catch (err) {
+        if (serverBox) serverBox.innerHTML = `❌ Telemetry fetch failed: ${err.message}`;
+      }
+    }
+
+    // Global Keyboard Shortcuts
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'F9' || (e.ctrlKey && (e.key === '`' || e.code === 'Backquote')) || (e.ctrlKey && e.shiftKey && (e.key === 'D' || e.key === 'd'))) {
+          e.preventDefault();
+          toggleDebugConsole();
+        } else if (e.key === 'Escape' && isDebugOpen) {
+          toggleDebugConsole();
+        }
+      });
+    }
+
+    // Initial greeting entry into debug console
+    addDebugEntry({
+      level: 'info',
+      source: 'client',
+      message: 'OmniSEO Realtime Developer Console & REPL Ready. Press Ctrl+` or F9 to toggle.'
+    });
+
     document.getElementById('btnPlan').addEventListener('click', runPlan);
     document.getElementById('btnExecute').addEventListener('click', async () => {
       await runPlan();
       runExecution();
     });
   </script>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- FLOATING DEBUG CONSOLE LAUNCHER PILL                      -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div id="btnOpenDebugConsole" class="debug-floating-pill" onclick="toggleDebugConsole()" title="Toggle Realtime Developer Debug Console & REPL (Ctrl+` or F9)">
+    <span class="debug-pulse-dot"></span>
+    <span>Debug Console</span>
+    <span id="floatingErrBadge" class="debug-badge" style="display:none;">0</span>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- INTERACTIVE DEVELOPER DEBUG CONSOLE & REPL DRAWER          -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div id="debugConsoleDrawer" class="debug-drawer">
+    <div class="debug-drawer-header">
+      <div class="debug-drawer-title-group">
+        <span class="debug-pulse-dot"></span>
+        <span class="debug-drawer-title">OmniSEO Developer Console</span>
+        <span class="debug-ver-pill">v2.0 REPL</span>
+      </div>
+      <div class="debug-tab-pills">
+        <button class="debug-tab-btn active" id="tabBtnLogs" onclick="switchDebugTab('logs')">
+          📋 Logs &amp; Network <span id="debugLogCountBadge" class="debug-count-pill">0</span>
+        </button>
+        <button class="debug-tab-btn" id="tabBtnRepl" onclick="switchDebugTab('repl')">
+          ⚡ JS REPL
+        </button>
+        <button class="debug-tab-btn" id="tabBtnTelemetry" onclick="switchDebugTab('telemetry')">
+          ☁️ System Telemetry
+        </button>
+      </div>
+      <div class="debug-drawer-actions">
+        <button class="debug-icon-btn" onclick="toggleDebugFullscreen()" title="Toggle Maximize/Restore">🗖</button>
+        <button class="debug-icon-btn" onclick="toggleDebugConsole()" title="Close Console (Esc / F9)">✕</button>
+      </div>
+    </div>
+
+    <!-- TAB 1: LOGS & NETWORK STREAM -->
+    <div id="debugTabLogs" class="debug-tab-panel active">
+      <div class="debug-toolbar">
+        <div class="debug-filter-group">
+          <label class="debug-filter-label"><input type="radio" name="debugFilter" value="all" checked onchange="filterDebugLogs('all')"> All</label>
+          <label class="debug-filter-label"><input type="radio" name="debugFilter" value="info" onchange="filterDebugLogs('info')"> Info</label>
+          <label class="debug-filter-label"><input type="radio" name="debugFilter" value="warn" onchange="filterDebugLogs('warn')"> Warn</label>
+          <label class="debug-filter-label"><input type="radio" name="debugFilter" value="error" onchange="filterDebugLogs('error')"> Error</label>
+          <label class="debug-filter-label"><input type="radio" name="debugFilter" value="network" onchange="filterDebugLogs('network')"> Network</label>
+        </div>
+        <div class="debug-search-group">
+          <input type="text" id="debugLogSearch" placeholder="Filter console logs (regex/text)..." oninput="renderDebugLogs()">
+        </div>
+        <div class="debug-actions-group">
+          <button class="debug-btn-sm" onclick="clearDebugConsoleLogs()" title="Clear console buffer">🗑️ Clear</button>
+          <button class="debug-btn-sm" onclick="exportDebugLogsJson()" title="Download debug logs as JSON">💾 Export</button>
+          <button class="debug-btn-sm" onclick="fetchServerDebugLogs()" title="Refresh server logs">🔄 Sync Server</button>
+        </div>
+      </div>
+      <div id="debugLogsContainer" class="debug-logs-stream">
+        <!-- Rendered items go here -->
+      </div>
+    </div>
+
+    <!-- TAB 2: INTERACTIVE REPL & STATE INSPECTOR -->
+    <div id="debugTabRepl" class="debug-tab-panel">
+      <div class="debug-repl-quickactions">
+        <span class="debug-repl-qa-label">Quick Actions:</span>
+        <button class="debug-chip-btn" onclick="runReplSnippet('inspectPlan()')">🔍 Inspect Plan</button>
+        <button class="debug-chip-btn" onclick="runReplSnippet('inspectAudit()')">📊 Inspect Audit Data</button>
+        <button class="debug-chip-btn" onclick="runReplSnippet('testHealth()')">💓 API Health Check</button>
+        <button class="debug-chip-btn" onclick="runReplSnippet('inspectCrawled()')">🕷️ Crawled URLs</button>
+        <button class="debug-chip-btn" onclick="runReplSnippet('dumpStorage()')">📦 Dump LocalStorage</button>
+        <button class="debug-chip-btn" onclick="runReplSnippet('checkScreamingFrog()')">🐸 Screaming Frog Status</button>
+      </div>
+      <div id="debugReplOutput" class="debug-repl-output-stream">
+        <div class="debug-repl-welcome">
+          ⚡ OmniSEO Interactive JavaScript REPL Ready. Type any JavaScript expression or command to inspect window, DOM, or app state. Use ↑ / ↓ for command history.
+        </div>
+      </div>
+      <form id="debugReplForm" class="debug-repl-input-bar" onsubmit="handleReplSubmit(event)">
+        <span class="debug-repl-prompt">&gt;</span>
+        <input type="text" id="debugReplInput" class="debug-repl-input" placeholder="e.g. window.allCrawledUrls, document.title, await fetch('/api/health').then(r=>r.json())" autocomplete="off" spellcheck="false">
+        <button type="submit" class="debug-btn-repl-send">Run ↵</button>
+      </form>
+    </div>
+
+    <!-- TAB 3: SYSTEM TELEMETRY -->
+    <div id="debugTabTelemetry" class="debug-tab-panel">
+      <div class="debug-telemetry-grid">
+        <div class="debug-telemetry-card">
+          <h4>🖥️ Node Process &amp; Runtime</h4>
+          <div id="debugTelemServer" class="debug-telem-data">Loading telemetry...</div>
+        </div>
+        <div class="debug-telemetry-card">
+          <h4>🧠 Memory Usage</h4>
+          <div id="debugTelemMemory" class="debug-telem-data">Loading memory stats...</div>
+        </div>
+        <div class="debug-telemetry-card">
+          <h4>🔌 AI &amp; CLI Integrations</h4>
+          <div id="debugTelemProviders" class="debug-telem-data">Loading providers...</div>
+        </div>
+        <div class="debug-telemetry-card">
+          <h4>⚙️ Active Models &amp; Environment</h4>
+          <div id="debugTelemConfig" class="debug-telem-data">Loading active models...</div>
+        </div>
+      </div>
+      <div style="margin-top:10px; padding:0 16px 12px 16px; display:flex; justify-content:flex-end;">
+        <button class="debug-btn-sm" onclick="refreshDebugTelemetry()">🔄 Refresh Telemetry</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
