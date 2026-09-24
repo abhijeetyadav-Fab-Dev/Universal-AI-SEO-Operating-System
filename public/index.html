@@ -548,6 +548,12 @@
     transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), height 0.2s ease;
     font-family: 'JetBrains Mono', monospace;
   }
+  .api-filter-btn.active, .plat-cat-btn.active {
+    background: #38bdf8 !important;
+    color: #030712 !important;
+    font-weight: 700 !important;
+    border-color: #38bdf8 !important;
+  }
   .debug-drawer.open {
     transform: translateY(0);
   }
@@ -935,7 +941,7 @@
       </div>
       <div class="header-right-actions">
         <div class="status-summary" onclick="openEngineModal()" title="View Engine Architecture Matrix">
-          <span class="dot-live"></span> 14/14 Engines Active
+          <span class="dot-live"></span> 15/15 Engines Active
           <span style="font-size:0.68rem; opacity:0.8; margin-left:2px;">▾</span>
         </div>
         <button class="header-nav-btn outline" onclick="openProvenanceModal()" style="border-color:rgba(16,185,129,0.4); color:#a7f3d0;" title="View Data Provenance: Live Ground-Truth vs Simulated Benchmarks">ℹ️ Data Provenance</button>
@@ -969,6 +975,7 @@
           <span class="nav-tag" onclick="jumpToEngine('schema')" title="JSON-LD Schema Dumper &amp; Rich Results Generator"><span class="dot-live"></span>Schema Studio</span>
           <span class="nav-tag" onclick="jumpToEngine('radar')" title="TLS &amp; Network Latency Radar"><span class="dot-live"></span>Tech Radar</span>
           <span class="nav-tag" onclick="jumpToEngine('crux')" title="Google Chrome UX Report &amp; CrUX Vis Real-User Field Data"><span class="dot-live"></span>CrUX Vis</span>
+          <span class="nav-tag" onclick="jumpToEngine('apihealth')" title="Live API Endpoints Discovery, Health &amp; Deprecation Matrix"><span class="dot-live"></span>API Health</span>
         </div>
       </div>
     </div>
@@ -1099,7 +1106,7 @@
           </button>
           <button class="deep-cat-btn" onclick="switchDeepCategory(2)" id="catBtnPerf">
             <span>⚡ Performance &amp; Enterprise Crawlers</span>
-            <span class="deep-cat-badge">6</span>
+            <span class="deep-cat-badge">7</span>
           </button>
         </div>
 
@@ -1174,6 +1181,9 @@
             </button>
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabScreamingFrog')">
               <span>🐸 Screaming Frog Hub</span>
+            </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabApiHealth')">
+              <span>📡 API Endpoints &amp; Health Matrix</span>
             </button>
           </div>
         </div>
@@ -2824,6 +2834,203 @@ https://web.dev/explore"></textarea>
             </div>
           </div>
         </div>
+
+        <!-- Tab 20: API Endpoints Discovery, Health & Deprecation Matrix -->
+        <div id="tabApiHealth" class="deep-tab-content" style="display:none;">
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:12px; padding:18px; margin-bottom:16px;">
+            <!-- Header bar with dual view switcher -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <h3 style="color:#fff; font-size:1.1rem; margin:0; font-weight:800;">📡 API Endpoints Discovery &amp; Enterprise Health Matrix</h3>
+                  <span style="font-size:0.68rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:4px; font-weight:700; font-family:'JetBrains Mono',monospace;">● RFC 8594 / Sunset / HTTP 410 Active</span>
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+                  Audit any website's exposed REST/GraphQL/OpenAPI endpoints for live health and deprecation, or monitor all 17 enterprise platform integrations in real time.
+                </div>
+              </div>
+              <div style="display:flex; gap:8px; background:rgba(0,0,0,0.35); padding:4px; border-radius:8px; border:1px solid var(--border);">
+                <button id="btnApiViewWebsite" onclick="switchApiView('website')" class="btn btn-secondary active" style="padding:6px 14px; font-size:0.75rem; font-weight:700; border-radius:6px; cursor:pointer;">
+                  🌐 Target Website Scanner
+                </button>
+                <button id="btnApiViewPlatforms" onclick="switchApiView('platforms')" class="btn btn-secondary" style="padding:6px 14px; font-size:0.75rem; font-weight:700; border-radius:6px; cursor:pointer;">
+                  🏢 Enterprise Platforms (17 Services)
+                </button>
+              </div>
+            </div>
+
+            <!-- VIEW 1: Target Website Endpoint Scanner -->
+            <div id="apiWebsiteView">
+              <!-- Scanner Bar -->
+              <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px; margin-bottom:16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <div style="flex:1; min-width:280px; position:relative;">
+                  <input type="url" id="inputApiScanUrl" class="command-input" placeholder="Enter website URL to audit API endpoints (e.g. https://example.com or https://httpbin.org)" style="width:100%; padding:10px 14px; font-size:0.85rem; font-family:'JetBrains Mono',monospace;">
+                </div>
+                <button id="btnScanWebsiteApis" onclick="scanWebsiteApis()" class="btn btn-primary" style="padding:10px 20px; font-size:0.85rem; font-weight:700; display:flex; align-items:center; gap:6px;">
+                  <span>🔍 Scan &amp; Audit Endpoints</span>
+                </button>
+                <button onclick="useCurrentAuditUrlForApi()" class="btn btn-secondary" style="padding:10px 14px; font-size:0.8rem;" title="Copy current audit target URL">
+                  Use Audit Target
+                </button>
+              </div>
+
+              <!-- Scanning Status & Progress -->
+              <div id="apiScanStatusBox" style="display:none; margin-bottom:14px; padding:10px 14px; border-radius:6px; font-size:0.78rem; font-family:'JetBrains Mono',monospace; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); color:#93c5fd;">
+                <span class="dot-live"></span> <span id="apiScanStatusText">Probing website OpenAPI specs, scripts and common endpoints...</span>
+              </div>
+
+              <!-- KPI Stats Strip -->
+              <div id="apiKpiStrip" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:16px;">
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:0.65rem; color:var(--text-muted);">Endpoints Probed</div>
+                  <div id="apiStatTotal" style="font-size:1.2rem; font-weight:800; color:#38bdf8;">--</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:0.65rem; color:var(--text-muted);">Healthy (2xx Active)</div>
+                  <div id="apiStatHealthy" style="font-size:1.2rem; font-weight:800; color:#10b981;">--</div>
+                </div>
+                <div style="background:rgba(244,63,94,0.06); border:1px solid rgba(244,63,94,0.25); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:0.65rem; color:#fda4af;">⚠️ Deprecated (Sunset)</div>
+                  <div id="apiStatDeprecated" style="font-size:1.2rem; font-weight:800; color:#f43f5e;">--</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:0.65rem; color:var(--text-muted);">Auth Required (401/403)</div>
+                  <div id="apiStatAuth" style="font-size:1.2rem; font-weight:800; color:#f59e0b;">--</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:0.65rem; color:var(--text-muted);">Errors / 404s</div>
+                  <div id="apiStatErrors" style="font-size:1.2rem; font-weight:800; color:#ef4444;">--</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:0.65rem; color:var(--text-muted);">Avg. Latency</div>
+                  <div id="apiStatLatency" style="font-size:1.2rem; font-weight:800; color:#a78bfa;">--</div>
+                </div>
+              </div>
+
+              <!-- Filter & Search Controls -->
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <button class="api-filter-btn active" onclick="setApiFilter('all')" id="btnFilterAll" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid var(--border); background:rgba(255,255,255,0.08); color:#fff; cursor:pointer;">
+                    All Endpoints (<span id="filterCountAll">0</span>)
+                  </button>
+                  <button class="api-filter-btn" onclick="setApiFilter('deprecated')" id="btnFilterDeprecated" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid rgba(244,63,94,0.3); background:rgba(244,63,94,0.1); color:#fda4af; cursor:pointer;">
+                    ⚠️ Deprecated (<span id="filterCountDeprecated">0</span>)
+                  </button>
+                  <button class="api-filter-btn" onclick="setApiFilter('healthy')" id="btnFilterHealthy" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid rgba(16,185,129,0.3); background:rgba(16,185,129,0.1); color:#a7f3d0; cursor:pointer;">
+                    ✅ Healthy 2xx (<span id="filterCountHealthy">0</span>)
+                  </button>
+                  <button class="api-filter-btn" onclick="setApiFilter('auth')" id="btnFilterAuth" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid rgba(245,158,11,0.3); background:rgba(245,158,11,0.1); color:#fde68a; cursor:pointer;">
+                    🔒 Auth 401/403 (<span id="filterCountAuth">0</span>)
+                  </button>
+                  <button class="api-filter-btn" onclick="setApiFilter('errors')" id="btnFilterErrors" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.1); color:#fca5a5; cursor:pointer;">
+                    ❌ Offline / Errors (<span id="filterCountErrors">0</span>)
+                  </button>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <input type="text" id="inputApiSearch" oninput="searchApiEndpoints(this.value)" placeholder="Filter by path..." style="background:rgba(0,0,0,0.3); border:1px solid var(--border); color:#fff; padding:4px 10px; border-radius:4px; font-size:0.75rem; width:180px;">
+                  <button onclick="exportApiHealthCsv()" class="btn btn-secondary" style="padding:4px 10px; font-size:0.72rem;">📥 Export CSV</button>
+                </div>
+              </div>
+
+              <!-- Endpoints Data Table -->
+              <div style="max-height:480px; overflow-y:auto; border:1px solid var(--border); border-radius:8px;">
+                <table class="data-table" id="tableApiEndpoints" style="margin:0; font-size:0.78rem;">
+                  <thead>
+                    <tr>
+                      <th style="padding:8px 10px; width:70px;">Method</th>
+                      <th style="padding:8px 10px;">Endpoint Path / Target URL</th>
+                      <th style="padding:8px 10px; width:110px;">HTTP Status</th>
+                      <th style="padding:8px 10px; width:80px;">Latency</th>
+                      <th style="padding:8px 10px; width:100px;">Format</th>
+                      <th style="padding:8px 10px; width:180px;">Deprecation Audit</th>
+                      <th style="padding:8px 10px; width:130px;">Discovery Source</th>
+                      <th style="padding:8px 10px; width:90px; text-align:center;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="apiEndpointsTableBody">
+                    <tr>
+                      <td colspan="8" style="padding:30px; text-align:center; color:var(--text-muted);">
+                        Ready to scan. Enter a target website above and click <strong>"Scan &amp; Audit Endpoints"</strong> to discover API routes, check live health, and detect deprecated APIs via RFC 8594 / Sunset headers and HTTP 410.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- VIEW 2: Enterprise Platform Registry & Multi-Service Health -->
+            <div id="apiPlatformsView" style="display:none;">
+              <!-- Platform Actions Bar -->
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <strong style="color:#fff; font-size:0.92rem;">OmniSEO Connected Enterprise Service Registry</strong>
+                    <span id="platformRegistryCountBadge" style="font-size:0.68rem; background:rgba(59,130,246,0.15); color:#93c5fd; border:1px solid rgba(59,130,246,0.3); padding:2px 6px; border-radius:4px; font-weight:700;">17 Platforms Monitored</span>
+                  </div>
+                  <div style="font-size:0.73rem; color:var(--text-muted); margin-top:2px;">
+                    Real-time status, endpoint health, latency, rate limits, and deprecation lifecycle across all AI LLMs, SEO indexes, Google Cloud, and DNS providers.
+                  </div>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <button id="btnSweepPlatforms" onclick="runPlatformHealthSweep()" class="btn btn-primary" style="padding:8px 16px; font-size:0.8rem; font-weight:700; display:flex; align-items:center; gap:6px;">
+                    <span>⚡ Run Live Health Sweep</span>
+                  </button>
+                  <button onclick="openApiSettingsModal()" class="btn btn-secondary" style="padding:8px 12px; font-size:0.8rem;">
+                    ⚙️ Manage Keys
+                  </button>
+                </div>
+              </div>
+
+              <!-- Platforms KPI Summary Cards -->
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-bottom:16px;">
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:0.65rem; color:var(--text-muted);">Monitored Platforms</div>
+                  <div id="platStatTotal" style="font-size:1.2rem; font-weight:800; color:#38bdf8;">17</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:0.65rem; color:var(--text-muted);">Healthy / Responsive</div>
+                  <div id="platStatHealthy" style="font-size:1.2rem; font-weight:800; color:#10b981;">--</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:0.65rem; color:var(--text-muted);">Active Keys Configured</div>
+                  <div id="platStatConfigured" style="font-size:1.2rem; font-weight:800; color:#f59e0b;">--</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:0.65rem; color:var(--text-muted);">Free / Anonymous Services</div>
+                  <div id="platStatFree" style="font-size:1.2rem; font-weight:800; color:#34d399;">8</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:0.65rem; color:var(--text-muted);">Deprecated Endpoints</div>
+                  <div id="platStatDeprecated" style="font-size:1.2rem; font-weight:800; color:#10b981;">0</div>
+                </div>
+              </div>
+
+              <!-- Platforms Category Filter Tabs -->
+              <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;">
+                <button class="plat-cat-btn active" onclick="filterPlatformCategory('all')" id="platCatAll" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid var(--border); background:rgba(255,255,255,0.08); color:#fff; cursor:pointer;">
+                  All Platforms (17)
+                </button>
+                <button class="plat-cat-btn" onclick="filterPlatformCategory('AI &amp; LLMs')" id="platCatAI" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:var(--text-muted); cursor:pointer;">
+                  🤖 AI &amp; LLMs (4)
+                </button>
+                <button class="plat-cat-btn" onclick="filterPlatformCategory('Core SEO &amp; Performance')" id="platCatSEO" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:var(--text-muted); cursor:pointer;">
+                  ⚡ Core SEO &amp; Performance (5)
+                </button>
+                <button class="plat-cat-btn" onclick="filterPlatformCategory('Infrastructure &amp; Scraping')" id="platCatInfra" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:var(--text-muted); cursor:pointer;">
+                  🕷️ Infra &amp; Crawling (3)
+                </button>
+                <button class="plat-cat-btn" onclick="filterPlatformCategory('Open Data &amp; Knowledge')" id="platCatData" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:var(--text-muted); cursor:pointer;">
+                  🌐 Public Data &amp; Knowledge (5)
+                </button>
+              </div>
+
+              <!-- Platforms Cards Grid / Table -->
+              <div id="platformsContainer" style="display:flex; flex-direction:column; gap:12px; max-height:550px; overflow-y:auto; padding-right:4px;">
+                <!-- Populated dynamically via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -3429,6 +3636,17 @@ https://web.dev/explore"></textarea>
             </div>
             <button onclick="jumpToEngine('crux')" class="btn-line-tag" style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.35); color:#93c5fd; cursor:pointer; justify-content:center; padding:5px 10px;">Launch CrUX Vis ↗</button>
           </div>
+
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:14px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                <strong style="color:#f8fafc; font-size:0.9rem;">📡 API Health &amp; Deprecation Matrix</strong>
+                <span style="color:#10b981; font-size:0.7rem; font-weight:700; font-family:'JetBrains Mono',monospace;">● LIVE</span>
+              </div>
+              <p style="font-size:0.76rem; color:#94a3b8; line-height:1.4; margin-bottom:12px;">Website API endpoint discovery, RFC 8594 Sunset/Deprecation auditing, HTTP 410 detection, and 17-service enterprise health matrix.</p>
+            </div>
+            <button onclick="jumpToEngine('apihealth')" class="btn-line-tag" style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.35); color:#93c5fd; cursor:pointer; justify-content:center; padding:5px 10px;">Inspect API Health ↗</button>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -3826,12 +4044,46 @@ https://web.dev/explore"></textarea>
               <td><span style="color:#10b981; font-weight:700;">⚡ Benchmark Certified</span></td>
               <td>Native Zero-Auth (walkinglabs / volcengine)</td>
             </tr>
+            <tr>
+              <td><strong>📡 API Endpoints &amp; Health Matrix</strong></td>
+              <td>Target API discovery, RFC 8594 Sunset/Deprecation, 17-service live telemetry</td>
+              <td>Live HTTP probe stream, RFC 8594 header parsing, and platform registry ping</td>
+              <td><span style="color:#10b981; font-weight:700;">⚡ Live Probe &amp; RFC 8594</span></td>
+              <td>Native Zero-Auth + BYOK Platforms</td>
+            </tr>
           </tbody>
         </table>
       </div>
 
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal('provenanceInfoModal')" style="padding:8px 16px; font-size:0.85rem;">Close Provenance Guide</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Endpoint Deep Inspection & Deprecation Diagnostic Modal -->
+  <div id="endpointDetailModal" class="modal-overlay" onclick="handleModalBackdropClick(event, 'endpointDetailModal')">
+    <div class="modal-container" style="max-width:850px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:36px; height:36px; border-radius:10px; background:rgba(56,189,248,0.2); border:1px solid rgba(56,189,248,0.4); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">
+            📡
+          </div>
+          <div>
+            <h3 style="color:#fff; font-size:1.15rem; font-weight:800; margin-bottom:2px;">Endpoint Diagnostic &amp; RFC 8594 Audit</h3>
+            <span id="endpointModalUrl" style="font-size:0.75rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">https://...</span>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('endpointDetailModal')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:20px;">
+        <div id="endpointModalContent">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+        <div id="endpointModalTimestamp" style="font-size:0.72rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace;"></div>
+        <button class="btn btn-secondary" onclick="closeModal('endpointDetailModal')" style="padding:6px 16px; font-size:0.8rem;">Close Inspector</button>
       </div>
     </div>
   </div>
@@ -6589,7 +6841,8 @@ https://web.dev/explore"></textarea>
       tabPagespeed: 2,
       tabArsenal: 2,
       tabGoogleCloud: 2,
-      tabScreamingFrog: 2
+      tabScreamingFrog: 2,
+      tabApiHealth: 2
     };
 
     const DEEP_CAT_NAMES = [
@@ -6687,7 +6940,8 @@ https://web.dev/explore"></textarea>
         tabPagespeed: 16,
         tabArsenal: 17,
         tabGoogleCloud: 18,
-        tabScreamingFrog: 19
+        tabScreamingFrog: 19,
+        tabApiHealth: 20
       };
       const idx = tabs[tabId] !== undefined ? tabs[tabId] : 0;
       const buttons = document.querySelectorAll('.tab-btn');
@@ -6717,6 +6971,8 @@ https://web.dev/explore"></textarea>
         switchDeepTabByTag('tabCrux');
       } else if (h === 'pagespeed' || h === 'psi') {
         switchDeepTabByTag('tabPagespeed');
+      } else if (h === 'apihealth' || h === 'api-health' || h === 'endpoints' || h === 'api') {
+        switchDeepTabByTag('tabApiHealth');
       } else if (h.startsWith('tab')) {
         switchDeepTabByTag(h);
       }
@@ -6960,7 +7216,8 @@ https://web.dev/explore"></textarea>
         cwv: 'tabSerpSimulator',
         crux: 'tabCrux',
         schema: 'tabSchemas',
-        radar: 'tabMultiAudit'
+        radar: 'tabMultiAudit',
+        apihealth: 'tabApiHealth'
       };
 
       const targetTab = tabMappings[engineId];
@@ -7684,6 +7941,614 @@ https://web.dev/explore"></textarea>
       message: 'OmniSEO Realtime Developer Console & REPL Ready. Press Ctrl+` or F9 to toggle.'
     });
 
+    // ══════════════════════════════════════════════════════════
+    // API ENDPOINTS DISCOVERY, HEALTH & DEPRECATION ENGINE
+    // ══════════════════════════════════════════════════════════
+    let currentApiScan = null;
+    let currentApiFilter = 'all';
+    let currentPlatformCategory = 'all';
+    let platformRegistryData = [];
+    let platformSweepRunning = false;
+
+    function switchApiView(mode) {
+      const viewWeb = document.getElementById('apiWebsiteView');
+      const viewPlat = document.getElementById('apiPlatformsView');
+      const btnWeb = document.getElementById('btnApiViewWebsite');
+      const btnPlat = document.getElementById('btnApiViewPlatforms');
+
+      if (mode === 'platforms') {
+        if (viewWeb) viewWeb.style.display = 'none';
+        if (viewPlat) viewPlat.style.display = 'block';
+        if (btnWeb) btnWeb.classList.remove('active');
+        if (btnPlat) btnPlat.classList.add('active');
+        if (!platformRegistryData || platformRegistryData.length === 0) {
+          loadPlatformRegistry();
+        }
+      } else {
+        if (viewWeb) viewWeb.style.display = 'block';
+        if (viewPlat) viewPlat.style.display = 'none';
+        if (btnWeb) btnWeb.classList.add('active');
+        if (btnPlat) btnPlat.classList.remove('active');
+      }
+    }
+
+    function useCurrentAuditUrlForApi() {
+      const queryInput = document.getElementById('queryInput');
+      const input = document.getElementById('inputApiScanUrl');
+      if (!input) return;
+      let target = '';
+      if (currentAuditResult && currentAuditResult.canonicalModel && currentAuditResult.canonicalModel.targetUrl) {
+        target = currentAuditResult.canonicalModel.targetUrl;
+      } else if (queryInput && queryInput.value) {
+        const match = queryInput.value.match(/https?:\/\/[^\s"'<>]+/i);
+        if (match) target = match[0];
+      }
+      if (target) {
+        input.value = target;
+      } else {
+        input.value = 'https://example.com';
+      }
+    }
+
+    async function scanWebsiteApis() {
+      const input = document.getElementById('inputApiScanUrl');
+      let targetUrl = input ? input.value.trim() : '';
+      if (!targetUrl) {
+        useCurrentAuditUrlForApi();
+        targetUrl = input ? input.value.trim() : '';
+      }
+      if (!targetUrl) {
+        targetUrl = 'https://example.com';
+        if (input) input.value = targetUrl;
+      }
+
+      if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+        targetUrl = 'https://' + targetUrl;
+        if (input) input.value = targetUrl;
+      }
+
+      const btn = document.getElementById('btnScanWebsiteApis');
+      const statusBox = document.getElementById('apiScanStatusBox');
+      const statusText = document.getElementById('apiScanStatusText');
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳ Probing Endpoints...</span>';
+      }
+      if (statusBox) {
+        statusBox.style.display = 'block';
+        statusBox.style.background = 'rgba(59,130,246,0.1)';
+        statusBox.style.borderColor = 'rgba(59,130,246,0.3)';
+        statusBox.style.color = '#93c5fd';
+        if (statusText) statusText.innerText = `Auditing ${targetUrl} — probing OpenAPI specs, scripts, GraphQL and REST endpoints...`;
+      }
+
+      try {
+        const res = await fetch('/api/api-health/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: targetUrl })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to scan target website API endpoints');
+        }
+
+        currentApiScan = data.data;
+
+        // Update KPIs
+        const s = currentApiScan.summary || {};
+        const elTotal = document.getElementById('apiStatTotal');
+        const elHealthy = document.getElementById('apiStatHealthy');
+        const elDeprecated = document.getElementById('apiStatDeprecated');
+        const elAuth = document.getElementById('apiStatAuth');
+        const elErrors = document.getElementById('apiStatErrors');
+        const elLatency = document.getElementById('apiStatLatency');
+
+        if (elTotal) elTotal.innerText = s.totalEndpoints ?? 0;
+        if (elHealthy) elHealthy.innerText = s.healthyEndpoints ?? 0;
+        if (elDeprecated) elDeprecated.innerText = s.deprecatedEndpoints ?? 0;
+        if (elAuth) elAuth.innerText = s.authRequiredEndpoints ?? 0;
+        if (elErrors) elErrors.innerText = s.errorEndpoints ?? 0;
+        if (elLatency) elLatency.innerText = (s.avgLatencyMs ?? 0) + 'ms';
+
+        // Update filter count badges
+        const countAll = document.getElementById('filterCountAll');
+        const countDep = document.getElementById('filterCountDeprecated');
+        const countHlt = document.getElementById('filterCountHealthy');
+        const countAth = document.getElementById('filterCountAuth');
+        const countErr = document.getElementById('filterCountErrors');
+
+        if (countAll) countAll.innerText = s.totalEndpoints ?? 0;
+        if (countDep) countDep.innerText = s.deprecatedEndpoints ?? 0;
+        if (countHlt) countHlt.innerText = s.healthyEndpoints ?? 0;
+        if (countAth) countAth.innerText = s.authRequiredEndpoints ?? 0;
+        if (countErr) countErr.innerText = s.errorEndpoints ?? 0;
+
+        renderApiEndpointsTable();
+
+        if (statusBox) {
+          statusBox.style.background = 'rgba(16,185,129,0.1)';
+          statusBox.style.borderColor = 'rgba(16,185,129,0.3)';
+          statusBox.style.color = '#a7f3d0';
+          if (statusText) statusText.innerText = `✅ Audit Complete: Probed ${s.totalEndpoints} endpoints on ${targetUrl} in ${currentApiScan.durationMs}ms. Detected ${s.deprecatedEndpoints} deprecated endpoints.`;
+        }
+      } catch (err) {
+        console.error('API health scan failed:', err);
+        if (statusBox) {
+          statusBox.style.background = 'rgba(239,68,68,0.1)';
+          statusBox.style.borderColor = 'rgba(239,68,68,0.3)';
+          statusBox.style.color = '#fca5a5';
+          if (statusText) statusText.innerText = `❌ API Scan Error: ${err.message}`;
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>🔍 Scan &amp; Audit Endpoints</span>';
+        }
+      }
+    }
+
+    function setApiFilter(filter) {
+      currentApiFilter = filter;
+      const btns = document.querySelectorAll('.api-filter-btn');
+      btns.forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('btnFilter' + filter.charAt(0).toUpperCase() + filter.slice(1));
+      if (activeBtn) activeBtn.classList.add('active');
+      renderApiEndpointsTable();
+    }
+
+    function searchApiEndpoints(term) {
+      renderApiEndpointsTable();
+    }
+
+    function renderApiEndpointsTable() {
+      const tbody = document.getElementById('apiEndpointsTableBody');
+      if (!tbody) return;
+
+      if (!currentApiScan || !currentApiScan.endpoints || currentApiScan.endpoints.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="padding:24px; text-align:center; color:var(--text-muted);">No endpoints discovered yet. Run a scan above.</td></tr>`;
+        return;
+      }
+
+      const searchInput = document.getElementById('inputApiSearch');
+      const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+      const filtered = currentApiScan.endpoints.filter((ep) => {
+        // Filter by tab
+        if (currentApiFilter === 'deprecated' && !ep.isDeprecated) return false;
+        if (currentApiFilter === 'healthy' && (ep.status < 200 || ep.status >= 300)) return false;
+        if (currentApiFilter === 'auth' && ep.status !== 401 && ep.status !== 403) return false;
+        if (currentApiFilter === 'errors' && (ep.status >= 200 && ep.status < 400)) return false;
+
+        // Search term
+        if (searchTerm) {
+          const matchUrl = (ep.url || '').toLowerCase().includes(searchTerm);
+          const matchPath = (ep.path || '').toLowerCase().includes(searchTerm);
+          const matchMethod = (ep.method || '').toLowerCase().includes(searchTerm);
+          const matchSource = (ep.source || '').toLowerCase().includes(searchTerm);
+          if (!matchUrl && !matchPath && !matchMethod && !matchSource) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="padding:24px; text-align:center; color:var(--text-muted);">No endpoints matched current filter ("${currentApiFilter}" / "${searchTerm}").</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((ep) => {
+        // Method badge
+        let methodColor = '#38bdf8';
+        let methodBg = 'rgba(56,189,248,0.15)';
+        if (ep.method === 'POST') { methodColor = '#10b981'; methodBg = 'rgba(16,185,129,0.15)'; }
+        else if (ep.method === 'PUT' || ep.method === 'PATCH') { methodColor = '#f59e0b'; methodBg = 'rgba(245,158,11,0.15)'; }
+        else if (ep.method === 'DELETE') { methodColor = '#ef4444'; methodBg = 'rgba(239,68,68,0.15)'; }
+
+        // Status code badge
+        let statusBg = 'rgba(148,163,184,0.1)';
+        let statusColor = '#94a3b8';
+        if (ep.status >= 200 && ep.status < 300) {
+          statusBg = 'rgba(16,185,129,0.15)'; statusColor = '#34d399';
+        } else if (ep.status >= 300 && ep.status < 400) {
+          statusBg = 'rgba(59,130,246,0.15)'; statusColor = '#93c5fd';
+        } else if (ep.status === 401 || ep.status === 403) {
+          statusBg = 'rgba(245,158,11,0.15)'; statusColor = '#fbbf24';
+        } else if (ep.status === 410) {
+          statusBg = 'rgba(244,63,94,0.2)'; statusColor = '#f43f5e';
+        } else if (ep.status >= 400) {
+          statusBg = 'rgba(239,68,68,0.15)'; statusColor = '#f87171';
+        }
+
+        // Latency color
+        let latColor = '#10b981';
+        if (ep.latencyMs >= 800) latColor = '#ef4444';
+        else if (ep.latencyMs >= 400) latColor = '#f59e0b';
+
+        // Deprecation indicator
+        let depHtml = '';
+        if (ep.isDeprecated) {
+          const reasonText = (ep.deprecationDetails?.reasons || ['Deprecated']).join(', ');
+          depHtml = `<div style="display:flex; flex-direction:column; gap:2px;">
+            <span style="display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; font-weight:700; background:rgba(244,63,94,0.15); color:#fda4af; border:1px solid rgba(244,63,94,0.35); padding:2px 6px; border-radius:4px;">
+              ⚠️ DEPRECATED
+            </span>
+            <span style="font-size:0.65rem; color:#fda4af; line-height:1.2;">${escapeHtml(reasonText)}</span>
+          </div>`;
+        } else {
+          depHtml = `<span style="font-size:0.72rem; color:#a7f3d0; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); padding:2px 6px; border-radius:4px;">
+            ● Active
+          </span>`;
+        }
+
+        // Source badge
+        let srcBadge = ep.source || 'REST Probe';
+        if (srcBadge.includes('OpenAPI') || srcBadge.includes('Swagger')) {
+          srcBadge = `<span style="color:#c084fc; font-size:0.7rem;">📜 ${escapeHtml(srcBadge)}</span>`;
+        } else if (srcBadge.includes('HTML') || srcBadge.includes('Script')) {
+          srcBadge = `<span style="color:#67e8f9; font-size:0.7rem;">🕸️ ${escapeHtml(srcBadge)}</span>`;
+        } else if (srcBadge.includes('GraphQL')) {
+          srcBadge = `<span style="color:#ec4899; font-size:0.7rem;">◈ GraphQL</span>`;
+        } else {
+          srcBadge = `<span style="color:#94a3b8; font-size:0.7rem;">⚡ Probe</span>`;
+        }
+
+        const epOriginalIndex = currentApiScan.endpoints.indexOf(ep);
+
+        return `
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.04); ${ep.isDeprecated ? 'background:rgba(244,63,94,0.03);' : ''}">
+            <td style="padding:8px 10px;">
+              <span style="font-size:0.72rem; font-weight:800; font-family:'JetBrains Mono',monospace; color:${methodColor}; background:${methodBg}; padding:2px 6px; border-radius:4px;">
+                ${ep.method || 'GET'}
+              </span>
+            </td>
+            <td style="padding:8px 10px; font-family:'JetBrains Mono',monospace; word-break:break-all;">
+              <div style="font-weight:600; color:#f8fafc; font-size:0.78rem;">${escapeHtml(ep.path || ep.url)}</div>
+              <a href="${escapeHtml(ep.url)}" target="_blank" rel="noopener noreferrer" style="font-size:0.68rem; color:#38bdf8; text-decoration:none; opacity:0.8;">
+                ${escapeHtml(ep.url)} ↗
+              </a>
+            </td>
+            <td style="padding:8px 10px;">
+              <span style="font-size:0.72rem; font-weight:700; font-family:'JetBrains Mono',monospace; color:${statusColor}; background:${statusBg}; padding:2px 6px; border-radius:4px; display:inline-block;">
+                ${ep.status || 0} ${ep.statusText || ''}
+              </span>
+            </td>
+            <td style="padding:8px 10px; font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:${latColor};">
+              ${ep.latencyMs ?? '--'}ms
+            </td>
+            <td style="padding:8px 10px; font-size:0.7rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace;">
+              ${escapeHtml(ep.contentType || 'unknown').split(';')[0]}
+            </td>
+            <td style="padding:8px 10px;">
+              ${depHtml}
+            </td>
+            <td style="padding:8px 10px;">
+              ${srcBadge}
+            </td>
+            <td style="padding:8px 10px; text-align:center;">
+              <button onclick="openEndpointDetail(${epOriginalIndex})" class="btn-line-tag" style="padding:3px 8px; font-size:0.68rem; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#93c5fd; cursor:pointer;">
+                Inspect
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openEndpointDetail(idx) {
+      if (!currentApiScan || !currentApiScan.endpoints || !currentApiScan.endpoints[idx]) return;
+      const ep = currentApiScan.endpoints[idx];
+
+      const modal = document.getElementById('endpointDetailModal');
+      const modalUrl = document.getElementById('endpointModalUrl');
+      const content = document.getElementById('endpointModalContent');
+      const timeBox = document.getElementById('endpointModalTimestamp');
+
+      if (modalUrl) modalUrl.innerText = `${ep.method} ${ep.url}`;
+      if (timeBox) timeBox.innerText = `Checked at: ${ep.timestamp || new Date().toISOString()} · Latency: ${ep.latencyMs}ms`;
+
+      let depSection = '';
+      if (ep.isDeprecated) {
+        depSection = `
+          <div style="background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.3); border-radius:8px; padding:12px; margin-bottom:14px;">
+            <div style="display:flex; align-items:center; gap:6px; color:#fda4af; font-weight:800; font-size:0.88rem; margin-bottom:6px;">
+              ⚠️ Deprecation Audit Triggered
+            </div>
+            <div style="font-size:0.76rem; color:#cbd5e1; line-height:1.45;">
+              <strong>Detected Reasons:</strong> ${(ep.deprecationDetails?.reasons || []).join('; ') || 'Endpoint flag'}<br/>
+              ${ep.deprecationDetails?.sunsetDate ? `<strong>Sunset Date:</strong> ${ep.deprecationDetails.sunsetDate}<br/>` : ''}
+              ${ep.deprecationDetails?.recommendation ? `<strong>Recommendation:</strong> ${escapeHtml(ep.deprecationDetails.recommendation)}` : ''}
+            </div>
+          </div>
+        `;
+      } else {
+        depSection = `
+          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:8px; padding:10px 14px; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+            <span style="color:#10b981; font-weight:800; font-size:0.85rem;">✅ Active API Endpoint</span>
+            <span style="font-size:0.75rem; color:#a7f3d0;">No RFC 8594 Sunset/Deprecation headers or HTTP 410 Gone status detected.</span>
+          </div>
+        `;
+      }
+
+      let headersTable = '';
+      if (ep.headers && Object.keys(ep.headers).length > 0) {
+        headersTable = `
+          <h5 style="color:#fff; font-size:0.82rem; margin:12px 0 6px 0;">Response Headers</h5>
+          <div style="max-height:180px; overflow-y:auto; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:6px; padding:8px; font-family:'JetBrains Mono',monospace; font-size:0.7rem;">
+            ${Object.entries(ep.headers).map(([k, v]) => `
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.03); padding:2px 0;">
+                <span style="color:#93c5fd; font-weight:600;">${escapeHtml(k)}:</span>
+                <span style="color:#e2e8f0; text-align:right; max-width:65%; word-break:break-all;">${escapeHtml(String(v))}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      let bodyPreview = '';
+      if (ep.bodyPreview) {
+        bodyPreview = `
+          <h5 style="color:#fff; font-size:0.82rem; margin:12px 0 6px 0;">Response Payload Preview</h5>
+          <pre style="max-height:160px; overflow-y:auto; background:#090d16; border:1px solid var(--border); border-radius:6px; padding:10px; font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:#a7f3d0; margin:0; white-space:pre-wrap; word-break:break-all;">${escapeHtml(ep.bodyPreview)}</pre>
+        `;
+      }
+
+      if (content) {
+        content.innerHTML = `
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:14px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:6px; padding:8px; text-align:center;">
+              <div style="font-size:0.65rem; color:var(--text-muted);">HTTP Status</div>
+              <div style="font-size:0.95rem; font-weight:800; color:#38bdf8;">${ep.status} ${ep.statusText || ''}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:6px; padding:8px; text-align:center;">
+              <div style="font-size:0.65rem; color:var(--text-muted);">Response Latency</div>
+              <div style="font-size:0.95rem; font-weight:800; color:#a78bfa;">${ep.latencyMs}ms</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:6px; padding:8px; text-align:center;">
+              <div style="font-size:0.65rem; color:var(--text-muted);">Content-Type</div>
+              <div style="font-size:0.85rem; font-weight:700; color:#e2e8f0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml((ep.contentType || 'unknown').split(';')[0])}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:6px; padding:8px; text-align:center;">
+              <div style="font-size:0.65rem; color:var(--text-muted);">Discovery Source</div>
+              <div style="font-size:0.85rem; font-weight:700; color:#e2e8f0;">${escapeHtml(ep.source || 'REST')}</div>
+            </div>
+          </div>
+          ${depSection}
+          ${headersTable}
+          ${bodyPreview}
+        `;
+      }
+
+      if (modal) modal.classList.add('active');
+    }
+
+    function exportApiHealthCsv() {
+      if (!currentApiScan || !currentApiScan.endpoints || currentApiScan.endpoints.length === 0) {
+        alert('Please run an endpoint scan before exporting.');
+        return;
+      }
+      let csv = 'Method,Path,Full URL,Status,Status Text,Latency (ms),Content-Type,Deprecated,Deprecation Reasons,Discovery Source\n';
+      currentApiScan.endpoints.forEach(ep => {
+        const reasons = (ep.deprecationDetails?.reasons || []).join('; ').replace(/"/g, '""');
+        csv += `"${ep.method}","${ep.path || ''}","${ep.url}","${ep.status}","${ep.statusText || ''}","${ep.latencyMs}","${ep.contentType || ''}","${ep.isDeprecated ? 'YES' : 'NO'}","${reasons}","${ep.source || ''}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `api-health-audit-${(currentApiScan.targetUrl || 'site').replace(/[^a-zA-Z0-9]/g, '_')}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // ─── PLATFORM REGISTRY & HEALTH SWEEP CONTROLLER ────────
+    async function loadPlatformRegistry() {
+      try {
+        const res = await fetch('/api/api-health/platforms');
+        const data = await res.json();
+        if (data.success && data.platforms) {
+          platformRegistryData = data.platforms;
+          renderPlatformRegistry();
+        }
+      } catch (err) {
+        console.error('Failed to load platform registry:', err);
+      }
+    }
+
+    function filterPlatformCategory(cat) {
+      currentPlatformCategory = cat;
+      const btns = document.querySelectorAll('.plat-cat-btn');
+      btns.forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(
+        cat === 'all' ? 'platCatAll' :
+        cat === 'AI & LLMs' ? 'platCatAI' :
+        cat === 'Core SEO & Performance' ? 'platCatSEO' :
+        cat === 'Infrastructure & Scraping' ? 'platCatInfra' : 'platCatData'
+      );
+      if (activeBtn) activeBtn.classList.add('active');
+      renderPlatformRegistry();
+    }
+
+    function renderPlatformRegistry() {
+      const container = document.getElementById('platformsContainer');
+      if (!container) return;
+
+      const filtered = platformRegistryData.filter(p => {
+        if (currentPlatformCategory === 'all') return true;
+        return p.category === currentPlatformCategory;
+      });
+
+      // Update KPI counters
+      let total = platformRegistryData.length;
+      let configured = platformRegistryData.filter(p => p.authConfigured || p.authType === 'anonymous' || p.authType === 'none').length;
+      let healthy = platformRegistryData.filter(p => p.healthStatus === 'healthy').length;
+      let deprecatedCount = 0;
+      platformRegistryData.forEach(p => {
+        (p.endpoints || []).forEach(e => {
+          if (e.deprecated || e.lifecycle === 'sunset_planned') deprecatedCount++;
+        });
+      });
+
+      const elTotal = document.getElementById('platStatTotal');
+      const elHealthy = document.getElementById('platStatHealthy');
+      const elConfigured = document.getElementById('platStatConfigured');
+      const elDeprecated = document.getElementById('platStatDeprecated');
+
+      if (elTotal) elTotal.innerText = total;
+      if (elHealthy) elHealthy.innerText = healthy > 0 ? healthy : '--';
+      if (elConfigured) elConfigured.innerText = configured;
+      if (elDeprecated) elDeprecated.innerText = deprecatedCount;
+
+      container.innerHTML = filtered.map(p => {
+        // Health badge
+        let healthBadge = `<span style="font-size:0.7rem; color:var(--text-muted); background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:4px; font-weight:700;">Awaiting Sweep</span>`;
+        if (p.healthStatus === 'healthy') {
+          healthBadge = `<span style="font-size:0.7rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:4px; font-weight:700;">● HEALTHY (${p.latencyMs ?? '--'}ms)</span>`;
+        } else if (p.healthStatus === 'degraded') {
+          healthBadge = `<span style="font-size:0.7rem; color:#ef4444; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); padding:2px 8px; border-radius:4px; font-weight:700;">● DEGRADED / OFFLINE</span>`;
+        } else if (p.healthStatus === 'key_required' || (!p.authConfigured && p.authType !== 'anonymous' && p.authType !== 'none')) {
+          healthBadge = `<span style="font-size:0.7rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 8px; border-radius:4px; font-weight:700;">● KEY REQUIRED</span>`;
+        }
+
+        // Auth pill
+        let authPill = '';
+        if (p.authType === 'anonymous' || p.authType === 'none') {
+          authPill = `<span style="font-size:0.65rem; color:#34d399; background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.2); padding:1px 6px; border-radius:4px;">Free / Anonymous</span>`;
+        } else if (p.authConfigured) {
+          authPill = `<span style="font-size:0.65rem; color:#38bdf8; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.2); padding:1px 6px; border-radius:4px;">Configured (${p.authType})</span>`;
+        } else {
+          authPill = `<span style="font-size:0.65rem; color:#fbbf24; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.2); padding:1px 6px; border-radius:4px;">Unset (${p.authType})</span>`;
+        }
+
+        return `
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="font-size:1.15rem;">${p.icon || '🔌'}</div>
+                <div>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <strong style="color:#fff; font-size:0.88rem;">${escapeHtml(p.name)}</strong>
+                    <span style="font-size:0.65rem; color:var(--text-muted); background:rgba(255,255,255,0.04); padding:1px 6px; border-radius:4px;">${escapeHtml(p.category)}</span>
+                    ${authPill}
+                  </div>
+                  <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">
+                    ${escapeHtml(p.description)}
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                ${healthBadge}
+                ${p.docsUrl ? `<a href="${escapeHtml(p.docsUrl)}" target="_blank" rel="noopener noreferrer" class="btn-line-tag" style="text-decoration:none; font-size:0.68rem; padding:3px 8px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:#cbd5e1;">Docs ↗</a>` : ''}
+              </div>
+            </div>
+
+            <!-- Endpoints Table for Platform -->
+            <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.04); border-radius:6px; overflow:hidden;">
+              <table class="data-table" style="margin:0; font-size:0.73rem;">
+                <thead>
+                  <tr style="background:rgba(255,255,255,0.02);">
+                    <th style="padding:6px 10px; width:65px;">Method</th>
+                    <th style="padding:6px 10px;">Endpoint Route</th>
+                    <th style="padding:6px 10px; width:70px;">Version</th>
+                    <th style="padding:6px 10px; width:130px;">Lifecycle / Deprecation</th>
+                    <th style="padding:6px 10px; width:180px;">Rate Limit / Free Quota</th>
+                    <th style="padding:6px 10px; width:130px; text-align:right;">Last Probe</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${(p.endpoints || []).map(ep => {
+                    let depTag = `<span style="color:#10b981;">Active</span>`;
+                    if (ep.deprecated || ep.lifecycle === 'sunset_planned') {
+                      depTag = `<span style="color:#f43f5e; font-weight:700; background:rgba(244,63,94,0.15); padding:1px 5px; border-radius:3px;">⚠️ Sunset Planned</span>`;
+                    } else if (ep.lifecycle === 'legacy') {
+                      depTag = `<span style="color:#f59e0b; background:rgba(245,158,11,0.15); padding:1px 5px; border-radius:3px;">Legacy</span>`;
+                    }
+
+                    let epProbe = '<span style="color:var(--text-muted);">--</span>';
+                    if (p.healthStatus === 'healthy' && p.latencyMs !== undefined) {
+                      epProbe = `<span style="color:#10b981; font-weight:700; font-family:'JetBrains Mono',monospace;">${p.statusCode || 200} OK · ${p.latencyMs}ms</span>`;
+                    } else if (p.healthStatus === 'degraded') {
+                      epProbe = `<span style="color:#ef4444; font-family:'JetBrains Mono',monospace;">${p.statusCode || 'Error'}</span>`;
+                    } else if (p.healthStatus === 'key_required') {
+                      epProbe = `<span style="color:#f59e0b; font-size:0.68rem;">Key Needed</span>`;
+                    }
+
+                    return `
+                      <tr style="border-top:1px solid rgba(255,255,255,0.02);">
+                        <td style="padding:6px 10px;">
+                          <span style="font-family:'JetBrains Mono',monospace; font-size:0.68rem; font-weight:700; color:#38bdf8;">${ep.method}</span>
+                        </td>
+                        <td style="padding:6px 10px; font-family:'JetBrains Mono',monospace; color:#cbd5e1;">
+                          <strong>${escapeHtml(ep.path)}</strong>
+                          ${ep.description ? `<div style="font-size:0.65rem; color:var(--text-muted); font-family:var(--font-sans);">${escapeHtml(ep.description)}</div>` : ''}
+                        </td>
+                        <td style="padding:6px 10px; font-family:'JetBrains Mono',monospace; color:var(--text-muted); font-size:0.68rem;">
+                          ${escapeHtml(ep.version || 'v1')}
+                        </td>
+                        <td style="padding:6px 10px;">
+                          ${depTag}
+                        </td>
+                        <td style="padding:6px 10px; color:var(--text-muted); font-size:0.68rem;">
+                          ${escapeHtml(ep.quota || ep.rateLimit || 'Standard')}
+                        </td>
+                        <td style="padding:6px 10px; text-align:right;">
+                          ${epProbe}
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function runPlatformHealthSweep() {
+      if (platformSweepRunning) return;
+      platformSweepRunning = true;
+
+      const btn = document.getElementById('btnSweepPlatforms');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>⚡ Running Live Sweep...</span>';
+      }
+
+      try {
+        const res = await fetch('/api/api-health/test-platforms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success && data.results) {
+          const resultMap = new Map();
+          data.results.forEach(r => resultMap.set(r.id, r));
+
+          platformRegistryData.forEach(p => {
+            const r = resultMap.get(p.id);
+            if (r) {
+              p.healthStatus = r.status;
+              p.latencyMs = r.latencyMs;
+              p.statusCode = r.statusCode;
+              p.statusText = r.statusText;
+              p.testedEndpoint = r.testedEndpoint;
+            }
+          });
+
+          renderPlatformRegistry();
+        }
+      } catch (err) {
+        console.error('Platform health sweep failed:', err);
+      } finally {
+        platformSweepRunning = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>⚡ Run Live Health Sweep</span>';
+        }
+      }
+    }
+
     document.getElementById('btnPlan').addEventListener('click', runPlan);
     document.getElementById('btnExecute').addEventListener('click', async () => {
       await runPlan();
@@ -7761,6 +8626,7 @@ https://web.dev/explore"></textarea>
         <button class="debug-chip-btn" onclick="runReplSnippet('inspectCrawled()')">🕷️ Crawled URLs</button>
         <button class="debug-chip-btn" onclick="runReplSnippet('dumpStorage()')">📦 Dump LocalStorage</button>
         <button class="debug-chip-btn" onclick="runReplSnippet('checkScreamingFrog()')">🐸 Screaming Frog Status</button>
+        <button class="debug-chip-btn" onclick="runReplSnippet('await fetch(\'/api/api-health/platforms\').then(r=>r.json())')">📡 Platform Registry</button>
       </div>
       <div id="debugReplOutput" class="debug-repl-output-stream">
         <div class="debug-repl-welcome">

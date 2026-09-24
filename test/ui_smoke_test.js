@@ -174,6 +174,15 @@ vm.runInContext(big, ctx, { filename: 'inline-app.js' });
   check('Debug REPL input exists in HTML', html.includes('id="debugReplInput"'));
   check('Debug telemetry tab exists in HTML', html.includes('id="debugTabTelemetry"'));
   check('Header error counter badge exists in HTML', html.includes('id="headerErrBadge"'));
+  check('tabApiHealth panel element exists in HTML', html.includes('id="tabApiHealth"'));
+  check('tabApiHealth button exists in HTML', html.includes("switchDeepTab(this, 'tabApiHealth')"));
+  check('API scan URL input exists in HTML', html.includes('id="inputApiScanUrl"'));
+  check('API scan button exists in HTML', html.includes('id="btnScanWebsiteApis"'));
+  check('API endpoints table exists in HTML', html.includes('id="tableApiEndpoints"'));
+  check('API endpoint detail modal exists in HTML', html.includes('id="endpointDetailModal"'));
+  check('Platform sweep button exists in HTML', html.includes('id="btnSweepPlatforms"'));
+  check('Platform registry container exists in HTML', html.includes('id="platformsContainer"'));
+  check('API Health ribbon tag exists in HTML', html.includes("jumpToEngine('apihealth')"));
 
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

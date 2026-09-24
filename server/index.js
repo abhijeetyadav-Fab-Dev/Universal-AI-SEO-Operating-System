@@ -104,6 +104,11 @@ import {
   listScreamingFrogCrawls,
   getScreamingFrogCrawlById
 } from './adapters/screaming_frog.js';
+import {
+  scanWebsiteEndpoints,
+  testPlatformEndpoints,
+  PLATFORM_REGISTRY
+} from './adapters/api_health.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -2996,6 +3001,53 @@ app.post(['/api/debug/log', '/api/v1/debug/log'], (req, res) => {
   res.json({ success: true, entry });
 });
 
+// ─── API HEALTH, ENDPOINT PROBING & DEPRECATION AUDITOR ─────
+app.get(['/api/api-health/platforms', '/api/v1/api-health/platforms'], (req, res) => {
+  res.json({
+    success: true,
+    total: PLATFORM_REGISTRY.length,
+    platforms: PLATFORM_REGISTRY,
+    activeConfig: {
+      psiConfigured: Boolean(activeApiSettings.psiApiKey),
+      cruxConfigured: Boolean(activeApiSettings.cruxApiKey || activeApiSettings.psiApiKey),
+      openrouterConfigured: Boolean(activeApiSettings.openrouterApiKey),
+      nvidiaConfigured: Boolean(activeApiSettings.nvidiaApiKey),
+      geminiConfigured: Boolean(activeApiSettings.geminiApiKey),
+      openaiConfigured: Boolean(activeApiSettings.openaiApiKey),
+      freellmEnabled: activeApiSettings.freellmEnabled !== false,
+      dataforseoConfigured: Boolean(activeApiSettings.dataforseoLogin),
+      gscConfigured: Boolean(activeApiSettings.gscClientId)
+    }
+  });
+});
+
+app.post(['/api/api-health/test-platforms', '/api/v1/api-health/test-platforms'], async (req, res) => {
+  try {
+    const report = await testPlatformEndpoints(activeApiSettings);
+    res.json(report);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post(['/api/api-health/scan', '/api/v1/api-health/scan'], async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) {
+      return res.status(400).json({ success: false, error: 'Target website URL is required.' });
+    }
+    await assertSafeUrl(url);
+    const report = await scanWebsiteEndpoints(url);
+    res.json({
+      success: true,
+      ...report,
+      data: report
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
 // Health check endpoint
 app.get(['/api/health', '/api/v1/health'], (req, res) => {
   res.json({
@@ -3030,7 +3082,8 @@ app.get(['/api/health', '/api/v1/health'], (req, res) => {
       'Google Cloud Storage Audit Archiver (/api/gcs)',
       'Google Analytics & Core Web Vitals Correlator (/api/ga4)',
       'Screaming Frog SEO Spider Enterprise CLI (/api/screaming-frog)',
-      'Realtime Developer Debug Console & Telemetry (/api/debug/state, /api/debug/logs)'
+      'Realtime Developer Debug Console & Telemetry (/api/debug/state, /api/debug/logs)',
+      'API Health, Endpoint Probing & Deprecation Auditor (/api/api-health/scan, /api/api-health/platforms)'
     ]
   });
 });
