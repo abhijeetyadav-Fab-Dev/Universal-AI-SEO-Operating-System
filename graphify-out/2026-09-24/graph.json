@@ -4,76 +4,88 @@
   "graph": {},
   "nodes": [
     {
-      "label": "auditBacklinks()",
+      "label": "callAiHorde()",
       "file_type": "code",
-      "source_file": "server/adapters/backlinks.js",
-      "source_location": "L13",
+      "source_file": "server/adapters/freellmapi.js",
+      "source_location": "L84",
       "_callable": true,
       "_origin": "ast",
-      "id": "server_adapters_backlinks_auditbacklinks",
+      "id": "server_adapters_freellmapi_callaihorde",
       "community": 0,
       "community_name": "openseo.js",
-      "norm_label": "auditbacklinks()"
+      "norm_label": "callaihorde()"
     },
     {
-      "label": "estimateDA()",
+      "label": "callCustomGateway()",
       "file_type": "code",
-      "source_file": "server/adapters/backlinks.js",
-      "source_location": "L286",
+      "source_file": "server/adapters/freellmapi.js",
+      "source_location": "L136",
       "_callable": true,
       "_origin": "ast",
-      "id": "server_adapters_backlinks_estimateda",
+      "id": "server_adapters_freellmapi_callcustomgateway",
       "community": 0,
       "community_name": "openseo.js",
-      "norm_label": "estimateda()"
+      "norm_label": "callcustomgateway()"
     },
     {
-      "label": "auditTechnical()",
+      "label": "callPollinations()",
       "file_type": "code",
-      "source_file": "server/adapters/crawler.js",
-      "source_location": "L9",
+      "source_file": "server/adapters/freellmapi.js",
+      "source_location": "L33",
       "_callable": true,
       "_origin": "ast",
-      "id": "server_adapters_crawler_audittechnical",
+      "id": "server_adapters_freellmapi_callpollinations",
       "community": 0,
       "community_name": "openseo.js",
-      "norm_label": "audittechnical()"
+      "norm_label": "callpollinations()"
     },
     {
-      "label": "auditHeadAndEeat()",
+      "label": "getFreeLlmCatalog()",
       "file_type": "code",
-      "source_file": "server/adapters/head_eeat.js",
-      "source_location": "L13",
+      "source_file": "server/adapters/freellmapi.js",
+      "source_location": "L302",
       "_callable": true,
       "_origin": "ast",
-      "id": "server_adapters_head_eeat_auditheadandeeat",
+      "id": "server_adapters_freellmapi_getfreellmcatalog",
       "community": 0,
       "community_name": "openseo.js",
-      "norm_label": "auditheadandeeat()"
+      "norm_label": "getfreellmcatalog()"
     },
     {
-      "label": "auditHelpfulContentGuardrail()",
+      "label": "queryFreeLlm()",
       "file_type": "code",
-      "source_file": "server/adapters/head_eeat.js",
-      "source_location": "L630",
+      "source_file": "server/adapters/freellmapi.js",
+      "source_location": "L193",
       "_callable": true,
       "_origin": "ast",
-      "id": "server_adapters_head_eeat_audithelpfulcontentguardrail",
+      "id": "server_adapters_freellmapi_queryfreellm",
       "community": 0,
       "community_name": "openseo.js",
-      "norm_label": "audithelpfulcontentguardrail()"
+      "norm_label": "queryfreellm()"
     },
     {
-      "label": "evaluateHelpfulContent()",
+      "label": "testFreeLlmConnection()",
       "file_type": "code",
-      "source_file": "server/adapters/head_eeat.js",
-      "source_location": "L304",
+      "source_file": "server/adapters/freellmapi.js",
+      "source_location": "L270",
       "_callable": true,
       "_origin": "ast",
-      "id": "server_adapters_head_eeat_evaluatehelpfulcontent",
+      "id": "server_adapters_freellmapi_testfreellmconnection",
       "community": 0,
       "community_name": "openseo.js",
-      "norm_label": "evaluatehelpfulcontent()"
+      "norm_label": "testfreellmconnection()"
+    },
+    {
+      "label": "analyzeCompetitorGap()",
+      "file_type": "code",
+      "source_file": "server/adapters/openseo.js",
+      "source_location": "L1139",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_adapters_openseo_analyzecompetitorgap",
+      "community": 0,
+      "community_name": "openseo.js",
+      "norm_label": "analyzecompetitorgap()"
     },
     {
       "label": "analyzeDomainOverview()",
@@ -244,30 +256,6 @@
       "norm_label": "universalwebscraper()"
     },
     {
-      "label": "analyzeKeywordsAndSERP()",
-      "file_type": "code",
-      "source_file": "server/adapters/serp.js",
-      "source_location": "L7",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_adapters_serp_analyzekeywordsandserp",
-      "community": 0,
-      "community_name": "openseo.js",
-      "norm_label": "analyzekeywordsandserp()"
-    },
-    {
-      "label": "executeOrchestratedPlan()",
-      "file_type": "code",
-      "source_file": "server/engine/orchestrator.js",
-      "source_location": "L15",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_engine_orchestrator_executeorchestratedplan",
-      "community": 0,
-      "community_name": "openseo.js",
-      "norm_label": "executeorchestratedplan()"
-    },
-    {
       "label": "parseAndPlan()",
       "file_type": "code",
       "source_file": "server/engine/planner.js",
@@ -280,13 +268,25 @@
       "norm_label": "parseandplan()"
     },
     {
-      "label": "test()",
+      "label": "asyncTest()",
       "file_type": "code",
-      "source_file": "test/test_helpful_content_guardrail.js",
-      "source_location": "L11",
+      "source_file": "test/test_freellmapi.js",
+      "source_location": "L41",
       "_callable": true,
       "_origin": "ast",
-      "id": "test_test_helpful_content_guardrail_test",
+      "id": "test_test_freellmapi_asynctest",
+      "community": 0,
+      "community_name": "openseo.js",
+      "norm_label": "asynctest()"
+    },
+    {
+      "label": "test()",
+      "file_type": "code",
+      "source_file": "test/test_freellmapi.js",
+      "source_location": "L29",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "test_test_freellmapi_test",
       "community": 0,
       "community_name": "openseo.js",
       "norm_label": "test()"
@@ -600,7 +600,7 @@
       "_origin": "ast",
       "id": "server_adapters_agentmemory_forget",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "forget()"
     },
     {
@@ -612,7 +612,7 @@
       "_origin": "ast",
       "id": "server_adapters_agentmemory_getmemorystats",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "getmemorystats()"
     },
     {
@@ -624,7 +624,7 @@
       "_origin": "ast",
       "id": "server_adapters_agentmemory_loadpersistedmemory",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "loadpersistedmemory()"
     },
     {
@@ -636,7 +636,7 @@
       "_origin": "ast",
       "id": "server_adapters_agentmemory_recall",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "recall()"
     },
     {
@@ -648,7 +648,7 @@
       "_origin": "ast",
       "id": "server_adapters_agentmemory_remember",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "remember()"
     },
     {
@@ -660,8 +660,32 @@
       "_origin": "ast",
       "id": "server_adapters_agentmemory_savepersistedmemory",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "savepersistedmemory()"
+    },
+    {
+      "label": "auditBacklinks()",
+      "file_type": "code",
+      "source_file": "server/adapters/backlinks.js",
+      "source_location": "L13",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_adapters_backlinks_auditbacklinks",
+      "community": 19,
+      "community_name": "mcp.js",
+      "norm_label": "auditbacklinks()"
+    },
+    {
+      "label": "estimateDA()",
+      "file_type": "code",
+      "source_file": "server/adapters/backlinks.js",
+      "source_location": "L286",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_adapters_backlinks_estimateda",
+      "community": 19,
+      "community_name": "mcp.js",
+      "norm_label": "estimateda()"
     },
     {
       "label": "crawlInteractive()",
@@ -672,7 +696,7 @@
       "_origin": "ast",
       "id": "server_adapters_browser_use_crawlinteractive",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "crawlinteractive()"
     },
     {
@@ -684,7 +708,7 @@
       "_origin": "ast",
       "id": "server_adapters_browser_use_takedomsnapshot",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "takedomsnapshot()"
     },
     {
@@ -696,7 +720,7 @@
       "_origin": "ast",
       "id": "server_adapters_browser_use_validateurl",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "validateurl()"
     },
     {
@@ -708,7 +732,7 @@
       "_origin": "ast",
       "id": "server_adapters_cybersecurity_auditsecurityposture",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "auditsecurityposture()"
     },
     {
@@ -720,7 +744,7 @@
       "_origin": "ast",
       "id": "server_adapters_diagram_design_generateseodiagram",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "generateseodiagram()"
     },
     {
@@ -732,7 +756,7 @@
       "_origin": "ast",
       "id": "server_adapters_geo_auditgeoaeo",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "auditgeoaeo()"
     },
     {
@@ -744,7 +768,7 @@
       "_origin": "ast",
       "id": "server_adapters_harness_engineering_runagentharnessevaluation",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "runagentharnessevaluation()"
     },
     {
@@ -756,7 +780,7 @@
       "_origin": "ast",
       "id": "server_adapters_open_apis_querydatamuselsikeywords",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "querydatamuselsikeywords()"
     },
     {
@@ -768,7 +792,7 @@
       "_origin": "ast",
       "id": "server_adapters_open_apis_querydomainrdap",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "querydomainrdap()"
     },
     {
@@ -780,7 +804,7 @@
       "_origin": "ast",
       "id": "server_adapters_open_apis_querygoogledns",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "querygoogledns()"
     },
     {
@@ -792,7 +816,7 @@
       "_origin": "ast",
       "id": "server_adapters_open_apis_querygooglesuggest",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "querygooglesuggest()"
     },
     {
@@ -804,7 +828,7 @@
       "_origin": "ast",
       "id": "server_adapters_open_apis_queryhackernewsmentions",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "queryhackernewsmentions()"
     },
     {
@@ -816,7 +840,7 @@
       "_origin": "ast",
       "id": "server_adapters_open_apis_querywikidataentity",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "querywikidataentity()"
     },
     {
@@ -828,7 +852,7 @@
       "_origin": "ast",
       "id": "server_adapters_open_apis_querywikimediapageviews",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "querywikimediapageviews()"
     },
     {
@@ -840,7 +864,7 @@
       "_origin": "ast",
       "id": "server_adapters_open_apis_querywikipediabacklinks",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "querywikipediabacklinks()"
     },
     {
@@ -852,44 +876,8 @@
       "_origin": "ast",
       "id": "server_adapters_open_apis_querywikipediasummary",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "querywikipediasummary()"
-    },
-    {
-      "label": "analyzeCompetitorGap()",
-      "file_type": "code",
-      "source_file": "server/adapters/openseo.js",
-      "source_location": "L1139",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_adapters_openseo_analyzecompetitorgap",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "analyzecompetitorgap()"
-    },
-    {
-      "label": "compressAgentContext()",
-      "file_type": "code",
-      "source_file": "server/adapters/openviking.js",
-      "source_location": "L20",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_adapters_openviking_compressagentcontext",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "compressagentcontext()"
-    },
-    {
-      "label": "getOpenVikingTierStats()",
-      "file_type": "code",
-      "source_file": "server/adapters/openviking.js",
-      "source_location": "L95",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_adapters_openviking_getopenvikingtierstats",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "getopenvikingtierstats()"
     },
     {
       "label": "searchScientificLiterature()",
@@ -900,7 +888,7 @@
       "_origin": "ast",
       "id": "server_adapters_scientific_skills_searchscientificliterature",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "searchscientificliterature()"
     },
     {
@@ -912,7 +900,7 @@
       "_origin": "ast",
       "id": "server_adapters_scientific_skills_verifyscientificcitations",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "verifyscientificcitations()"
     },
     {
@@ -924,92 +912,8 @@
       "_origin": "ast",
       "id": "server_adapters_trends_fetchgoogletrendsandvolume",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "fetchgoogletrendsandvolume()"
-    },
-    {
-      "label": "assertSafeUrl()",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L435",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_index_assertsafeurl",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "assertsafeurl()"
-    },
-    {
-      "label": "isBlockedIp()",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L416",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_index_isblockedip",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "isblockedip()"
-    },
-    {
-      "label": "isSafeUrl()",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L464",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_index_issafeurl",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "issafeurl()"
-    },
-    {
-      "label": "maskKey()",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L142",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_index_maskkey",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "maskkey()"
-    },
-    {
-      "label": "rateLimiter()",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L189",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_index_ratelimiter",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "ratelimiter()"
-    },
-    {
-      "label": "recordDebugLog()",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L247",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_index_recorddebuglog",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "recorddebuglog()"
-    },
-    {
-      "label": "resolveRequestOptions()",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L149",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_index_resolverequestoptions",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "resolverequestoptions()"
     },
     {
       "label": "extractDomain()",
@@ -1020,7 +924,7 @@
       "_origin": "ast",
       "id": "server_mcp_extractdomain",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "extractdomain()"
     },
     {
@@ -1032,7 +936,7 @@
       "_origin": "ast",
       "id": "server_mcp_handlejsonrpcmessage",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "handlejsonrpcmessage()"
     },
     {
@@ -1044,7 +948,7 @@
       "_origin": "ast",
       "id": "server_mcp_handletoolcall",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "handletoolcall()"
     },
     {
@@ -1056,7 +960,7 @@
       "_origin": "ast",
       "id": "server_mcp_normalizeurl",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "normalizeurl()"
     },
     {
@@ -1068,7 +972,7 @@
       "_origin": "ast",
       "id": "server_mcp_startmcpserver",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "startmcpserver()"
     },
     {
@@ -1080,7 +984,7 @@
       "_origin": "ast",
       "id": "test_test_mcp_assert",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "assert()"
     },
     {
@@ -1092,7 +996,7 @@
       "_origin": "ast",
       "id": "test_test_mcp_runmcptestsuite",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "runmcptestsuite()"
     },
     {
@@ -1104,7 +1008,7 @@
       "_origin": "ast",
       "id": "test_test_new_ecosystem_asynctest",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "asynctest()"
     },
     {
@@ -1116,7 +1020,7 @@
       "_origin": "ast",
       "id": "test_test_new_ecosystem_synctest",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "synctest()"
     },
     {
@@ -1128,7 +1032,7 @@
       "_origin": "ast",
       "id": "test_test_open_apis_verifyallopenapis",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "verifyallopenapis()"
     },
     {
@@ -2056,99 +1960,219 @@
       "norm_label": "runtest()"
     },
     {
-      "label": "callAiHorde()",
+      "label": "analyzeDeprecation()",
       "file_type": "code",
-      "source_file": "server/adapters/freellmapi.js",
-      "source_location": "L84",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L453",
       "_callable": true,
       "_origin": "ast",
-      "id": "server_adapters_freellmapi_callaihorde",
+      "id": "server_adapters_api_health_analyzedeprecation",
       "community": 28,
-      "community_name": "freellmapi.js",
-      "norm_label": "callaihorde()"
+      "community_name": "api_health.js",
+      "norm_label": "analyzedeprecation()"
     },
     {
-      "label": "callCustomGateway()",
+      "label": "extractEndpointsFromScript()",
       "file_type": "code",
-      "source_file": "server/adapters/freellmapi.js",
-      "source_location": "L136",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L577",
       "_callable": true,
       "_origin": "ast",
-      "id": "server_adapters_freellmapi_callcustomgateway",
+      "id": "server_adapters_api_health_extractendpointsfromscript",
       "community": 28,
-      "community_name": "freellmapi.js",
-      "norm_label": "callcustomgateway()"
+      "community_name": "api_health.js",
+      "norm_label": "extractendpointsfromscript()"
     },
     {
-      "label": "callPollinations()",
+      "label": "isSpaCatchAll()",
       "file_type": "code",
-      "source_file": "server/adapters/freellmapi.js",
-      "source_location": "L33",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L675",
       "_callable": true,
       "_origin": "ast",
-      "id": "server_adapters_freellmapi_callpollinations",
+      "id": "server_adapters_api_health_isspacatchall",
       "community": 28,
-      "community_name": "freellmapi.js",
-      "norm_label": "callpollinations()"
+      "community_name": "api_health.js",
+      "norm_label": "isspacatchall()"
     },
     {
-      "label": "getFreeLlmCatalog()",
+      "label": "profileRootHtml()",
       "file_type": "code",
-      "source_file": "server/adapters/freellmapi.js",
-      "source_location": "L302",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L623",
       "_callable": true,
       "_origin": "ast",
-      "id": "server_adapters_freellmapi_getfreellmcatalog",
+      "id": "server_adapters_api_health_profileroothtml",
       "community": 28,
-      "community_name": "freellmapi.js",
-      "norm_label": "getfreellmcatalog()"
+      "community_name": "api_health.js",
+      "norm_label": "profileroothtml()"
     },
     {
-      "label": "queryFreeLlm()",
+      "label": "safeJsonParse()",
       "file_type": "code",
-      "source_file": "server/adapters/freellmapi.js",
-      "source_location": "L193",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L441",
       "_callable": true,
       "_origin": "ast",
-      "id": "server_adapters_freellmapi_queryfreellm",
+      "id": "server_adapters_api_health_safejsonparse",
       "community": 28,
-      "community_name": "freellmapi.js",
-      "norm_label": "queryfreellm()"
+      "community_name": "api_health.js",
+      "norm_label": "safejsonparse()"
     },
     {
-      "label": "testFreeLlmConnection()",
+      "label": "scanWebsiteEndpoints()",
       "file_type": "code",
-      "source_file": "server/adapters/freellmapi.js",
-      "source_location": "L270",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L725",
       "_callable": true,
       "_origin": "ast",
-      "id": "server_adapters_freellmapi_testfreellmconnection",
+      "id": "server_adapters_api_health_scanwebsiteendpoints",
       "community": 28,
-      "community_name": "freellmapi.js",
-      "norm_label": "testfreellmconnection()"
+      "community_name": "api_health.js",
+      "norm_label": "scanwebsiteendpoints()"
     },
     {
-      "label": "asyncTest()",
+      "label": "testPlatformEndpoints()",
       "file_type": "code",
-      "source_file": "test/test_freellmapi.js",
-      "source_location": "L41",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L1178",
       "_callable": true,
       "_origin": "ast",
-      "id": "test_test_freellmapi_asynctest",
+      "id": "server_adapters_api_health_testplatformendpoints",
       "community": 28,
-      "community_name": "freellmapi.js",
-      "norm_label": "asynctest()"
+      "community_name": "api_health.js",
+      "norm_label": "testplatformendpoints()"
+    },
+    {
+      "label": "unpackOpenApiSpec()",
+      "file_type": "code",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L520",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_adapters_api_health_unpackopenapispec",
+      "community": 28,
+      "community_name": "api_health.js",
+      "norm_label": "unpackopenapispec()"
+    },
+    {
+      "label": "runTests()",
+      "file_type": "code",
+      "source_file": "test/test_api_health.js",
+      "source_location": "L16",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "test_test_api_health_runtests",
+      "community": 28,
+      "community_name": "api_health.js",
+      "norm_label": "runtests()"
     },
     {
       "label": "test()",
       "file_type": "code",
-      "source_file": "test/test_freellmapi.js",
-      "source_location": "L29",
+      "source_file": "test/test_api_health.js",
+      "source_location": "L22",
       "_callable": true,
       "_origin": "ast",
-      "id": "test_test_freellmapi_test",
+      "id": "test_test_api_health_runtests_test",
       "community": 28,
-      "community_name": "freellmapi.js",
+      "community_name": "api_health.js",
+      "norm_label": "test()"
+    },
+    {
+      "label": "testAsync()",
+      "file_type": "code",
+      "source_file": "test/test_api_health.js",
+      "source_location": "L34",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "test_test_api_health_runtests_testasync",
+      "community": 28,
+      "community_name": "api_health.js",
+      "norm_label": "testasync()"
+    },
+    {
+      "label": "auditTechnical()",
+      "file_type": "code",
+      "source_file": "server/adapters/crawler.js",
+      "source_location": "L9",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_adapters_crawler_audittechnical",
+      "community": 29,
+      "community_name": "orchestrator.js",
+      "norm_label": "audittechnical()"
+    },
+    {
+      "label": "auditHeadAndEeat()",
+      "file_type": "code",
+      "source_file": "server/adapters/head_eeat.js",
+      "source_location": "L13",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_adapters_head_eeat_auditheadandeeat",
+      "community": 29,
+      "community_name": "orchestrator.js",
+      "norm_label": "auditheadandeeat()"
+    },
+    {
+      "label": "auditHelpfulContentGuardrail()",
+      "file_type": "code",
+      "source_file": "server/adapters/head_eeat.js",
+      "source_location": "L630",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_adapters_head_eeat_audithelpfulcontentguardrail",
+      "community": 29,
+      "community_name": "orchestrator.js",
+      "norm_label": "audithelpfulcontentguardrail()"
+    },
+    {
+      "label": "evaluateHelpfulContent()",
+      "file_type": "code",
+      "source_file": "server/adapters/head_eeat.js",
+      "source_location": "L304",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_adapters_head_eeat_evaluatehelpfulcontent",
+      "community": 29,
+      "community_name": "orchestrator.js",
+      "norm_label": "evaluatehelpfulcontent()"
+    },
+    {
+      "label": "analyzeKeywordsAndSERP()",
+      "file_type": "code",
+      "source_file": "server/adapters/serp.js",
+      "source_location": "L7",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_adapters_serp_analyzekeywordsandserp",
+      "community": 29,
+      "community_name": "orchestrator.js",
+      "norm_label": "analyzekeywordsandserp()"
+    },
+    {
+      "label": "executeOrchestratedPlan()",
+      "file_type": "code",
+      "source_file": "server/engine/orchestrator.js",
+      "source_location": "L15",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_engine_orchestrator_executeorchestratedplan",
+      "community": 29,
+      "community_name": "orchestrator.js",
+      "norm_label": "executeorchestratedplan()"
+    },
+    {
+      "label": "test()",
+      "file_type": "code",
+      "source_file": "test/test_helpful_content_guardrail.js",
+      "source_location": "L11",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "test_test_helpful_content_guardrail_test",
+      "community": 29,
+      "community_name": "orchestrator.js",
       "norm_label": "test()"
     },
     {
@@ -2160,7 +2184,7 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_buildga4organicreportrequest",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "buildga4organicreportrequest()"
     },
     {
@@ -2172,7 +2196,7 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_correlatecwvwithga4",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "correlatecwvwithga4()"
     },
     {
@@ -2184,7 +2208,7 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_executebigqueryquery",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "executebigqueryquery()"
     },
     {
@@ -2196,7 +2220,7 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_formatcloudlogentry",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "formatcloudlogentry()"
     },
     {
@@ -2208,7 +2232,7 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_formatgcsurls",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "formatgcsurls()"
     },
     {
@@ -2220,7 +2244,7 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_generatecruxbigquerysql",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "generatecruxbigquerysql()"
     },
     {
@@ -2232,7 +2256,7 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_generategscbulkexportsql",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "generategscbulkexportsql()"
     },
     {
@@ -2244,7 +2268,7 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_generateloganalysissql",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "generateloganalysissql()"
     },
     {
@@ -2256,7 +2280,7 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_getgooglecloudservicesstatus",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "getgooglecloudservicesstatus()"
     },
     {
@@ -2268,8 +2292,116 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_uploadaudittogcs",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "uploadaudittogcs()"
+    },
+    {
+      "label": "compressAgentContext()",
+      "file_type": "code",
+      "source_file": "server/adapters/openviking.js",
+      "source_location": "L20",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_adapters_openviking_compressagentcontext",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "compressagentcontext()"
+    },
+    {
+      "label": "getOpenVikingTierStats()",
+      "file_type": "code",
+      "source_file": "server/adapters/openviking.js",
+      "source_location": "L95",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_adapters_openviking_getopenvikingtierstats",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "getopenvikingtierstats()"
+    },
+    {
+      "label": "assertSafeUrl()",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L435",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_index_assertsafeurl",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "assertsafeurl()"
+    },
+    {
+      "label": "isBlockedIp()",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L416",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_index_isblockedip",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "isblockedip()"
+    },
+    {
+      "label": "isSafeUrl()",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L464",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_index_issafeurl",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "issafeurl()"
+    },
+    {
+      "label": "maskKey()",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L142",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_index_maskkey",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "maskkey()"
+    },
+    {
+      "label": "rateLimiter()",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L189",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_index_ratelimiter",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "ratelimiter()"
+    },
+    {
+      "label": "recordDebugLog()",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L247",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_index_recorddebuglog",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "recorddebuglog()"
+    },
+    {
+      "label": "resolveRequestOptions()",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L149",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "server_index_resolverequestoptions",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "resolverequestoptions()"
     },
     {
       "label": "assert()",
@@ -2280,7 +2412,7 @@
       "_origin": "ast",
       "id": "test_test_google_cloud_assert",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "assert()"
     },
     {
@@ -2292,7 +2424,7 @@
       "_origin": "ast",
       "id": "test_test_google_cloud_httpget",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "httpget()"
     },
     {
@@ -2304,7 +2436,7 @@
       "_origin": "ast",
       "id": "test_test_google_cloud_httppost",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "httppost()"
     },
     {
@@ -2316,7 +2448,7 @@
       "_origin": "ast",
       "id": "test_test_google_cloud_runtests",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "runtests()"
     },
     {
@@ -2330,42 +2462,6 @@
       "community": 4,
       "community_name": "ui_smoke_test.js",
       "norm_label": "makeel()"
-    },
-    {
-      "label": "analyzeDeprecation()",
-      "file_type": "code",
-      "source_file": "server/adapters/api_health.js",
-      "source_location": "L439",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_adapters_api_health_analyzedeprecation",
-      "community": 48,
-      "community_name": "screaming_frog.js",
-      "norm_label": "analyzedeprecation()"
-    },
-    {
-      "label": "scanWebsiteEndpoints()",
-      "file_type": "code",
-      "source_file": "server/adapters/api_health.js",
-      "source_location": "L500",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_adapters_api_health_scanwebsiteendpoints",
-      "community": 48,
-      "community_name": "screaming_frog.js",
-      "norm_label": "scanwebsiteendpoints()"
-    },
-    {
-      "label": "testPlatformEndpoints()",
-      "file_type": "code",
-      "source_file": "server/adapters/api_health.js",
-      "source_location": "L693",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "server_adapters_api_health_testplatformendpoints",
-      "community": 48,
-      "community_name": "screaming_frog.js",
-      "norm_label": "testplatformendpoints()"
     },
     {
       "label": "buildScreamingFrogCommand()",
@@ -2488,42 +2584,6 @@
       "norm_label": "runheadlesscrawl()"
     },
     {
-      "label": "runTests()",
-      "file_type": "code",
-      "source_file": "test/test_api_health.js",
-      "source_location": "L12",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "test_test_api_health_runtests",
-      "community": 48,
-      "community_name": "screaming_frog.js",
-      "norm_label": "runtests()"
-    },
-    {
-      "label": "test()",
-      "file_type": "code",
-      "source_file": "test/test_api_health.js",
-      "source_location": "L18",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "test_test_api_health_runtests_test",
-      "community": 48,
-      "community_name": "screaming_frog.js",
-      "norm_label": "test()"
-    },
-    {
-      "label": "testAsync()",
-      "file_type": "code",
-      "source_file": "test/test_api_health.js",
-      "source_location": "L30",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "test_test_api_health_runtests_testasync",
-      "community": 48,
-      "community_name": "screaming_frog.js",
-      "norm_label": "testasync()"
-    },
-    {
       "label": "assert()",
       "file_type": "code",
       "source_file": "test/test_screaming_frog.js",
@@ -2608,37 +2668,26 @@
       "norm_label": "generate()"
     },
     {
-      "label": "backlinks.js",
+      "label": "freellmapi.js",
       "file_type": "code",
-      "source_file": "server/adapters/backlinks.js",
+      "source_file": "server/adapters/freellmapi.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "server_adapters_backlinks",
+      "id": "server_adapters_freellmapi",
       "community": 0,
       "community_name": "openseo.js",
-      "norm_label": "backlinks.js"
+      "norm_label": "freellmapi.js"
     },
     {
-      "label": "crawler.js",
+      "label": "FREELLM_ENDPOINTS",
       "file_type": "code",
-      "source_file": "server/adapters/crawler.js",
-      "source_location": "L1",
+      "source_file": "server/adapters/freellmapi.js",
+      "source_location": "L9",
       "_origin": "ast",
-      "id": "server_adapters_crawler",
+      "id": "server_adapters_freellmapi_freellm_endpoints",
       "community": 0,
       "community_name": "openseo.js",
-      "norm_label": "crawler.js"
-    },
-    {
-      "label": "head_eeat.js",
-      "file_type": "code",
-      "source_file": "server/adapters/head_eeat.js",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "server_adapters_head_eeat",
-      "community": 0,
-      "community_name": "openseo.js",
-      "norm_label": "head_eeat.js"
+      "norm_label": "freellm_endpoints"
     },
     {
       "label": "openseo.js",
@@ -2652,28 +2701,6 @@
       "norm_label": "openseo.js"
     },
     {
-      "label": "serp.js",
-      "file_type": "code",
-      "source_file": "server/adapters/serp.js",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "server_adapters_serp",
-      "community": 0,
-      "community_name": "openseo.js",
-      "norm_label": "serp.js"
-    },
-    {
-      "label": "orchestrator.js",
-      "file_type": "code",
-      "source_file": "server/engine/orchestrator.js",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "server_engine_orchestrator",
-      "community": 0,
-      "community_name": "openseo.js",
-      "norm_label": "orchestrator.js"
-    },
-    {
       "label": "planner.js",
       "file_type": "code",
       "source_file": "server/engine/planner.js",
@@ -2685,15 +2712,15 @@
       "norm_label": "planner.js"
     },
     {
-      "label": "test_helpful_content_guardrail.js",
+      "label": "test_freellmapi.js",
       "file_type": "code",
-      "source_file": "test/test_helpful_content_guardrail.js",
+      "source_file": "test/test_freellmapi.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "test_test_helpful_content_guardrail",
+      "id": "test_test_freellmapi",
       "community": 0,
       "community_name": "openseo.js",
-      "norm_label": "test_helpful_content_guardrail.js"
+      "norm_label": "test_freellmapi.js"
     },
     {
       "label": "test_openrouter_nvidia.js",
@@ -3121,7 +3148,7 @@
       "_origin": "ast",
       "id": "server_adapters_agentmemory",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "agentmemory.js"
     },
     {
@@ -3132,7 +3159,7 @@
       "_origin": "ast",
       "id": "server_adapters_agentmemory_memory_file",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "memory_file"
     },
     {
@@ -3143,8 +3170,19 @@
       "_origin": "ast",
       "id": "server_adapters_agentmemory_memorystore",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "memorystore"
+    },
+    {
+      "label": "backlinks.js",
+      "file_type": "code",
+      "source_file": "server/adapters/backlinks.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "server_adapters_backlinks",
+      "community": 19,
+      "community_name": "mcp.js",
+      "norm_label": "backlinks.js"
     },
     {
       "label": "browser_use.js",
@@ -3154,7 +3192,7 @@
       "_origin": "ast",
       "id": "server_adapters_browser_use",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "browser_use.js"
     },
     {
@@ -3165,7 +3203,7 @@
       "_origin": "ast",
       "id": "server_adapters_cybersecurity",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "cybersecurity.js"
     },
     {
@@ -3176,7 +3214,7 @@
       "_origin": "ast",
       "id": "server_adapters_cybersecurity_security_headers_checklist",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "security_headers_checklist"
     },
     {
@@ -3187,7 +3225,7 @@
       "_origin": "ast",
       "id": "server_adapters_diagram_design",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "diagram_design.js"
     },
     {
@@ -3198,7 +3236,7 @@
       "_origin": "ast",
       "id": "server_adapters_diagram_design_accessible_palette",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "accessible_palette"
     },
     {
@@ -3209,7 +3247,7 @@
       "_origin": "ast",
       "id": "server_adapters_geo",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "geo.js"
     },
     {
@@ -3220,7 +3258,7 @@
       "_origin": "ast",
       "id": "server_adapters_harness_engineering",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "harness_engineering.js"
     },
     {
@@ -3231,30 +3269,8 @@
       "_origin": "ast",
       "id": "server_adapters_open_apis",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "open_apis.js"
-    },
-    {
-      "label": "openviking.js",
-      "file_type": "code",
-      "source_file": "server/adapters/openviking.js",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "server_adapters_openviking",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "openviking.js"
-    },
-    {
-      "label": "L3_PERSISTENT_KNOWLEDGE",
-      "file_type": "code",
-      "source_file": "server/adapters/openviking.js",
-      "source_location": "L10",
-      "_origin": "ast",
-      "id": "server_adapters_openviking_l3_persistent_knowledge",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "l3_persistent_knowledge"
     },
     {
       "label": "scientific_skills.js",
@@ -3264,7 +3280,7 @@
       "_origin": "ast",
       "id": "server_adapters_scientific_skills",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "scientific_skills.js"
     },
     {
@@ -3275,85 +3291,8 @@
       "_origin": "ast",
       "id": "server_adapters_trends",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "trends.js"
-    },
-    {
-      "label": "index.js",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "server_index",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "index.js"
-    },
-    {
-      "label": "activeApiSettings",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L117",
-      "_origin": "ast",
-      "id": "server_index_activeapisettings",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "activeapisettings"
-    },
-    {
-      "label": "app",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L169",
-      "_origin": "ast",
-      "id": "server_index_app",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "app"
-    },
-    {
-      "label": "__dirname",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L114",
-      "_origin": "ast",
-      "id": "server_index_dirname",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "__dirname"
-    },
-    {
-      "label": "__filename",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L113",
-      "_origin": "ast",
-      "id": "server_index_filename",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "__filename"
-    },
-    {
-      "label": "rateLimitMap",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L184",
-      "_origin": "ast",
-      "id": "server_index_ratelimitmap",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "ratelimitmap"
-    },
-    {
-      "label": "serverDebugLogs",
-      "file_type": "code",
-      "source_file": "server/index.js",
-      "source_location": "L245",
-      "_origin": "ast",
-      "id": "server_index_serverdebuglogs",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "serverdebuglogs"
     },
     {
       "label": "mcp.js",
@@ -3363,7 +3302,7 @@
       "_origin": "ast",
       "id": "server_mcp",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "mcp.js"
     },
     {
@@ -3374,7 +3313,7 @@
       "_origin": "ast",
       "id": "server_mcp_dirname",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "__dirname"
     },
     {
@@ -3385,7 +3324,7 @@
       "_origin": "ast",
       "id": "server_mcp_filename",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "__filename"
     },
     {
@@ -3396,7 +3335,7 @@
       "_origin": "ast",
       "id": "server_mcp_tools",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "tools"
     },
     {
@@ -3407,7 +3346,7 @@
       "_origin": "ast",
       "id": "test_test_mcp",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "test_mcp.js"
     },
     {
@@ -3418,7 +3357,7 @@
       "_origin": "ast",
       "id": "test_test_mcp_dirname",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "__dirname"
     },
     {
@@ -3429,7 +3368,7 @@
       "_origin": "ast",
       "id": "test_test_mcp_filename",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "__filename"
     },
     {
@@ -3440,7 +3379,7 @@
       "_origin": "ast",
       "id": "test_test_mcp_mcp_server_path",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "mcp_server_path"
     },
     {
@@ -3451,7 +3390,7 @@
       "_origin": "ast",
       "id": "test_test_new_ecosystem",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "test_new_ecosystem.js"
     },
     {
@@ -3462,19 +3401,8 @@
       "_origin": "ast",
       "id": "test_test_open_apis",
       "community": 19,
-      "community_name": "index.js",
+      "community_name": "mcp.js",
       "norm_label": "test_open_apis.js"
-    },
-    {
-      "label": "RFC-4180",
-      "file_type": "concept",
-      "source_file": "server/index.js",
-      "source_location": "L2842",
-      "_origin": "ast",
-      "id": "server_index_js_docref_rfc_4180",
-      "community": 19,
-      "community_name": "index.js",
-      "norm_label": "rfc-4180"
     },
     {
       "label": "package.json",
@@ -4060,17 +3988,6 @@
       "norm_label": "cruxcache"
     },
     {
-      "label": "DEFAULT_CRUX_KEY",
-      "file_type": "code",
-      "source_file": "server/adapters/crux.js",
-      "source_location": "L26",
-      "_origin": "ast",
-      "id": "server_adapters_crux_default_crux_key",
-      "community": 26,
-      "community_name": "crux.js",
-      "norm_label": "default_crux_key"
-    },
-    {
       "label": "DEFAULT_CRUX_VIS_KEY",
       "file_type": "code",
       "source_file": "server/adapters/crux.js",
@@ -4181,37 +4098,125 @@
       "norm_label": "test_indexnow_sitemap.js"
     },
     {
-      "label": "freellmapi.js",
+      "label": "api_health.js",
       "file_type": "code",
-      "source_file": "server/adapters/freellmapi.js",
+      "source_file": "server/adapters/api_health.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "server_adapters_freellmapi",
+      "id": "server_adapters_api_health",
       "community": 28,
-      "community_name": "freellmapi.js",
-      "norm_label": "freellmapi.js"
+      "community_name": "api_health.js",
+      "norm_label": "api_health.js"
     },
     {
-      "label": "FREELLM_ENDPOINTS",
+      "label": "COMMON_API_PROBES",
       "file_type": "code",
-      "source_file": "server/adapters/freellmapi.js",
-      "source_location": "L9",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L10",
       "_origin": "ast",
-      "id": "server_adapters_freellmapi_freellm_endpoints",
+      "id": "server_adapters_api_health_common_api_probes",
       "community": 28,
-      "community_name": "freellmapi.js",
-      "norm_label": "freellm_endpoints"
+      "community_name": "api_health.js",
+      "norm_label": "common_api_probes"
     },
     {
-      "label": "test_freellmapi.js",
+      "label": "PLATFORM_REGISTRY",
       "file_type": "code",
-      "source_file": "test/test_freellmapi.js",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "server_adapters_api_health_platform_registry",
+      "community": 28,
+      "community_name": "api_health.js",
+      "norm_label": "platform_registry"
+    },
+    {
+      "label": "test_api_health.js",
+      "file_type": "code",
+      "source_file": "test/test_api_health.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "test_test_freellmapi",
+      "id": "test_test_api_health",
       "community": 28,
-      "community_name": "freellmapi.js",
-      "norm_label": "test_freellmapi.js"
+      "community_name": "api_health.js",
+      "norm_label": "test_api_health.js"
+    },
+    {
+      "label": "RFC-8594",
+      "file_type": "concept",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L450",
+      "_origin": "ast",
+      "id": "docref_rfc_8594",
+      "community": 28,
+      "community_name": "api_health.js",
+      "norm_label": "rfc-8594"
+    },
+    {
+      "label": "RFC-9524",
+      "file_type": "concept",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L450",
+      "_origin": "ast",
+      "id": "docref_rfc_9524",
+      "community": 28,
+      "community_name": "api_health.js",
+      "norm_label": "rfc-9524"
+    },
+    {
+      "label": "crawler.js",
+      "file_type": "code",
+      "source_file": "server/adapters/crawler.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "server_adapters_crawler",
+      "community": 29,
+      "community_name": "orchestrator.js",
+      "norm_label": "crawler.js"
+    },
+    {
+      "label": "head_eeat.js",
+      "file_type": "code",
+      "source_file": "server/adapters/head_eeat.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "server_adapters_head_eeat",
+      "community": 29,
+      "community_name": "orchestrator.js",
+      "norm_label": "head_eeat.js"
+    },
+    {
+      "label": "serp.js",
+      "file_type": "code",
+      "source_file": "server/adapters/serp.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "server_adapters_serp",
+      "community": 29,
+      "community_name": "orchestrator.js",
+      "norm_label": "serp.js"
+    },
+    {
+      "label": "orchestrator.js",
+      "file_type": "code",
+      "source_file": "server/engine/orchestrator.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "server_engine_orchestrator",
+      "community": 29,
+      "community_name": "orchestrator.js",
+      "norm_label": "orchestrator.js"
+    },
+    {
+      "label": "test_helpful_content_guardrail.js",
+      "file_type": "code",
+      "source_file": "test/test_helpful_content_guardrail.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "test_test_helpful_content_guardrail",
+      "community": 29,
+      "community_name": "orchestrator.js",
+      "norm_label": "test_helpful_content_guardrail.js"
     },
     {
       "label": "scripts",
@@ -4478,6 +4483,17 @@
       "norm_label": "test:ui"
     },
     {
+      "label": "DEFAULT_CRUX_KEY",
+      "file_type": "code",
+      "source_file": "server/adapters/crux.js",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "server_adapters_crux_default_crux_key",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "default_crux_key"
+    },
+    {
       "label": "google_cloud.js",
       "file_type": "code",
       "source_file": "server/adapters/google_cloud.js",
@@ -4485,7 +4501,7 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "google_cloud.js"
     },
     {
@@ -4496,7 +4512,7 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_default_gcp_project_id",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "default_gcp_project_id"
     },
     {
@@ -4507,7 +4523,7 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_default_gcs_bucket",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "default_gcs_bucket"
     },
     {
@@ -4518,8 +4534,107 @@
       "_origin": "ast",
       "id": "server_adapters_google_cloud_enabled_google_cloud_apis",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "enabled_google_cloud_apis"
+    },
+    {
+      "label": "openviking.js",
+      "file_type": "code",
+      "source_file": "server/adapters/openviking.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "server_adapters_openviking",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "openviking.js"
+    },
+    {
+      "label": "L3_PERSISTENT_KNOWLEDGE",
+      "file_type": "code",
+      "source_file": "server/adapters/openviking.js",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "server_adapters_openviking_l3_persistent_knowledge",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "l3_persistent_knowledge"
+    },
+    {
+      "label": "index.js",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "server_index",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "index.js"
+    },
+    {
+      "label": "activeApiSettings",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L117",
+      "_origin": "ast",
+      "id": "server_index_activeapisettings",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "activeapisettings"
+    },
+    {
+      "label": "app",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L169",
+      "_origin": "ast",
+      "id": "server_index_app",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "app"
+    },
+    {
+      "label": "__dirname",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L114",
+      "_origin": "ast",
+      "id": "server_index_dirname",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "__dirname"
+    },
+    {
+      "label": "__filename",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L113",
+      "_origin": "ast",
+      "id": "server_index_filename",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "__filename"
+    },
+    {
+      "label": "rateLimitMap",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L184",
+      "_origin": "ast",
+      "id": "server_index_ratelimitmap",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "ratelimitmap"
+    },
+    {
+      "label": "serverDebugLogs",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L245",
+      "_origin": "ast",
+      "id": "server_index_serverdebuglogs",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "serverdebuglogs"
     },
     {
       "label": "test_google_cloud.js",
@@ -4529,8 +4644,19 @@
       "_origin": "ast",
       "id": "test_test_google_cloud",
       "community": 31,
-      "community_name": "google_cloud.js",
+      "community_name": "index.js",
       "norm_label": "test_google_cloud.js"
+    },
+    {
+      "label": "RFC-4180",
+      "file_type": "concept",
+      "source_file": "server/index.js",
+      "source_location": "L2842",
+      "_origin": "ast",
+      "id": "server_index_js_docref_rfc_4180",
+      "community": 31,
+      "community_name": "index.js",
+      "norm_label": "rfc-4180"
     },
     {
       "label": "ui_smoke_test.js",
@@ -4654,39 +4780,6 @@
       "norm_label": "stamps"
     },
     {
-      "label": "api_health.js",
-      "file_type": "code",
-      "source_file": "server/adapters/api_health.js",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "server_adapters_api_health",
-      "community": 48,
-      "community_name": "screaming_frog.js",
-      "norm_label": "api_health.js"
-    },
-    {
-      "label": "COMMON_API_PROBES",
-      "file_type": "code",
-      "source_file": "server/adapters/api_health.js",
-      "source_location": "L10",
-      "_origin": "ast",
-      "id": "server_adapters_api_health_common_api_probes",
-      "community": 48,
-      "community_name": "screaming_frog.js",
-      "norm_label": "common_api_probes"
-    },
-    {
-      "label": "PLATFORM_REGISTRY",
-      "file_type": "code",
-      "source_file": "server/adapters/api_health.js",
-      "source_location": "L46",
-      "_origin": "ast",
-      "id": "server_adapters_api_health_platform_registry",
-      "community": 48,
-      "community_name": "screaming_frog.js",
-      "norm_label": "platform_registry"
-    },
-    {
       "label": "screaming_frog.js",
       "file_type": "code",
       "source_file": "server/adapters/screaming_frog.js",
@@ -4764,17 +4857,6 @@
       "norm_label": "screaming_frog_user_dir"
     },
     {
-      "label": "test_api_health.js",
-      "file_type": "code",
-      "source_file": "test/test_api_health.js",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "test_test_api_health",
-      "community": 48,
-      "community_name": "screaming_frog.js",
-      "norm_label": "test_api_health.js"
-    },
-    {
       "label": "test_screaming_frog.js",
       "file_type": "code",
       "source_file": "test/test_screaming_frog.js",
@@ -4806,28 +4888,6 @@
       "community": 48,
       "community_name": "screaming_frog.js",
       "norm_label": "__filename"
-    },
-    {
-      "label": "RFC-8594",
-      "file_type": "concept",
-      "source_file": "server/adapters/api_health.js",
-      "source_location": "L437",
-      "_origin": "ast",
-      "id": "docref_rfc_8594",
-      "community": 48,
-      "community_name": "screaming_frog.js",
-      "norm_label": "rfc-8594"
-    },
-    {
-      "label": "RFC-9524",
-      "file_type": "concept",
-      "source_file": "server/adapters/api_health.js",
-      "source_location": "L437",
-      "_origin": "ast",
-      "id": "docref_rfc_9524",
-      "community": 48,
-      "community_name": "screaming_frog.js",
-      "norm_label": "rfc-9524"
     },
     {
       "label": "RFC-4180",
@@ -5146,7 +5206,55 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "server/adapters/api_health.js",
-      "source_location": "L588",
+      "source_location": "L755",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "server_adapters_api_health_scanwebsiteendpoints",
+      "target": "server_adapters_api_health_safejsonparse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L759",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "server_adapters_api_health_scanwebsiteendpoints",
+      "target": "server_adapters_api_health_unpackopenapispec",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L779",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "server_adapters_api_health_scanwebsiteendpoints",
+      "target": "server_adapters_api_health_profileroothtml",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L857",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "server_adapters_api_health_scanwebsiteendpoints",
+      "target": "server_adapters_api_health_extractendpointsfromscript",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L961",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_adapters_api_health_scanwebsiteendpoints",
@@ -5157,9 +5265,21 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L964",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "server_adapters_api_health_scanwebsiteendpoints",
+      "target": "server_adapters_api_health_isspacatchall",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "server/adapters/api_health.js",
-      "source_location": "L696",
+      "source_location": "L1181",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_adapters_api_health_testplatformendpoints",
@@ -7162,7 +7282,43 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "test/test_api_health.js",
-      "source_location": "L46",
+      "source_location": "L111",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "test_test_api_health_runtests",
+      "target": "server_adapters_api_health_unpackopenapispec",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "test/test_api_health.js",
+      "source_location": "L141",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "test_test_api_health_runtests",
+      "target": "server_adapters_api_health_extractendpointsfromscript",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "test/test_api_health.js",
+      "source_location": "L163",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "test_test_api_health_runtests",
+      "target": "server_adapters_api_health_isspacatchall",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "test/test_api_health.js",
+      "source_location": "L50",
       "weight": 1.0,
       "_origin": "ast",
       "source": "test_test_api_health_runtests",
@@ -8254,7 +8410,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "test/test_api_health.js",
-      "source_location": "L18",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
       "source": "test_test_api_health_runtests",
@@ -8266,7 +8422,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "test/test_api_health.js",
-      "source_location": "L30",
+      "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast",
       "source": "test_test_api_health_runtests",
@@ -10094,7 +10250,43 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "test_test_api_health",
+      "target": "server_adapters_api_health_extractendpointsfromscript",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "test/test_api_health.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "test_test_api_health",
+      "target": "server_adapters_api_health_isspacatchall",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "test/test_api_health.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "test_test_api_health",
       "target": "server_adapters_api_health_platform_registry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "test/test_api_health.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "test_test_api_health",
+      "target": "server_adapters_api_health_profileroothtml",
       "confidence_score": 1.0
     },
     {
@@ -10119,6 +10311,18 @@
       "_origin": "ast",
       "source": "test_test_api_health",
       "target": "server_adapters_api_health_testplatformendpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "test/test_api_health.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "test_test_api_health",
+      "target": "server_adapters_api_health_unpackopenapispec",
       "confidence_score": 1.0
     },
     {
@@ -12525,7 +12729,7 @@
       "relation": "cites",
       "confidence": "EXTRACTED",
       "source_file": "server/adapters/api_health.js",
-      "source_location": "L437",
+      "source_location": "L450",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_adapters_api_health",
@@ -12536,7 +12740,7 @@
       "relation": "cites",
       "confidence": "EXTRACTED",
       "source_file": "server/adapters/api_health.js",
-      "source_location": "L437",
+      "source_location": "L450",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_adapters_api_health",
@@ -13394,7 +13598,29 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/adapters/api_health.js",
-      "source_location": "L439",
+      "source_location": "L1178",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "server_adapters_api_health",
+      "target": "server_adapters_api_health_testplatformendpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L441",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "server_adapters_api_health",
+      "target": "server_adapters_api_health_safejsonparse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L453",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_adapters_api_health",
@@ -13405,7 +13631,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/adapters/api_health.js",
-      "source_location": "L46",
+      "source_location": "L48",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_adapters_api_health",
@@ -13416,22 +13642,55 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/adapters/api_health.js",
-      "source_location": "L500",
+      "source_location": "L520",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_adapters_api_health",
-      "target": "server_adapters_api_health_scanwebsiteendpoints",
+      "target": "server_adapters_api_health_unpackopenapispec",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/adapters/api_health.js",
-      "source_location": "L693",
+      "source_location": "L577",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_adapters_api_health",
-      "target": "server_adapters_api_health_testplatformendpoints",
+      "target": "server_adapters_api_health_extractendpointsfromscript",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L623",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "server_adapters_api_health",
+      "target": "server_adapters_api_health_profileroothtml",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L675",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "server_adapters_api_health",
+      "target": "server_adapters_api_health_isspacatchall",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/adapters/api_health.js",
+      "source_location": "L725",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "server_adapters_api_health",
+      "target": "server_adapters_api_health_scanwebsiteendpoints",
       "confidence_score": 1.0
     },
     {
@@ -15341,7 +15600,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "test/test_api_health.js",
-      "source_location": "L12",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
       "source": "test_test_api_health",
@@ -16567,5 +16826,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "103e10674ba328ceb07c866b674e0d92647b88ed"
+  "built_at_commit": "8ac6a9cf85740ef8a79a944682cd7debd7f689f8"
 }

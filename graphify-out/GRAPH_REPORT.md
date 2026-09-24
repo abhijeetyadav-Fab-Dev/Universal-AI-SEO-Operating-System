@@ -1,16 +1,16 @@
 # Graph Report - OmniSEO-OS  (2026-09-24)
 
 ## Corpus Check
-- 64 files · ~152,308 words
+- 64 files · ~155,174 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 450 nodes · 1000 edges · 32 communities (30 shown, 2 thin omitted)
+- 452 nodes · 1003 edges · 32 communities (30 shown, 2 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 18 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8ac6a9cf`
+- Built from commit: `2c70ce15`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -33,8 +33,8 @@
 - crux.js
 - indexnow_sitemap.js
 - api_health.js
-- orchestrator.js
 - index.js
+- google_cloud.js
 - screaming_frog.js
 
 ## God Nodes (most connected - your core abstractions)
@@ -99,8 +99,8 @@ Cohesion: 0.83
 Nodes (3): make_request(), run_tests(), scan_for_markers()
 
 ### Community 19 - "mcp.js"
-Cohesion: 0.09
-Nodes (44): forget(), getMemoryStats(), MEMORY_FILE, memoryStore, recall(), remember(), savePersistedMemory(), auditBacklinks() (+36 more)
+Cohesion: 0.10
+Nodes (39): getMemoryStats(), recall(), remember(), auditBacklinks(), estimateDA(), auditTechnical(), ACCESSIBLE_PALETTE, generateSeoDiagram() (+31 more)
 
 ### Community 20 - "storage.js"
 Cohesion: 0.23
@@ -127,23 +127,23 @@ Cohesion: 0.31
 Nodes (10): cleanTagContent(), decompressIfNeeded(), detectOrphanPages(), extractRawUrls(), fetchAndParseSitemap(), generateIndexNowKey(), INDEXNOW_ENDPOINTS, normalizeUrl() (+2 more)
 
 ### Community 28 - "api_health.js"
-Cohesion: 0.25
-Nodes (13): RFC-8594, RFC-9524, analyzeDeprecation(), COMMON_API_PROBES, extractEndpointsFromScript(), isSpaCatchAll(), PLATFORM_REGISTRY, profileRootHtml() (+5 more)
+Cohesion: 0.22
+Nodes (15): RFC-8594, RFC-9524, analyzeDeprecation(), COMMON_API_PROBES, DOMAIN_PLATFORM_MAP, extractEndpointsFromScript(), isSpaCatchAll(), PLATFORM_REGISTRY (+7 more)
 
-### Community 29 - "orchestrator.js"
-Cohesion: 0.36
-Nodes (6): auditTechnical(), auditHeadAndEeat(), auditHelpfulContentGuardrail(), evaluateHelpfulContent(), analyzeKeywordsAndSERP(), executeOrchestratedPlan()
+### Community 29 - "index.js"
+Cohesion: 0.09
+Nodes (24): forget(), MEMORY_FILE, memoryStore, savePersistedMemory(), crawlInteractive(), takeDomSnapshot(), validateUrl(), auditSecurityPosture() (+16 more)
 
-### Community 31 - "index.js"
-Cohesion: 0.10
-Nodes (31): DEFAULT_CRUX_KEY, buildGa4OrganicReportRequest(), correlateCwvWithGa4(), DEFAULT_GCP_PROJECT_ID, DEFAULT_GCS_BUCKET, ENABLED_GOOGLE_CLOUD_APIS, executeBigQueryQuery(), formatCloudLogEntry() (+23 more)
+### Community 31 - "google_cloud.js"
+Cohesion: 0.23
+Nodes (18): DEFAULT_CRUX_KEY, buildGa4OrganicReportRequest(), correlateCwvWithGa4(), DEFAULT_GCP_PROJECT_ID, DEFAULT_GCS_BUCKET, ENABLED_GOOGLE_CLOUD_APIS, executeBigQueryQuery(), formatCloudLogEntry() (+10 more)
 
 ### Community 48 - "screaming_frog.js"
 Cohesion: 0.17
 Nodes (24): buildScreamingFrogCommand(), CRAWL_STORAGE_DIR, crawlJobs, __dirname, __filename, findScreamingFrogBinary(), getScreamingFrogCrawlById(), getScreamingFrogCrawlSummary() (+16 more)
 
 ## Knowledge Gaps
-- **141 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+136 more)
+- **142 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+137 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -154,10 +154,10 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.025) - this node is a cross-community bridge._
 - **Why does `exportToCsv()` connect `test_exporter.js` to `index.js`?**
   _High betweenness centrality (0.023) - this node is a cross-community bridge._
-- **Why does `handleToolCall()` connect `mcp.js` to `openseo.js`, `crux.js`, `indexnow_sitemap.js`, `orchestrator.js`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
+- **Why does `scanWebsiteEndpoints()` connect `api_health.js` to `index.js`?**
+  _High betweenness centrality (0.014) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
-  _141 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _142 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `openseo.js` be split into smaller, more focused modules?**
   _Cohesion score 0.12312312312312312 - nodes in this community are weakly interconnected._
 - **Should `test_exporter.js` be split into smaller, more focused modules?**

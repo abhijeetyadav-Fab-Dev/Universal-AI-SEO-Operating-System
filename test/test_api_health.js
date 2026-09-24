@@ -192,8 +192,8 @@ async function runTests() {
   // ─── 2. PLATFORM REGISTRY CATALOG TESTS ──────────────────
   console.log('\n--- 2. Enterprise Platform Registry Catalog ---');
 
-  test('Registry contains all 17 external platforms', () => {
-    assert.strictEqual(PLATFORM_REGISTRY.length, 17);
+  test('Registry contains all 25 external platforms', () => {
+    assert.strictEqual(PLATFORM_REGISTRY.length, 25);
     const ids = PLATFORM_REGISTRY.map(p => p.id);
     assert.ok(ids.includes('google-psi'));
     assert.ok(ids.includes('google-crux'));
@@ -212,6 +212,14 @@ async function runTests() {
     assert.ok(ids.includes('wikimedia-pageviews'));
     assert.ok(ids.includes('datamuse-lsi'));
     assert.ok(ids.includes('google-suggest'));
+    assert.ok(ids.includes('ahrefs'));
+    assert.ok(ids.includes('semrush'));
+    assert.ok(ids.includes('moz'));
+    assert.ok(ids.includes('serpapi'));
+    assert.ok(ids.includes('anthropic'));
+    assert.ok(ids.includes('github-api'));
+    assert.ok(ids.includes('stripe-api'));
+    assert.ok(ids.includes('cloudflare-api'));
   });
 
   test('Every platform defines name, category, endpoints, and healthCheck', () => {
@@ -227,14 +235,14 @@ async function runTests() {
   // ─── 3. LIVE REST SERVER ENDPOINTS TESTS ─────────────────
   console.log('\n--- 3. Server REST API & SSRF Security Tests ---');
 
-  await testAsync('GET /api/api-health/platforms returns 17 platforms and active config', async () => {
+  await testAsync('GET /api/api-health/platforms returns 25 platforms and active config', async () => {
     const res = await fetch(`${BASE_URL}/api/api-health/platforms`);
     assert.strictEqual(res.status, 200);
     const json = await res.json();
     assert.strictEqual(json.success, true);
-    assert.strictEqual(json.total, 17);
+    assert.strictEqual(json.total, 25);
     assert.ok(Array.isArray(json.platforms));
-    assert.strictEqual(json.platforms.length, 17);
+    assert.strictEqual(json.platforms.length, 25);
   });
 
   await testAsync('POST /api/api-health/test-platforms performs live health sweep', async () => {
@@ -270,6 +278,21 @@ async function runTests() {
     assert.strictEqual(typeof json.data.summary.avgLatencyMs, 'number');
     assert.ok(json.data.endpoints[0].format !== undefined);
     assert.ok(typeof json.data.endpoints[0].isRealApi === 'boolean');
+  });
+
+  await testAsync('POST /api/api-health/scan auto-recognizes platform domains like app.ahrefs.com', async () => {
+    const res = await fetch(`${BASE_URL}/api/api-health/scan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: 'https://app.ahrefs.com/' })
+    });
+    assert.strictEqual(res.status, 200);
+    const json = await res.json();
+    assert.strictEqual(json.success, true);
+    assert.ok(json.data.matchedPlatform);
+    assert.strictEqual(json.data.matchedPlatform.id, 'ahrefs');
+    assert.ok(json.data.endpoints.some(ep => ep.path && ep.path.includes('/v3/site-explorer/')));
+    assert.ok(json.data.endpoints.some(ep => ep.isDeprecated === true));
   });
 
   await testAsync('POST /api/api-health/scan defends against SSRF (blocks localhost and 127.0.0.1)', async () => {

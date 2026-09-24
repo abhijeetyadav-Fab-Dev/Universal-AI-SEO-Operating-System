@@ -2862,9 +2862,9 @@ https://web.dev/explore"></textarea>
             <!-- VIEW 1: Target Website Endpoint Scanner -->
             <div id="apiWebsiteView">
               <!-- Scanner Bar -->
-              <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px; margin-bottom:16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px; margin-bottom:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
                 <div style="flex:1; min-width:280px; position:relative;">
-                  <input type="url" id="inputApiScanUrl" class="command-input" placeholder="Enter website URL to audit API endpoints (e.g. https://example.com or https://httpbin.org)" style="width:100%; padding:10px 14px; font-size:0.85rem; font-family:'JetBrains Mono',monospace;">
+                  <input type="url" id="inputApiScanUrl" class="command-input" placeholder="Enter website URL to audit API endpoints (e.g. https://app.ahrefs.com, https://api.semrush.com, or https://example.com)" style="width:100%; padding:10px 14px; font-size:0.85rem; font-family:'JetBrains Mono',monospace;">
                 </div>
                 <button id="btnScanWebsiteApis" onclick="scanWebsiteApis()" class="btn btn-primary" style="padding:10px 20px; font-size:0.85rem; font-weight:700; display:flex; align-items:center; gap:6px;">
                   <span>🔍 Scan &amp; Audit Endpoints</span>
@@ -2872,6 +2872,40 @@ https://web.dev/explore"></textarea>
                 <button onclick="useCurrentAuditUrlForApi()" class="btn btn-secondary" style="padding:10px 14px; font-size:0.8rem;" title="Copy current audit target URL">
                   Use Audit Target
                 </button>
+              </div>
+
+              <!-- Quick Platform Audit Chips -->
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+                <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">⚡ Audit Popular Platforms:</span>
+                <button type="button" onclick="quickAuditPlatform('https://app.ahrefs.com')" class="btn btn-secondary" style="padding:3px 9px; font-size:0.72rem; border-radius:12px; cursor:pointer;" title="Audit Ahrefs SEO &amp; Backlinks API">🅰️ Ahrefs</button>
+                <button type="button" onclick="quickAuditPlatform('https://api.semrush.com')" class="btn btn-secondary" style="padding:3px 9px; font-size:0.72rem; border-radius:12px; cursor:pointer;" title="Audit Semrush Analytics API">📊 Semrush</button>
+                <button type="button" onclick="quickAuditPlatform('https://moz.com')" class="btn btn-secondary" style="padding:3px 9px; font-size:0.72rem; border-radius:12px; cursor:pointer;" title="Audit Moz Mozscape &amp; Links API">Ⓜ️ Moz</button>
+                <button type="button" onclick="quickAuditPlatform('https://api.openai.com')" class="btn btn-secondary" style="padding:3px 9px; font-size:0.72rem; border-radius:12px; cursor:pointer;" title="Audit OpenAI GPT &amp; Embeddings API">🤖 OpenAI</button>
+                <button type="button" onclick="quickAuditPlatform('https://api.dataforseo.com')" class="btn btn-secondary" style="padding:3px 9px; font-size:0.72rem; border-radius:12px; cursor:pointer;" title="Audit DataForSEO Live SERP API">🔗 DataForSEO</button>
+                <button type="button" onclick="quickAuditPlatform('https://developers.google.com')" class="btn btn-secondary" style="padding:3px 9px; font-size:0.72rem; border-radius:12px; cursor:pointer;" title="Audit Google PSI &amp; Lighthouse API">⚡ Google PSI</button>
+                <button type="button" onclick="quickAuditPlatform('https://api.github.com')" class="btn btn-secondary" style="padding:3px 9px; font-size:0.72rem; border-radius:12px; cursor:pointer;" title="Audit GitHub REST &amp; GraphQL API">🐙 GitHub</button>
+                <button type="button" onclick="quickAuditPlatform('https://api.stripe.com')" class="btn btn-secondary" style="padding:3px 9px; font-size:0.72rem; border-radius:12px; cursor:pointer;" title="Audit Stripe Payments API">💳 Stripe</button>
+                <button type="button" onclick="quickAuditPlatform('https://api.cloudflare.com')" class="btn btn-secondary" style="padding:3px 9px; font-size:0.72rem; border-radius:12px; cursor:pointer;" title="Audit Cloudflare v4 Edge API">☁️ Cloudflare</button>
+              </div>
+
+              <!-- Matched Platform Banner -->
+              <div id="apiPlatformMatchedBanner" style="display:none; margin-bottom:14px; background:linear-gradient(90deg, rgba(37,99,235,0.15) 0%, rgba(30,58,138,0.1) 100%); border:1px solid rgba(59,130,246,0.35); border-radius:8px; padding:12px 16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <span id="apiMatchedPlatformIcon" style="font-size:1.6rem;">🏢</span>
+                    <div>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <strong id="apiMatchedPlatformName" style="color:#fff; font-size:0.95rem;">Matched Platform</strong>
+                        <span id="apiMatchedPlatformCategory" style="font-size:0.68rem; background:rgba(59,130,246,0.2); color:#93c5fd; padding:2px 6px; border-radius:4px; font-weight:700;">Category</span>
+                        <span id="apiMatchedPlatformVersion" style="font-size:0.68rem; background:rgba(16,185,129,0.15); color:#a7f3d0; padding:2px 6px; border-radius:4px; font-weight:700;">Version</span>
+                      </div>
+                      <div id="apiMatchedPlatformNotes" style="font-size:0.74rem; color:var(--text-muted); margin-top:2px;">Platform API description and deprecation notes</div>
+                    </div>
+                  </div>
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <a id="apiMatchedPlatformDocsLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="font-size:0.74rem; padding:5px 12px; text-decoration:none;">Official API Docs ↗</a>
+                  </div>
+                </div>
               </div>
 
               <!-- Scanning Status & Progress -->
@@ -2932,8 +2966,11 @@ https://web.dev/explore"></textarea>
                   <button class="api-filter-btn" onclick="setApiFilter('catchall')" id="btnFilterCatchall" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid rgba(148,163,184,0.3); background:rgba(148,163,184,0.06); color:#94a3b8; cursor:pointer;">
                     🛡️ SPA Fallbacks (<span id="filterCountCatchall">0</span>)
                   </button>
+                  <button class="api-filter-btn" onclick="setApiFilter('probemisses')" id="btnFilterProbemisses" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid rgba(148,163,184,0.3); background:rgba(148,163,184,0.06); color:#94a3b8; cursor:pointer;" title="Failed speculative probe guesses returning 404">
+                    🔍 Probe Misses (<span id="filterCountProbeMisses">0</span>)
+                  </button>
                   <button class="api-filter-btn" onclick="setApiFilter('all')" id="btnFilterAll" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid var(--border); background:rgba(255,255,255,0.05); color:var(--text-muted); cursor:pointer;">
-                    All Probed (<span id="filterCountAll">0</span>)
+                    Discovered Endpoints (<span id="filterCountAll">0</span>)
                   </button>
                 </div>
                 <div style="display:flex; gap:8px; align-items:center;">
@@ -2975,7 +3012,7 @@ https://web.dev/explore"></textarea>
                 <div>
                   <div style="display:flex; align-items:center; gap:8px;">
                     <strong style="color:#fff; font-size:0.92rem;">OmniSEO Connected Enterprise Service Registry</strong>
-                    <span id="platformRegistryCountBadge" style="font-size:0.68rem; background:rgba(59,130,246,0.15); color:#93c5fd; border:1px solid rgba(59,130,246,0.3); padding:2px 6px; border-radius:4px; font-weight:700;">17 Platforms Monitored</span>
+                    <span id="platformRegistryCountBadge" style="font-size:0.68rem; background:rgba(59,130,246,0.15); color:#93c5fd; border:1px solid rgba(59,130,246,0.3); padding:2px 6px; border-radius:4px; font-weight:700;">25 Platforms Monitored</span>
                   </div>
                   <div style="font-size:0.73rem; color:var(--text-muted); margin-top:2px;">
                     Real-time status, endpoint health, latency, rate limits, and deprecation lifecycle across all AI LLMs, SEO indexes, Google Cloud, and DNS providers.
@@ -2995,7 +3032,7 @@ https://web.dev/explore"></textarea>
               <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-bottom:16px;">
                 <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
                   <div style="font-size:0.65rem; color:var(--text-muted);">Monitored Platforms</div>
-                  <div id="platStatTotal" style="font-size:1.2rem; font-weight:800; color:#38bdf8;">17</div>
+                  <div id="platStatTotal" style="font-size:1.2rem; font-weight:800; color:#38bdf8;">25</div>
                 </div>
                 <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
                   <div style="font-size:0.65rem; color:var(--text-muted);">Healthy / Responsive</div>
@@ -3018,16 +3055,16 @@ https://web.dev/explore"></textarea>
               <!-- Platforms Category Filter Tabs -->
               <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;">
                 <button class="plat-cat-btn active" onclick="filterPlatformCategory('all')" id="platCatAll" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid var(--border); background:rgba(255,255,255,0.08); color:#fff; cursor:pointer;">
-                  All Platforms (17)
+                  All Platforms (25)
                 </button>
                 <button class="plat-cat-btn" onclick="filterPlatformCategory('AI &amp; LLMs')" id="platCatAI" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:var(--text-muted); cursor:pointer;">
-                  🤖 AI &amp; LLMs (4)
+                  🤖 AI &amp; LLMs (5)
                 </button>
                 <button class="plat-cat-btn" onclick="filterPlatformCategory('Core SEO &amp; Performance')" id="platCatSEO" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:var(--text-muted); cursor:pointer;">
-                  ⚡ Core SEO &amp; Performance (5)
+                  ⚡ Core SEO &amp; Performance (9)
                 </button>
                 <button class="plat-cat-btn" onclick="filterPlatformCategory('Infrastructure &amp; Scraping')" id="platCatInfra" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:var(--text-muted); cursor:pointer;">
-                  🕷️ Infra &amp; Crawling (3)
+                  🕷️ Infra &amp; Crawling (6)
                 </button>
                 <button class="plat-cat-btn" onclick="filterPlatformCategory('Open Data &amp; Knowledge')" id="platCatData" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:var(--text-muted); cursor:pointer;">
                   🌐 Public Data &amp; Knowledge (5)
@@ -8000,6 +8037,19 @@ https://web.dev/explore"></textarea>
       }
     }
 
+    function quickAuditPlatform(target) {
+      const input = document.getElementById('inputApiScanUrl');
+      if (input) input.value = target;
+      scanWebsiteApis();
+    }
+
+    function auditPlatformInScanner(target) {
+      switchApiView('website');
+      const input = document.getElementById('inputApiScanUrl');
+      if (input) input.value = target;
+      scanWebsiteApis();
+    }
+
     async function scanWebsiteApis() {
       const input = document.getElementById('inputApiScanUrl');
       let targetUrl = input ? input.value.trim() : '';
@@ -8030,7 +8080,7 @@ https://web.dev/explore"></textarea>
         statusBox.style.background = 'rgba(59,130,246,0.1)';
         statusBox.style.borderColor = 'rgba(59,130,246,0.3)';
         statusBox.style.color = '#93c5fd';
-        if (statusText) statusText.innerText = `Auditing ${targetUrl} — probing OpenAPI specs, scripts, GraphQL and REST endpoints...`;
+        if (statusText) statusText.innerText = `Auditing ${targetUrl} — probing OpenAPI specs, scripts, GraphQL, and platform catalog endpoints...`;
       }
 
       try {
@@ -8046,6 +8096,33 @@ https://web.dev/explore"></textarea>
 
         currentApiScan = data.data;
 
+        // Platform Matched Banner
+        const pBanner = document.getElementById('apiPlatformMatchedBanner');
+        if (currentApiScan.matchedPlatform) {
+          const mp = currentApiScan.matchedPlatform;
+          if (pBanner) {
+            pBanner.style.display = 'block';
+            const iconEl = document.getElementById('apiMatchedPlatformIcon');
+            const nameEl = document.getElementById('apiMatchedPlatformName');
+            const catEl = document.getElementById('apiMatchedPlatformCategory');
+            const verEl = document.getElementById('apiMatchedPlatformVersion');
+            const notesEl = document.getElementById('apiMatchedPlatformNotes');
+            const linkEl = document.getElementById('apiMatchedPlatformDocsLink');
+
+            if (iconEl) iconEl.innerText = mp.icon || '🏢';
+            if (nameEl) nameEl.innerText = mp.name || 'Recognized Platform';
+            if (catEl) catEl.innerText = mp.category || 'Platform';
+            if (verEl) verEl.innerText = mp.version || 'Active';
+            if (notesEl) notesEl.innerText = `${mp.deprecationNotes || ''} · Auth: ${mp.authType} (${mp.envKey || 'none'}) · Quota: ${mp.quotaInfo || 'Standard'}`;
+            if (linkEl) {
+              linkEl.href = mp.docUrl || mp.docsUrl || '#';
+              linkEl.innerText = `${mp.name} Docs ↗`;
+            }
+          }
+        } else {
+          if (pBanner) pBanner.style.display = 'none';
+        }
+
         // Update KPIs
         const s = currentApiScan.summary || {};
         const elTotal = document.getElementById('apiStatTotal');
@@ -8055,6 +8132,9 @@ https://web.dev/explore"></textarea>
         const elAuth = document.getElementById('apiStatAuth');
         const elCatchAlls = document.getElementById('apiStatCatchAlls');
         const elLatency = document.getElementById('apiStatLatency');
+
+        const probeMissesCount = s.probeMisses ?? (currentApiScan.endpoints || []).filter(e => e.isProbeMiss).length;
+        const validEndpointsCount = s.discoveredEndpoints ?? ((s.totalEndpoints || 0) - probeMissesCount);
 
         if (elTotal) elTotal.innerText = s.totalEndpoints ?? 0;
         if (elReal) elReal.innerText = s.realApiEndpoints ?? 0;
@@ -8078,6 +8158,7 @@ https://web.dev/explore"></textarea>
         const countAth = document.getElementById('filterCountAuth');
         const countDocs = document.getElementById('filterCountDocs');
         const countCatch = document.getElementById('filterCountCatchall');
+        const countProbeMiss = document.getElementById('filterCountProbeMisses');
         const countAll = document.getElementById('filterCountAll');
 
         if (countReal) countReal.innerText = s.realApiEndpoints ?? 0;
@@ -8086,11 +8167,16 @@ https://web.dev/explore"></textarea>
         if (countAth) countAth.innerText = s.authRequiredEndpoints ?? 0;
         if (countDocs) countDocs.innerText = docsCount;
         if (countCatch) countCatch.innerText = s.filteredHtmlCatchAlls ?? 0;
-        if (countAll) countAll.innerText = s.totalEndpoints ?? 0;
+        if (countProbeMiss) countProbeMiss.innerText = probeMissesCount;
+        if (countAll) countAll.innerText = validEndpointsCount;
 
-        // Default to 'real' filter if real APIs discovered; else 'all'
+        // Default filter selection: real > deprecated > all
         if ((s.realApiEndpoints || 0) > 0) {
           setApiFilter('real');
+        } else if ((s.deprecatedEndpoints || 0) > 0) {
+          setApiFilter('deprecated');
+        } else if (validEndpointsCount > 0) {
+          setApiFilter('all');
         } else {
           setApiFilter('all');
         }
@@ -8099,10 +8185,11 @@ https://web.dev/explore"></textarea>
           statusBox.style.background = 'rgba(16,185,129,0.1)';
           statusBox.style.borderColor = 'rgba(16,185,129,0.3)';
           statusBox.style.color = '#a7f3d0';
+          const platformText = currentApiScan.matchedPlatform ? ` · 🏢 Matched: ${currentApiScan.matchedPlatform.name}` : '';
           const realText = (s.realApiEndpoints || 0) > 0 ? `Discovered ${s.realApiEndpoints} active API endpoints (JSON/Data)` : 'No exposed JSON APIs detected';
           const catchText = (s.filteredHtmlCatchAlls || 0) > 0 ? ` · Filtered ${s.filteredHtmlCatchAlls} SPA HTML fallbacks` : '';
           const depText = (s.deprecatedEndpoints || 0) > 0 ? ` · ⚠️ ${s.deprecatedEndpoints} Deprecated` : ' · 0 Deprecated';
-          if (statusText) statusText.innerText = `✅ Audit Complete: ${realText}${catchText}${depText} (${currentApiScan.durationMs}ms).`;
+          if (statusText) statusText.innerText = `✅ Audit Complete: ${realText}${platformText}${catchText}${depText} (${currentApiScan.durationMs}ms).`;
         }
       } catch (err) {
         console.error('API health scan failed:', err);
@@ -8152,15 +8239,19 @@ https://web.dev/explore"></textarea>
       const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
       const filtered = currentApiScan.endpoints.filter((ep) => {
+        // If not in probemisses view, hide speculative probe misses from all standard views
+        if (currentApiFilter !== 'probemisses' && ep.isProbeMiss) return false;
+        if (currentApiFilter === 'probemisses') return ep.isProbeMiss;
+
         // Filter by tab
         if (currentApiFilter === 'real' && !ep.isRealApi) return false;
         if (currentApiFilter === 'deprecated' && !ep.isDeprecated) return false;
-        if (currentApiFilter === 'healthy' && (ep.status < 200 || ep.status >= 300 || ep.isCatchAllFallback)) return false;
+        if (currentApiFilter === 'healthy' && (ep.status < 200 || ep.status >= 300 || ep.isCatchAllFallback || ep.isProbeMiss)) return false;
         if (currentApiFilter === 'auth' && ep.status !== 401 && ep.status !== 403) return false;
         if (currentApiFilter === 'docs') {
           const src = (ep.source || '').toLowerCase();
           const fmt = (ep.format || '').toLowerCase();
-          if (!src.includes('openapi') && !src.includes('swagger') && !fmt.includes('spec') && !fmt.includes('openapi')) return false;
+          if (!src.includes('openapi') && !src.includes('swagger') && !fmt.includes('spec') && !fmt.includes('openapi') && !ep.isDocPage) return false;
         }
         if (currentApiFilter === 'catchall' && !ep.isCatchAllFallback) return false;
 
@@ -8171,13 +8262,37 @@ https://web.dev/explore"></textarea>
           const matchMethod = (ep.method || '').toLowerCase().includes(searchTerm);
           const matchSource = (ep.source || '').toLowerCase().includes(searchTerm);
           const matchFormat = (ep.format || '').toLowerCase().includes(searchTerm);
-          const matchSummary = (ep.openApiOp?.summary || '').toLowerCase().includes(searchTerm);
+          const matchSummary = (ep.openApiOp?.summary || ep.summary || '').toLowerCase().includes(searchTerm);
           if (!matchUrl && !matchPath && !matchMethod && !matchSource && !matchFormat && !matchSummary) return false;
         }
         return true;
       });
 
       if (filtered.length === 0) {
+        if ((currentApiScan.summary?.realApiEndpoints || 0) === 0 && (currentApiScan.summary?.discoveredEndpoints || 0) === 0 && currentApiFilter !== 'probemisses') {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8" style="padding:36px 20px; text-align:center;">
+                <div style="font-size:2rem; margin-bottom:8px;">🔒 No Public REST / OpenAPI Endpoints Exposed</div>
+                <div style="font-weight:700; color:#fff; font-size:0.95rem; margin-bottom:6px;">
+                  The target domain does not publicly expose standard REST, OpenAPI, or GraphQL routes without credentials.
+                </div>
+                <div style="font-size:0.76rem; color:var(--text-muted); max-width:560px; margin:0 auto; line-height:1.6;">
+                  All standard probe requests (/openapi.json, /api, /health, etc.) returned HTTP 404 HTML error pages.
+                  <div style="margin-top:12px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:6px; padding:10px 14px; text-align:left;">
+                    <div style="font-weight:700; color:#38bdf8; margin-bottom:4px;">💡 Recommended Actions:</div>
+                    <ul style="margin:0; padding-left:18px; color:#cbd5e1; font-size:0.74rem;">
+                      <li>If testing a known SEO service (Ahrefs, Semrush, Moz, OpenAI, DataForSEO), click one of the <strong>Audit Popular Platforms</strong> chips above.</li>
+                      <li>If this domain has a dedicated API gateway, enter the direct subdomain (e.g. <code>https://api.example.com</code>).</li>
+                      <li>To review the 404 speculative probe attempts, click the <strong>🔍 Probe Misses (${currentApiScan.summary?.probeMisses || 0})</strong> filter.</li>
+                    </ul>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
         tbody.innerHTML = `<tr><td colspan="8" style="padding:24px; text-align:center; color:var(--text-muted);">No endpoints matched current filter ("${currentApiFilter}" / "${searchTerm || 'all'}").</td></tr>`;
         return;
       }
@@ -8254,7 +8369,9 @@ https://web.dev/explore"></textarea>
 
         // Source badge
         let srcBadge = ep.source || 'REST Probe';
-        if (srcBadge.includes('OpenAPI') || srcBadge.includes('Swagger')) {
+        if (ep.matchedPlatform) {
+          srcBadge = `<span style="color:#38bdf8; font-size:0.7rem; font-weight:700; background:rgba(56,189,248,0.12); padding:1px 6px; border-radius:4px;">🏢 ${escapeHtml(ep.matchedPlatform)}</span>`;
+        } else if (srcBadge.includes('OpenAPI') || srcBadge.includes('Swagger')) {
           srcBadge = `<span style="color:#c084fc; font-size:0.7rem; font-weight:600;">📜 ${escapeHtml(srcBadge)}</span>`;
         } else if (srcBadge.includes('Bundle') || srcBadge.includes('Script')) {
           srcBadge = `<span style="color:#67e8f9; font-size:0.7rem; font-weight:600;">📦 ${escapeHtml(srcBadge)}</span>`;
@@ -8262,6 +8379,8 @@ https://web.dev/explore"></textarea>
           srcBadge = `<span style="color:#ec4899; font-size:0.7rem; font-weight:600;">◈ GraphQL</span>`;
         } else if (srcBadge.includes('WordPress')) {
           srcBadge = `<span style="color:#60a5fa; font-size:0.7rem; font-weight:600;">WP REST</span>`;
+        } else if (ep.isProbeMiss) {
+          srcBadge = `<span style="color:#94a3b8; font-size:0.68rem; opacity:0.8;">Miss (404)</span>`;
         } else {
           srcBadge = `<span style="color:#94a3b8; font-size:0.7rem;">⚡ Probe</span>`;
         }
@@ -8269,7 +8388,9 @@ https://web.dev/explore"></textarea>
         // Summary or Operation ID
         const displayPath = ep.displayUrl || ep.path || ep.url;
         let opSummaryHtml = '';
-        if (ep.openApiOp?.summary) {
+        if (ep.summary) {
+          opSummaryHtml = `<div style="font-size:0.7rem; color:#93c5fd; margin-top:2px;">${escapeHtml(ep.summary)}</div>`;
+        } else if (ep.openApiOp?.summary) {
           opSummaryHtml = `<div style="font-size:0.7rem; color:#93c5fd; margin-top:2px;">${escapeHtml(ep.openApiOp.summary)}</div>`;
         }
         if (ep.openApiOp?.parameters && ep.openApiOp.parameters.length > 0) {

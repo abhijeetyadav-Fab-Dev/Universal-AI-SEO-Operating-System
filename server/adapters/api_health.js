@@ -432,8 +432,313 @@ export const PLATFORM_REGISTRY = [
     endpoints: [
       { path: '/complete/search?client=chrome&q={keyword}', method: 'GET', version: 'Chrome API', lifecycle: 'active', quota: 'Dynamic public pool', description: 'Autocomplete search suggestions' }
     ]
+  },
+  {
+    id: 'ahrefs',
+    name: 'Ahrefs SEO & Backlinks API',
+    platform: 'Ahrefs SEO & Backlinks API',
+    category: 'Core SEO & Performance',
+    icon: '🅰️',
+    description: 'Industry-standard live backlink index, domain rating, and organic keyword explorer.',
+    authType: 'api_key',
+    method: 'GET',
+    endpointUrl: 'https://api.ahrefs.com/v3/site-explorer/all-backlinks?target=ahrefs.com',
+    healthCheck: { url: 'https://api.ahrefs.com/v3/site-explorer/all-backlinks?target=ahrefs.com', method: 'GET' },
+    docUrl: 'https://ahrefs.com/api/documentation',
+    docsUrl: 'https://ahrefs.com/api/documentation',
+    version: 'v3 (Active)',
+    deprecationNotes: 'API v3 active. Legacy API v1 and v2 sunset and decommissioned.',
+    isDeprecated: false,
+    quotaInfo: 'Subscription-based API units (Enterprise API plans)',
+    envKey: 'AHREFS_API_KEY',
+    endpoints: [
+      { path: '/v3/site-explorer/all-backlinks?target={domain}', method: 'GET', version: 'v3', lifecycle: 'active', quota: 'API Units', description: 'Query all live backlinks for domain/URL', fullUrl: 'https://api.ahrefs.com/v3/site-explorer/all-backlinks?target=ahrefs.com' },
+      { path: '/v3/site-explorer/domain-rating?target={domain}', method: 'GET', version: 'v3', lifecycle: 'active', quota: 'API Units', description: 'Query official Domain Rating (DR) score', fullUrl: 'https://api.ahrefs.com/v3/site-explorer/domain-rating?target=ahrefs.com' },
+      { path: '/v3/site-explorer/organic-keywords?target={domain}', method: 'GET', version: 'v3', lifecycle: 'active', quota: 'API Units', description: 'Query organic search keyword rankings', fullUrl: 'https://api.ahrefs.com/v3/site-explorer/organic-keywords?target=ahrefs.com' },
+      { path: '/v3/keywords-explorer/overview?keyword={keyword}&country=us', method: 'GET', version: 'v3', lifecycle: 'active', quota: 'API Units', description: 'Search volume & keyword difficulty', fullUrl: 'https://api.ahrefs.com/v3/keywords-explorer/overview?keyword=seo&country=us' },
+      { path: '/v3/subscription-info', method: 'GET', version: 'v3', lifecycle: 'active', quota: 'Unlimited', description: 'Check remaining API units and subscription status', fullUrl: 'https://api.ahrefs.com/v3/subscription-info' },
+      { path: '/v2/?from=backlinks', method: 'GET', version: 'v2', lifecycle: 'sunset_planned', quota: 'Deprecated', deprecated: true, deprecationNotes: 'Ahrefs v2 API sunset and decommissioned; replaced by API v3.', description: 'Legacy v2 Backlinks API (Decommissioned)', fullUrl: 'https://apiv2.ahrefs.com/?from=backlinks&target=ahrefs.com' },
+      { path: '/v1/get_backlinks', method: 'GET', version: 'v1', lifecycle: 'sunset_planned', quota: 'Deprecated (410)', deprecated: true, deprecationNotes: 'Ahrefs v1 API shut down (HTTP 410); replaced by API v3.', description: 'Legacy v1 Backlinks API (Retired)', fullUrl: 'https://api.ahrefs.com/v1/get_backlinks' }
+    ]
+  },
+  {
+    id: 'semrush',
+    name: 'Semrush Analytics & Keyword API',
+    platform: 'Semrush Analytics & Keyword API',
+    category: 'Core SEO & Performance',
+    icon: '📊',
+    description: 'Global keyword database, domain organic research, and competitive intelligence.',
+    authType: 'api_key',
+    method: 'GET',
+    endpointUrl: 'https://api.semrush.com/?type=domain_ranks&key=TEST&domain=semrush.com',
+    healthCheck: { url: 'https://api.semrush.com/?type=domain_ranks&key=TEST&domain=semrush.com', method: 'GET' },
+    docUrl: 'https://developer.semrush.com/',
+    docsUrl: 'https://developer.semrush.com/',
+    version: 'v3 Direct Query API',
+    deprecationNotes: 'Active Direct Query API. Legacy v1 endpoints discontinued.',
+    isDeprecated: false,
+    quotaInfo: 'API units per line/column',
+    envKey: 'SEMRUSH_API_KEY',
+    endpoints: [
+      { path: '/?type=domain_ranks&key={key}&domain={domain}', method: 'GET', version: 'v3', lifecycle: 'active', quota: '10 units / line', description: 'Domain rank & organic traffic overview', fullUrl: 'https://api.semrush.com/?type=domain_ranks&key=DEMO&domain=example.com' },
+      { path: '/?type=domain_organic&key={key}&domain={domain}', method: 'GET', version: 'v3', lifecycle: 'active', quota: '10 units / line', description: 'Organic search positions and keywords', fullUrl: 'https://api.semrush.com/?type=domain_organic&key=DEMO&domain=example.com' },
+      { path: '/?type=backlinks_overview&key={key}&target={domain}', method: 'GET', version: 'v3', lifecycle: 'active', quota: '10 units / line', description: 'Authority Score & referring domains', fullUrl: 'https://api.semrush.com/?type=backlinks_overview&key=DEMO&target=example.com' },
+      { path: '/v1/reports', method: 'GET', version: 'v1', lifecycle: 'sunset_planned', quota: 'Deprecated (410)', deprecated: true, deprecationNotes: 'Semrush v1 legacy report routes shut down in favor of unified query API.', description: 'Legacy v1 Reports Endpoint (Retired)', fullUrl: 'https://api.semrush.com/v1/reports' }
+    ]
+  },
+  {
+    id: 'moz',
+    name: 'Moz Mozscape & Links API',
+    platform: 'Moz Mozscape & Links API',
+    category: 'Core SEO & Performance',
+    icon: 'Ⓜ️',
+    description: 'Domain Authority (DA), Page Authority (PA), and Link Explorer metrics.',
+    authType: 'api_key',
+    method: 'POST',
+    endpointUrl: 'https://lsapi.seomoz.com/v2/url_metrics',
+    healthCheck: { url: 'https://lsapi.seomoz.com/v2/url_metrics', method: 'POST' },
+    docUrl: 'https://moz.com/help/moz-api',
+    docsUrl: 'https://moz.com/help/moz-api',
+    version: 'Mozscape v2',
+    deprecationNotes: 'Mozscape v2 active (JSON POST). Legacy v1 URL metrics GET sunset.',
+    isDeprecated: false,
+    quotaInfo: 'Free tier 2,500 rows / month (1 req / 10 sec)',
+    envKey: 'MOZ_API_KEY',
+    endpoints: [
+      { path: '/v2/url_metrics', method: 'POST', version: 'v2', lifecycle: 'active', quota: '2,500 rows / mo free', description: 'Query DA, PA, and root domain linking metrics', fullUrl: 'https://lsapi.seomoz.com/v2/url_metrics' },
+      { path: '/v2/anchor_text', method: 'POST', version: 'v2', lifecycle: 'active', quota: 'Rate-limited', description: 'Query top backlink anchor texts', fullUrl: 'https://lsapi.seomoz.com/v2/anchor_text' },
+      { path: '/linkscape/url-metrics/{url}', method: 'GET', version: 'v1', lifecycle: 'sunset_planned', quota: 'Deprecated (410)', deprecated: true, deprecationNotes: 'Mozscape v1 GET API sunset; replaced by v2 JSON POST API.', description: 'Legacy v1 Mozscape API (Sunset)', fullUrl: 'https://lsapi.seomoz.com/linkscape/url-metrics/example.com' }
+    ]
+  },
+  {
+    id: 'serpapi',
+    name: 'SerpAPI Real-Time SERP Engine',
+    platform: 'SerpAPI Real-Time SERP Engine',
+    category: 'Core SEO & Performance',
+    icon: '🔎',
+    description: 'Real-time search engine scraping for Google, Bing, Baidu, Yahoo, and YouTube.',
+    authType: 'api_key',
+    method: 'GET',
+    endpointUrl: 'https://serpapi.com/account',
+    healthCheck: { url: 'https://serpapi.com/account', method: 'GET' },
+    docUrl: 'https://serpapi.com/docs',
+    docsUrl: 'https://serpapi.com/docs',
+    version: 'v1 JSON API',
+    deprecationNotes: 'Active search engine scraping interface.',
+    isDeprecated: false,
+    quotaInfo: '100 free searches / month',
+    envKey: 'SERPAPI_API_KEY',
+    endpoints: [
+      { path: '/search.json?engine=google&q={query}', method: 'GET', version: 'v1', lifecycle: 'active', quota: '100 / mo free', description: 'Scrape Google Organic, AI Overviews, Knowledge Graph', fullUrl: 'https://serpapi.com/search.json?engine=google&q=seo' },
+      { path: '/account', method: 'GET', version: 'v1', lifecycle: 'active', quota: 'Unlimited', description: 'Account status, remaining searches, and rate limits', fullUrl: 'https://serpapi.com/account' },
+      { path: '/v1/search', method: 'GET', version: 'v1', lifecycle: 'sunset_planned', quota: 'Deprecated (410)', deprecated: true, deprecationNotes: 'Legacy /v1/search deprecated in favor of /search.json.', description: 'Legacy v1 Search Endpoint (Deprecated)', fullUrl: 'https://serpapi.com/v1/search' }
+    ]
+  },
+  {
+    id: 'anthropic',
+    name: 'Anthropic Claude API',
+    platform: 'Anthropic Claude API',
+    category: 'AI & LLMs',
+    icon: '🧠',
+    description: 'Claude 3.7 Sonnet, Claude 3.5 Haiku, and extended reasoning models.',
+    authType: 'api_key',
+    method: 'POST',
+    endpointUrl: 'https://api.anthropic.com/v1/messages',
+    healthCheck: { url: 'https://api.anthropic.com/v1/messages', method: 'POST' },
+    docUrl: 'https://docs.anthropic.com/en/api/getting-started',
+    docsUrl: 'https://docs.anthropic.com/en/api/getting-started',
+    version: 'v1 (Messages API)',
+    deprecationNotes: 'Active (v1 /v1/messages). Legacy /v1/complete endpoint deprecated.',
+    isDeprecated: false,
+    quotaInfo: 'Tier-based tokens/minute & RPM',
+    envKey: 'ANTHROPIC_API_KEY',
+    endpoints: [
+      { path: '/v1/messages', method: 'POST', version: 'v1', lifecycle: 'active', quota: 'Tier limits', description: 'State-of-the-art Claude chat and reasoning completion', fullUrl: 'https://api.anthropic.com/v1/messages' },
+      { path: '/v1/complete', method: 'POST', version: 'v1', lifecycle: 'sunset_planned', quota: 'Deprecated (410)', deprecated: true, deprecationNotes: 'Anthropic /v1/complete text completions deprecated; migrate to /v1/messages.', description: 'Legacy Complete Endpoint (Deprecated)', fullUrl: 'https://api.anthropic.com/v1/complete' }
+    ]
+  },
+  {
+    id: 'github-api',
+    name: 'GitHub REST & GraphQL API',
+    platform: 'GitHub REST & GraphQL API',
+    category: 'Infrastructure & Scraping',
+    icon: '🐙',
+    description: 'Repository management, releases, issues, actions, and GraphQL v4.',
+    authType: 'api_key',
+    method: 'GET',
+    endpointUrl: 'https://api.github.com/',
+    healthCheck: { url: 'https://api.github.com/', method: 'GET' },
+    docUrl: 'https://docs.github.com/en/rest',
+    docsUrl: 'https://docs.github.com/en/rest',
+    version: 'REST v3 / GraphQL v4',
+    deprecationNotes: 'REST v3 & GraphQL active. Legacy API v2 retired.',
+    isDeprecated: false,
+    quotaInfo: '60 req/hr unauth; 5,000 req/hr with PAT',
+    envKey: 'GITHUB_TOKEN',
+    endpoints: [
+      { path: '/', method: 'GET', version: 'v3', lifecycle: 'active', quota: '5,000 / hr', description: 'Root API directory and hypermedia index', fullUrl: 'https://api.github.com/' },
+      { path: '/rate_limit', method: 'GET', version: 'v3', lifecycle: 'active', quota: 'Unlimited', description: 'Current rate limit quota and reset time', fullUrl: 'https://api.github.com/rate_limit' },
+      { path: '/graphql', method: 'POST', version: 'v4', lifecycle: 'active', quota: '5,000 pts / hr', description: 'GraphQL v4 query and mutation endpoint', fullUrl: 'https://api.github.com/graphql' },
+      { path: '/v2/', method: 'GET', version: 'v2', lifecycle: 'sunset_planned', quota: 'Deprecated (410)', deprecated: true, deprecationNotes: 'GitHub API v2 permanently retired in 2012.', description: 'Legacy API v2 (Retired)', fullUrl: 'https://api.github.com/v2/' }
+    ]
+  },
+  {
+    id: 'stripe-api',
+    name: 'Stripe Payments & Billing API',
+    platform: 'Stripe Payments & Billing API',
+    category: 'Infrastructure & Scraping',
+    icon: '💳',
+    description: 'Global payments processing, customer billing, and webhooks.',
+    authType: 'api_key',
+    method: 'GET',
+    endpointUrl: 'https://api.stripe.com/v1/balance',
+    healthCheck: { url: 'https://api.stripe.com/v1/balance', method: 'GET' },
+    docUrl: 'https://stripe.com/docs/api',
+    docsUrl: 'https://stripe.com/docs/api',
+    version: 'v1 (Versioned by date)',
+    deprecationNotes: 'Active PaymentIntents API. Legacy charges tokens deprecated.',
+    isDeprecated: false,
+    quotaInfo: '100 read req / sec, 25 write req / sec',
+    envKey: 'STRIPE_SECRET_KEY',
+    endpoints: [
+      { path: '/v1/balance', method: 'GET', version: 'v1', lifecycle: 'active', quota: '100 req / sec', description: 'Retrieve account balance and pending funds', fullUrl: 'https://api.stripe.com/v1/balance' },
+      { path: '/v1/payment_intents', method: 'POST', version: 'v1', lifecycle: 'active', quota: '25 req / sec', description: 'Create and confirm customer payment intents', fullUrl: 'https://api.stripe.com/v1/payment_intents' },
+      { path: '/v1/tokens', method: 'POST', version: 'v1', lifecycle: 'sunset_planned', quota: 'Deprecated', deprecated: true, deprecationNotes: 'Charges Token API deprecated in favor of client-side Elements & PaymentIntents.', description: 'Legacy Card Tokens API (Deprecated)', fullUrl: 'https://api.stripe.com/v1/tokens' },
+      { path: '/v1/plans', method: 'GET', version: 'v1', lifecycle: 'sunset_planned', quota: 'Deprecated', deprecated: true, deprecationNotes: 'Stripe Plans API deprecated in favor of Prices API.', description: 'Legacy Plans API (Deprecated)', fullUrl: 'https://api.stripe.com/v1/plans' }
+    ]
+  },
+  {
+    id: 'cloudflare-api',
+    name: 'Cloudflare Edge & Security API',
+    platform: 'Cloudflare Edge & Security API',
+    category: 'Infrastructure & Scraping',
+    icon: '☁️',
+    description: 'Edge DNS, CDN cache purge, WAF security rules, and Turnstile challenges.',
+    authType: 'api_key',
+    method: 'GET',
+    endpointUrl: 'https://api.cloudflare.com/client/v4/user/tokens/verify',
+    healthCheck: { url: 'https://api.cloudflare.com/client/v4/user/tokens/verify', method: 'GET' },
+    docUrl: 'https://developers.cloudflare.com/api/',
+    docsUrl: 'https://developers.cloudflare.com/api/',
+    version: 'Client API v4',
+    deprecationNotes: 'API v4 active. Legacy v1 HTML form API and v3 API sunset.',
+    isDeprecated: false,
+    quotaInfo: '1,200 requests per 5 minutes',
+    envKey: 'CLOUDFLARE_API_KEY',
+    endpoints: [
+      { path: '/client/v4/user/tokens/verify', method: 'GET', version: 'v4', lifecycle: 'active', quota: '1,200 / 5 min', description: 'Validate API Token permissions', fullUrl: 'https://api.cloudflare.com/client/v4/user/tokens/verify' },
+      { path: '/client/v4/zones', method: 'GET', version: 'v4', lifecycle: 'active', quota: '1,200 / 5 min', description: 'List DNS zones and edge configurations', fullUrl: 'https://api.cloudflare.com/client/v4/zones' },
+      { path: '/client/v3/zones', method: 'GET', version: 'v3', lifecycle: 'sunset_planned', quota: 'Deprecated (410)', deprecated: true, deprecationNotes: 'Cloudflare Client API v3 sunset in 2018; replaced by v4.', description: 'Legacy v3 Zones API (Sunset)', fullUrl: 'https://api.cloudflare.com/client/v3/zones' },
+      { path: '/api_json.html', method: 'POST', version: 'v1', lifecycle: 'sunset_planned', quota: 'Deprecated (410)', deprecated: true, deprecationNotes: 'Cloudflare v1 API permanently decommissioned.', description: 'Legacy Client API v1 (Decommissioned)', fullUrl: 'https://www.cloudflare.com/api_json.html' }
+    ]
   }
 ];
+
+/**
+ * Domain-to-Platform intelligent resolution knowledge base
+ */
+export const DOMAIN_PLATFORM_MAP = [
+  {
+    domains: ['ahrefs.com', 'app.ahrefs.com', 'api.ahrefs.com', 'apiv2.ahrefs.com'],
+    platformId: 'ahrefs',
+    apiBase: 'https://api.ahrefs.com'
+  },
+  {
+    domains: ['semrush.com', 'api.semrush.com'],
+    platformId: 'semrush',
+    apiBase: 'https://api.semrush.com'
+  },
+  {
+    domains: ['moz.com', 'lsapi.seomoz.com'],
+    platformId: 'moz',
+    apiBase: 'https://lsapi.seomoz.com'
+  },
+  {
+    domains: ['serpapi.com'],
+    platformId: 'serpapi',
+    apiBase: 'https://serpapi.com'
+  },
+  {
+    domains: ['dataforseo.com', 'api.dataforseo.com'],
+    platformId: 'dataforseo',
+    apiBase: 'https://api.dataforseo.com'
+  },
+  {
+    domains: ['openai.com', 'api.openai.com'],
+    platformId: 'openai',
+    apiBase: 'https://api.openai.com'
+  },
+  {
+    domains: ['anthropic.com', 'api.anthropic.com'],
+    platformId: 'anthropic',
+    apiBase: 'https://api.anthropic.com'
+  },
+  {
+    domains: ['openrouter.ai'],
+    platformId: 'openrouter',
+    apiBase: 'https://openrouter.ai'
+  },
+  {
+    domains: ['nvidia.com', 'integrate.api.nvidia.com'],
+    platformId: 'nvidia-nim',
+    apiBase: 'https://integrate.api.nvidia.com'
+  },
+  {
+    domains: ['github.com', 'api.github.com'],
+    platformId: 'github-api',
+    apiBase: 'https://api.github.com'
+  },
+  {
+    domains: ['stripe.com', 'api.stripe.com'],
+    platformId: 'stripe-api',
+    apiBase: 'https://api.stripe.com'
+  },
+  {
+    domains: ['cloudflare.com', 'api.cloudflare.com'],
+    platformId: 'cloudflare-api',
+    apiBase: 'https://api.cloudflare.com'
+  },
+  {
+    domains: ['indexnow.org', 'api.indexnow.org'],
+    platformId: 'indexnow',
+    apiBase: 'https://api.indexnow.org'
+  },
+  {
+    domains: ['searchconsole.googleapis.com', 'search.google.com'],
+    platformId: 'google-gsc',
+    apiBase: 'https://searchconsole.googleapis.com'
+  },
+  {
+    domains: ['pagespeedonline.googleapis.com', 'pagespeed.web.dev'],
+    platformId: 'google-psi',
+    apiBase: 'https://www.googleapis.com'
+  },
+  {
+    domains: ['chromeuxreport.googleapis.com'],
+    platformId: 'google-crux',
+    apiBase: 'https://chromeuxreport.googleapis.com'
+  }
+];
+
+/**
+ * Resolves a platform and its official API base from a target URL or domain
+ */
+export function resolvePlatformFromUrl(targetUrl) {
+  try {
+    const raw = String(targetUrl || '').trim();
+    const parsed = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+    const host = parsed.hostname.toLowerCase();
+    for (const entry of DOMAIN_PLATFORM_MAP) {
+      if (entry.domains.some(d => host === d || host.endsWith(`.${d}`))) {
+        const platform = PLATFORM_REGISTRY.find(p => p.id === entry.platformId);
+        if (platform) {
+          return { platform, apiBase: entry.apiBase };
+        }
+      }
+    }
+  } catch {}
+  return null;
+}
 
 /**
  * Safely parses JSON string, returns null on failure
@@ -739,6 +1044,68 @@ export async function scanWebsiteEndpoints(targetUrl) {
 
   let rootProfile = null;
   let directSpecDiscovered = false;
+  let matchedPlatform = null;
+
+  // STEP 0: Enterprise Platform Auto-Recognition (e.g. Ahrefs, Semrush, Moz, OpenAI, etc.)
+  const matchedPlatformObj = resolvePlatformFromUrl(base.href);
+  if (matchedPlatformObj) {
+    const { platform, apiBase } = matchedPlatformObj;
+    matchedPlatform = {
+      id: platform.id,
+      name: platform.name,
+      category: platform.category,
+      icon: platform.icon,
+      docUrl: platform.docUrl,
+      docsUrl: platform.docUrl,
+      authType: platform.authType,
+      envKey: platform.envKey,
+      quotaInfo: platform.quotaInfo,
+      version: platform.version,
+      deprecationNotes: platform.deprecationNotes
+    };
+
+    // Pre-populate with official platform active and deprecated endpoints
+    platform.endpoints.forEach(ep => {
+      const fullUrl = ep.fullUrl || `${apiBase}${ep.path}`;
+      const key = `${ep.method}:${ep.path}`;
+      discoveredPaths.set(key, {
+        path: ep.path,
+        method: ep.method,
+        fullUrl,
+        type: 'PLATFORM_CATALOG_ENDPOINT',
+        source: `${platform.name} Catalog`,
+        summary: ep.description || `${platform.name} API endpoint`,
+        deprecated: Boolean(ep.deprecated),
+        deprecationNotes: ep.deprecationNotes || null,
+        quota: ep.quota,
+        matchedPlatform: platform.name
+      });
+    });
+  } else {
+    // Quick API subdomain auto-discovery (e.g. api.example.com)
+    const hostParts = base.hostname.split('.');
+    if (hostParts.length >= 2 && !base.hostname.startsWith('api.') && !/^[0-9.]+$/.test(base.hostname)) {
+      const rootDomain = hostParts.slice(-2).join('.');
+      const candidateApiOrigin = `https://api.${rootDomain}`;
+      try {
+        const apiCheckRes = await fetch(candidateApiOrigin, {
+          headers: { 'User-Agent': UA, 'Accept': 'application/json, */*' },
+          signal: AbortSignal.timeout(2500)
+        });
+        const apiCType = (apiCheckRes.headers.get('content-type') || '').toLowerCase();
+        if (apiCheckRes.ok || apiCheckRes.status === 401 || apiCheckRes.status === 403 || apiCType.includes('json')) {
+          discoveredPaths.set(`GET:${candidateApiOrigin}`, {
+            path: '/',
+            method: 'GET',
+            fullUrl: candidateApiOrigin,
+            type: 'API_GATEWAY_SUBDOMAIN',
+            source: `Subdomain Discovery (api.${rootDomain})`,
+            summary: `Discovered API Gateway: ${candidateApiOrigin}`
+          });
+        }
+      } catch {}
+    }
+  }
 
   // STEP 1: Direct Target URL Probe & Profiling
   try {
@@ -781,7 +1148,7 @@ export async function scanWebsiteEndpoints(targetUrl) {
   } catch {}
 
   // Fetch origin root if rootProfile is missing and no direct spec was found
-  if (!rootProfile && !directSpecDiscovered) {
+  if (!rootProfile && !directSpecDiscovered && !matchedPlatform) {
     try {
       const rootRes = await fetch(origin, {
         headers: { 'User-Agent': UA, 'Accept': 'text/html, */*' },
@@ -796,7 +1163,7 @@ export async function scanWebsiteEndpoints(targetUrl) {
   }
 
   // STEP 1.5: Fast OpenAPI / Swagger / WordPress Spec Sweeper
-  if (!directSpecDiscovered) {
+  if (!directSpecDiscovered && !matchedPlatform) {
     const specSweepPaths = ['/openapi.json', '/swagger.json', '/spec.json', '/v2/api-docs', '/api/v1/openapi.json', '/wp-json/'];
     const specChecks = specSweepPaths.map(async (sPath) => {
       try {
@@ -878,32 +1245,36 @@ export async function scanWebsiteEndpoints(targetUrl) {
     });
   }
 
-  // STEP 4: Standard probes
-  COMMON_API_PROBES.forEach(p => {
-    const key = `${p.method}:${p.path}`;
-    if (!discoveredPaths.has(key)) {
-      discoveredPaths.set(key, { path: p.path, method: p.method, type: p.type, source: 'Standard Probe' });
-    }
-  });
+  // STEP 4: Standard probes (only if not a recognized platform or if very few endpoints found)
+  if (!matchedPlatform || discoveredPaths.size < 4) {
+    COMMON_API_PROBES.forEach(p => {
+      const key = `${p.method}:${p.path}`;
+      if (!discoveredPaths.has(key)) {
+        discoveredPaths.set(key, { path: p.path, method: p.method, type: p.type, source: 'Standard Probe' });
+      }
+    });
+  }
 
   // Prioritize candidates
   const allCandidates = Array.from(discoveredPaths.values());
   const priorityOrder = {
-    'OPENAPI_OPERATION': 1,
-    'DIRECT_API_ENDPOINT': 2,
-    'BUNDLE_EXTRACTED_API': 3,
-    'DISCOVERED_LINK': 4,
-    'OPENAPI_SPEC': 5,
-    'SWAGGER_SPEC': 5,
-    'WORDPRESS_REST': 6,
-    'WORDPRESS_POSTS': 7,
-    'GRAPHQL_ENDPOINT': 8,
-    'HEALTH_CHECK': 9,
-    'STATUS': 10,
-    'PING': 11,
-    'API_VERSION': 12,
-    'API_ROOT': 13,
-    'Standard Probe': 14
+    'PLATFORM_CATALOG_ENDPOINT': 1,
+    'OPENAPI_OPERATION': 2,
+    'DIRECT_API_ENDPOINT': 3,
+    'API_GATEWAY_SUBDOMAIN': 4,
+    'BUNDLE_EXTRACTED_API': 5,
+    'DISCOVERED_LINK': 6,
+    'OPENAPI_SPEC': 7,
+    'SWAGGER_SPEC': 7,
+    'WORDPRESS_REST': 8,
+    'WORDPRESS_POSTS': 9,
+    'GRAPHQL_ENDPOINT': 10,
+    'HEALTH_CHECK': 11,
+    'STATUS': 12,
+    'PING': 13,
+    'API_VERSION': 14,
+    'API_ROOT': 15,
+    'Standard Probe': 16
   };
 
   allCandidates.sort((a, b) => {
@@ -916,10 +1287,16 @@ export async function scanWebsiteEndpoints(targetUrl) {
 
   // Probe all discovered endpoints in parallel
   const probeResults = await Promise.all(endpointsToProbe.map(async (item) => {
-    // Substitute path parameters like {id} or {petId} with sample value '1'
-    const actualPath = item.path.replace(/\{[a-zA-Z0-9_\-]+\}/g, '1');
-    const probeUrl = `${origin}${actualPath}`;
-    const displayUrl = `${origin}${item.path}`;
+    // Substitute path parameters like {id} or {domain} with sample values
+    const actualPath = item.path
+      .replace(/\{[a-zA-Z0-9_\-]*domain[a-zA-Z0-9_\-]*\}/gi, 'example.com')
+      .replace(/\{[a-zA-Z0-9_\-]*key[a-zA-Z0-9_\-]*\}/gi, 'DEMO')
+      .replace(/\{[a-zA-Z0-9_\-]*query[a-zA-Z0-9_\-]*\}/gi, 'seo')
+      .replace(/\{[a-zA-Z0-9_\-]*keyword[a-zA-Z0-9_\-]*\}/gi, 'seo')
+      .replace(/\{[a-zA-Z0-9_\-]+\}/g, '1');
+
+    const probeUrl = item.fullUrl || `${origin}${actualPath}`;
+    const displayUrl = item.fullUrl || `${origin}${item.path}`;
     const pStart = Date.now();
 
     try {
@@ -959,6 +1336,18 @@ export async function scanWebsiteEndpoints(targetUrl) {
 
       // Analyze deprecation
       const deprecationInfo = analyzeDeprecation(status, headers, bodySnippet, item.path, item.deprecatedInSpec);
+
+      // Explicit platform catalog deprecation propagation
+      if (item.deprecated) {
+        deprecationInfo.isDeprecated = true;
+        const depReason = item.deprecationNotes || `${item.source} explicitly flagged as deprecated / sunset`;
+        if (!deprecationInfo.reasons.includes(depReason)) {
+          deprecationInfo.reasons.push(depReason);
+        }
+        if (!deprecationInfo.reason) {
+          deprecationInfo.reason = depReason;
+        }
+      }
 
       // Check SPA Fallback / HTML catch-all
       const isCatchAll = isSpaCatchAll(status, headers, bodySnippet, rootProfile, item.path);
@@ -1059,6 +1448,9 @@ export async function scanWebsiteEndpoints(targetUrl) {
         else if (status >= 400) healthStatus = 'BROKEN';
       }
 
+      // Identify blind probe misses (speculative guesses that returned 404 HTML)
+      const isProbeMiss = item.source === 'Standard Probe' && status === 404 && (!contentType || contentType.includes('text/html') || contentType.includes('none') || format === 'HTML (404)');
+
       return {
         path: item.path,
         url: displayUrl,
@@ -1078,6 +1470,8 @@ export async function scanWebsiteEndpoints(targetUrl) {
         isRealApi,
         isDocPage,
         isCatchAllFallback: isCatchAll,
+        isProbeMiss,
+        matchedPlatform: item.matchedPlatform || null,
         contentType: headers['content-type'] || 'unknown',
         isDeprecated: deprecationInfo.isDeprecated,
         deprecationReason: deprecationInfo.reason,
@@ -1093,6 +1487,7 @@ export async function scanWebsiteEndpoints(targetUrl) {
       };
     } catch (err) {
       const latencyMs = Date.now() - pStart;
+      const isProbeMiss = item.source === 'Standard Probe';
       return {
         path: item.path,
         url: probeUrl,
@@ -1108,21 +1503,27 @@ export async function scanWebsiteEndpoints(targetUrl) {
         isRealApi: false,
         isDocPage: false,
         isCatchAllFallback: false,
+        isProbeMiss,
+        matchedPlatform: item.matchedPlatform || null,
         contentType: 'none',
-        isDeprecated: false,
-        deprecationReason: null,
-        deprecationEvidence: null,
-        deprecationDetails: { isDeprecated: false, reasons: [], reason: null, evidence: null },
+        isDeprecated: item.deprecated || false,
+        deprecationReason: item.deprecationNotes || null,
+        deprecationEvidence: item.deprecationNotes ? [item.deprecationNotes] : null,
+        deprecationDetails: { isDeprecated: Boolean(item.deprecated), reasons: item.deprecationNotes ? [item.deprecationNotes] : [], reason: item.deprecationNotes || null, evidence: null },
         bodyPreview: '',
         error: err.message
       };
     }
   }));
 
-  // Sort probe results: Real APIs first, then Docs, then Catch-alls
+  // Sort probe results: Probe misses go to bottom; Real APIs and Platform Catalog items go to top
   probeResults.sort((a, b) => {
+    if (a.isProbeMiss && !b.isProbeMiss) return 1;
+    if (!a.isProbeMiss && b.isProbeMiss) return -1;
     if (a.isRealApi && !b.isRealApi) return -1;
     if (!a.isRealApi && b.isRealApi) return 1;
+    if (a.type === 'PLATFORM_CATALOG_ENDPOINT' && b.type !== 'PLATFORM_CATALOG_ENDPOINT') return -1;
+    if (a.type !== 'PLATFORM_CATALOG_ENDPOINT' && b.type === 'PLATFORM_CATALOG_ENDPOINT') return 1;
     if (a.isDeprecated && !b.isDeprecated) return -1;
     if (!a.isDeprecated && b.isDeprecated) return 1;
     return 0;
@@ -1136,6 +1537,8 @@ export async function scanWebsiteEndpoints(targetUrl) {
   const authRequired = probeResults.filter(p => p.healthStatus === 'AUTH_REQUIRED').length;
   const broken = probeResults.filter(p => p.healthStatus === 'BROKEN' || p.status === 404 || p.status >= 500).length;
   const filteredHtmlCatchAlls = probeResults.filter(p => p.isCatchAllFallback).length;
+  const probeMisses = probeResults.filter(p => p.isProbeMiss).length;
+  const discoveredEndpoints = probeResults.filter(p => !p.isProbeMiss).length;
   const redirected = probeResults.filter(p => p.healthStatus === 'REDIRECT').length;
   const validLatencies = probeResults.filter(p => p.latencyMs > 0).map(p => p.latencyMs);
   const avgLatencyMs = validLatencies.length ? Math.round(validLatencies.reduce((a, b) => a + b, 0) / validLatencies.length) : 0;
@@ -1145,6 +1548,7 @@ export async function scanWebsiteEndpoints(targetUrl) {
     targetUrl: origin,
     scannedAt: new Date().toISOString(),
     durationMs: Date.now() - startTime,
+    matchedPlatform,
     rootProfile: {
       isSpa: rootProfile?.isSpa || false,
       title: rootProfile?.title || '',
@@ -1164,9 +1568,11 @@ export async function scanWebsiteEndpoints(targetUrl) {
       errorEndpoints: broken,
       broken,
       filteredHtmlCatchAlls,
+      probeMisses,
+      discoveredEndpoints,
       redirected,
       avgLatencyMs,
-      healthScore: total > 0 ? Math.max(0, Math.round(((healthy + authRequired * 0.8) / total) * 100)) : 0
+      healthScore: total > 0 ? Math.max(0, Math.round(((healthy + authRequired * 0.8) / Math.max(1, total - probeMisses)) * 100)) : 0
     },
     endpoints: probeResults
   };

@@ -18,7 +18,7 @@
   "16": "test_security_baseline.py",
   "17": "test_phase1_real_data.py",
   "18": "test_phase2_enterprise_api.py",
-  "19": "index.js",
+  "19": "mcp.js",
   "20": "storage.js",
   "21": "gsc_real.js",
   "22": "test_all_14_apps.js",
@@ -27,7 +27,8 @@
   "25": "test_debug_console.js",
   "26": "crux.js",
   "27": "indexnow_sitemap.js",
-  "28": "freellmapi.js",
-  "31": "google_cloud.js",
+  "28": "api_health.js",
+  "29": "orchestrator.js",
+  "31": "index.js",
   "48": "screaming_frog.js"
 }
