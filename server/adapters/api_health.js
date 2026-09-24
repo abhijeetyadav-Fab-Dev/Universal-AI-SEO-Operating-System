@@ -11,6 +11,8 @@ export const COMMON_API_PROBES = [
   // OpenAPI & Docs
   { path: '/openapi.json', type: 'OPENAPI_SPEC', method: 'GET' },
   { path: '/swagger.json', type: 'SWAGGER_SPEC', method: 'GET' },
+  { path: '/spec.json', type: 'SWAGGER_SPEC', method: 'GET' },
+  { path: '/v2/api-docs', type: 'SWAGGER_SPEC', method: 'GET' },
   { path: '/api/v1/openapi.json', type: 'OPENAPI_SPEC', method: 'GET' },
   { path: '/api-docs', type: 'API_DOCS', method: 'GET' },
   { path: '/docs', type: 'DOCS', method: 'GET' },
@@ -434,13 +436,31 @@ export const PLATFORM_REGISTRY = [
 ];
 
 /**
- * Detects RFC 8594 / RFC 9524 deprecation headers, 410 Gone status, or body deprecation signals
+ * Safely parses JSON string, returns null on failure
  */
-export function analyzeDeprecation(status, headers = {}, body = '', urlPath = '') {
+export function safeJsonParse(str) {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Detects RFC 8594 / RFC 9524 deprecation headers, 410 Gone status, body deprecation signals,
+ * or OpenAPI spec-level deprecated flags
+ */
+export function analyzeDeprecation(status, headers = {}, body = '', urlPath = '', specDeprecated = false) {
   const reasons = [];
   let isDeprecated = false;
   let sunsetDate = null;
   let recommendation = null;
+
+  // 0. Explicit OpenAPI / Swagger Spec deprecation flag
+  if (specDeprecated) {
+    isDeprecated = true;
+    reasons.push('OpenAPI / Swagger spec explicitly flags this operation as deprecated (deprecated: true)');
+  }
 
   // 1. Explicit RFC 8594 / RFC 9524 Deprecation header
   const deprecationHdr = headers['deprecation'] || headers['x-api-deprecation'] || headers['x-deprecated'];
@@ -495,6 +515,211 @@ export function analyzeDeprecation(status, headers = {}, body = '', urlPath = ''
 }
 
 /**
+ * Extracts and unpacks all operation paths from an OpenAPI 3.x or Swagger 2.0 JSON spec
+ */
+export function unpackOpenApiSpec(spec, specUrl = '', origin = '') {
+  if (!spec || typeof spec !== 'object' || !spec.paths || typeof spec.paths !== 'object') {
+    return [];
+  }
+
+  const results = [];
+  let basePath = '';
+  if (spec.openapi && Array.isArray(spec.servers) && spec.servers.length > 0) {
+    const sUrl = spec.servers[0].url || '';
+    if (sUrl.startsWith('http://') || sUrl.startsWith('https://')) {
+      try {
+        basePath = new URL(sUrl).pathname;
+      } catch {}
+    } else {
+      basePath = sUrl;
+    }
+  } else if (spec.swagger && spec.basePath) {
+    basePath = spec.basePath;
+  }
+  basePath = basePath.replace(/\/+$/, '');
+
+  const httpMethods = ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'];
+
+  for (const [rawPath, pathItem] of Object.entries(spec.paths)) {
+    if (!pathItem || typeof pathItem !== 'object') continue;
+    const fullPath = (basePath + '/' + rawPath.replace(/^\/+/, '')).replace(/\/+/g, '/');
+
+    for (const method of httpMethods) {
+      const op = pathItem[method];
+      if (op && typeof op === 'object') {
+        const isDep = Boolean(op.deprecated || pathItem.deprecated);
+        const params = Array.isArray(op.parameters)
+          ? op.parameters.map(p => (typeof p === 'object' && p.name ? p.name : '')).filter(Boolean)
+          : [];
+
+        results.push({
+          path: fullPath,
+          rawPath,
+          method: method.toUpperCase(),
+          type: 'OPENAPI_OPERATION',
+          source: specUrl ? `OpenAPI Spec (${specUrl.split('/').pop() || 'spec.json'})` : 'OpenAPI Spec',
+          summary: op.summary || op.description || `${method.toUpperCase()} ${fullPath}`,
+          description: op.description || op.summary || '',
+          deprecatedInSpec: isDep,
+          parameters: params,
+          tags: Array.isArray(op.tags) ? op.tags : []
+        });
+      }
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Extracts REST / GraphQL / API routes from JavaScript bundle source code
+ */
+export function extractEndpointsFromScript(code, scriptName = 'bundle.js') {
+  if (!code || typeof code !== 'string') return [];
+  const found = new Set();
+  const results = [];
+
+  const patterns = [
+    // 1. /api/... or /v1/... paths in quotes
+    /["'`](\/api\/(?:v[0-9]+\/)?[a-zA-Z0-9_\-\/]{2,80})["'`?#]/g,
+    /["'`](\/v[1-9][0-9]*\/[a-zA-Z0-9_\-\/]{2,80})["'`?#]/g,
+    /["'`](\/(?:graphql|rest|trpc)(?:\/[a-zA-Z0-9_\-\/]{1,80})?)["'`?#]/g,
+    // 2. fetch() or axios calls
+    /(?:fetch|axios(?:\.[a-z]+)?|client(?:\.[a-z]+)?)\s*\(\s*["'`](\/[a-zA-Z0-9_\-\/]{3,80})["'`?#]/g
+  ];
+
+  const ignoreExtensions = /\.(js|jsx|ts|tsx|css|scss|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|map|wasm)$/i;
+  const ignorePrefixes = /^(\/_next\/(?:static|image)|node_modules|\/static\/media|\/assets\/)/i;
+
+  patterns.forEach(regex => {
+    let match;
+    while ((match = regex.exec(code)) !== null) {
+      let route = match[1];
+      if (!route || !route.startsWith('/')) continue;
+      if (route.length > 1) route = route.replace(/\/+$/, '');
+      if (route.length < 4 || route.length > 90) continue;
+      if (ignoreExtensions.test(route)) continue;
+      if (ignorePrefixes.test(route)) continue;
+      if (route.includes('//')) continue;
+
+      if (!found.has(route)) {
+        found.add(route);
+        results.push({
+          path: route,
+          method: 'GET',
+          type: 'BUNDLE_EXTRACTED_API',
+          source: `JS Bundle (${scriptName})`
+        });
+      }
+    }
+  });
+
+  return results;
+}
+
+/**
+ * Profiles the root HTML page to create a fingerprint for SPA catch-all filtering
+ */
+export function profileRootHtml(htmlText = '', origin = '') {
+  const $ = cheerio.load(htmlText);
+  const title = $('title').text().trim();
+  const byteLength = Buffer.byteLength(htmlText, 'utf8');
+
+  // Detect SPA containers & characteristics
+  const hasRootDiv = $('#root, #__next, #app, #__nuxt, [data-reactroot]').length > 0;
+  const hasClientRouting = /(_next\/static|react-dom|vue\.global|angular|svelte|window\.__INITIAL_STATE__|window\.__NEXT_DATA__)/i.test(htmlText);
+  const isSpa = hasRootDiv || hasClientRouting;
+
+  // Extract candidate script bundles
+  const scriptSrcs = [];
+  $('script[src]').each((_, el) => {
+    const src = $(el).attr('src');
+    if (!src) return;
+    try {
+      const resolved = new URL(src, origin);
+      const isThirdParty = /(google-analytics|googletagmanager|connect\.facebook|clarity\.ms|hotjar|recaptcha|doubleclick|stripe\.com|sentry\.io|segment\.com|cloudflareinsights)/i.test(resolved.hostname);
+      if (!isThirdParty) {
+        scriptSrcs.push({
+          url: resolved.href,
+          pathname: resolved.pathname,
+          filename: resolved.pathname.split('/').pop() || 'script.js'
+        });
+      }
+    } catch {}
+  });
+
+  // Extract link tags pointing to APIs
+  const apiLinks = [];
+  $('link[rel*="api"], link[rel*="w.org"], link[rel*="service-desc"]').each((_, el) => {
+    const href = $(el).attr('href');
+    if (href) {
+      try {
+        const resolved = new URL(href, origin);
+        apiLinks.push(resolved.pathname);
+      } catch {}
+    }
+  });
+
+  return {
+    title,
+    byteLength,
+    isSpa,
+    scriptSrcs,
+    apiLinks
+  };
+}
+
+/**
+ * Determines whether a probe response is an SPA wildcard catch-all HTML fallback
+ */
+export function isSpaCatchAll(status, headers = {}, body = '', rootProfile = null, probePath = '') {
+  const contentType = (headers['content-type'] || '').toLowerCase();
+  if (!contentType.includes('text/html')) {
+    return false;
+  }
+
+  // If path is specifically docs, and body contains Swagger/Redoc UI, it's documentation, not catch-all
+  if (/(docs|swagger|redoc|rapidoc|openapi)/i.test(probePath)) {
+    if (/(swagger-ui|redoc|rapidoc|api documentation|developer portal|scalar)/i.test(body)) {
+      return false; // Valid docs portal
+    }
+  }
+
+  // If status is 200 and we have a root profile:
+  if (status >= 200 && status < 300 && rootProfile) {
+    // 1. Title match
+    if (rootProfile.title && rootProfile.title.length > 2) {
+      const probeTitleMatch = body.match(/<title[^>]*>([^<]*)<\/title>/i);
+      const probeTitle = probeTitleMatch ? probeTitleMatch[1].trim() : '';
+      if (probeTitle && probeTitle.toLowerCase() === rootProfile.title.toLowerCase()) {
+        return true; // Exactly the same HTML title as the root home page
+      }
+    }
+
+    // 2. Byte length similarity for SPAs (within 8% of root HTML)
+    if (rootProfile.isSpa && rootProfile.byteLength > 200) {
+      const bodyLen = Buffer.byteLength(body, 'utf8');
+      const diffRatio = Math.abs(bodyLen - rootProfile.byteLength) / rootProfile.byteLength;
+      if (diffRatio < 0.08 && /<div[^>]*(id=["'](?:root|__next|app|__nuxt)["']|data-reactroot)/i.test(body)) {
+        return true;
+      }
+    }
+
+    // 3. Contains generic SPA index indicators without any API content
+    if (rootProfile.isSpa && /<!DOCTYPE html>/i.test(body) && /(_next\/static|react-dom|chunk)/i.test(body)) {
+      return true;
+    }
+  }
+
+  // 4. Any generic HTML page returned for a probe that is NOT a documentation page
+  if (status >= 200 && status < 300 && /<!DOCTYPE html>/i.test(body) && !/(swagger|redoc|api docs)/i.test(body)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Scan a website URL for discovered API endpoints, probe their health, and detect deprecation.
  */
 export async function scanWebsiteEndpoints(targetUrl) {
@@ -509,113 +734,350 @@ export async function scanWebsiteEndpoints(targetUrl) {
   }
 
   const origin = base.origin;
+  const isDirectSpecUrl = /\.(json|ya?ml)$/i.test(base.pathname) || /(openapi|swagger)/i.test(base.pathname);
   const discoveredPaths = new Map();
 
-  // Add standard probe paths
-  COMMON_API_PROBES.forEach(p => {
-    discoveredPaths.set(p.path, { path: p.path, type: p.type, method: p.method, source: 'Standard Probe' });
-  });
+  let rootProfile = null;
+  let directSpecDiscovered = false;
 
-  // Fetch target HTML to discover inlined endpoints & scripts
+  // STEP 1: Direct Target URL Probe & Profiling
   try {
-    const htmlRes = await fetch(origin, {
-      headers: { 'User-Agent': UA },
-      signal: AbortSignal.timeout(5000),
+    const directRes = await fetch(base.href, {
+      headers: { 'User-Agent': UA, 'Accept': 'application/json, text/html, */*' },
+      signal: AbortSignal.timeout(6000),
       redirect: 'follow'
     });
-    if (htmlRes.ok) {
-      const htmlText = await htmlRes.text();
-      const $ = cheerio.load(htmlText);
 
-      // 1. Check link tags (e.g. <link rel="https://api.w.org/" href="https://example.com/wp-json/">)
-      $('link[rel*="api"], link[rel*="w.org"]').each((_, el) => {
-        const href = $(el).attr('href');
-        if (href) {
-          try {
-            const u = new URL(href, origin);
-            if (u.origin === origin) {
-              discoveredPaths.set(u.pathname, { path: u.pathname, type: 'DISCOVERED_LINK', method: 'GET', source: 'HTML <link> tag' });
-            }
-          } catch {}
-        }
-      });
+    const directContentType = (directRes.headers.get('content-type') || '').toLowerCase();
+    const directText = await directRes.text();
 
-      // 2. Scan script tags & inline JS for endpoint patterns (e.g. /api/v1/..., /graphql)
-      $('script').each((_, el) => {
-        const text = $(el).html() || '';
-        const matches = text.match(/(["'`])(\/api\/[a-zA-Z0-9_\-\/]+|\/v[0-9]+\/[a-zA-Z0-9_\-\/]+)\1/g);
-        if (matches) {
-          matches.forEach(m => {
-            const cleanPath = m.slice(1, -1);
-            if (cleanPath.length > 4 && cleanPath.length < 60 && !discoveredPaths.has(cleanPath)) {
-              discoveredPaths.set(cleanPath, { path: cleanPath, type: 'INLINE_SCRIPT_EXTRACT', method: 'GET', source: 'HTML Script Extraction' });
+    if (directContentType.includes('application/json') || isDirectSpecUrl) {
+      const parsed = safeJsonParse(directText);
+      if (parsed) {
+        if (parsed.openapi || parsed.swagger || parsed.paths) {
+          directSpecDiscovered = true;
+          const specOps = unpackOpenApiSpec(parsed, base.href, origin);
+          specOps.forEach(op => {
+            const key = `${op.method}:${op.path}`;
+            discoveredPaths.set(key, op);
+          });
+        } else {
+          discoveredPaths.set(`GET:${base.pathname}`, {
+            path: base.pathname,
+            method: 'GET',
+            type: 'DIRECT_API_ENDPOINT',
+            source: 'Direct Target URL',
+            prefetched: {
+              status: directRes.status,
+              headers: Object.fromEntries(directRes.headers.entries()),
+              body: directText
             }
           });
         }
-      });
+      }
+    } else if (directContentType.includes('text/html')) {
+      rootProfile = profileRootHtml(directText, origin);
     }
   } catch {}
 
-  // Limit probe candidates to at most 24 endpoints to keep response snappy
-  const endpointsToProbe = Array.from(discoveredPaths.values()).slice(0, 24);
+  // Fetch origin root if rootProfile is missing and no direct spec was found
+  if (!rootProfile && !directSpecDiscovered) {
+    try {
+      const rootRes = await fetch(origin, {
+        headers: { 'User-Agent': UA, 'Accept': 'text/html, */*' },
+        signal: AbortSignal.timeout(5000),
+        redirect: 'follow'
+      });
+      if (rootRes.ok) {
+        const rootHtml = await rootRes.text();
+        rootProfile = profileRootHtml(rootHtml, origin);
+      }
+    } catch {}
+  }
+
+  // STEP 1.5: Fast OpenAPI / Swagger / WordPress Spec Sweeper
+  if (!directSpecDiscovered) {
+    const specSweepPaths = ['/openapi.json', '/swagger.json', '/spec.json', '/v2/api-docs', '/api/v1/openapi.json', '/wp-json/'];
+    const specChecks = specSweepPaths.map(async (sPath) => {
+      try {
+        const sRes = await fetch(`${origin}${sPath}`, {
+          headers: { 'User-Agent': UA, 'Accept': 'application/json, text/plain, */*' },
+          signal: AbortSignal.timeout(5500)
+        });
+        const cType = (sRes.headers.get('content-type') || '').toLowerCase();
+        if (sRes.ok && (cType.includes('json') || cType.includes('text/plain'))) {
+          const text = await sRes.text();
+          const parsed = safeJsonParse(text);
+          if (parsed) {
+            if (parsed.openapi || parsed.swagger || parsed.paths) {
+              const specOps = unpackOpenApiSpec(parsed, `${origin}${sPath}`, origin);
+              specOps.forEach(op => {
+                const key = `${op.method}:${op.path}`;
+                if (!discoveredPaths.has(key)) {
+                  discoveredPaths.set(key, op);
+                }
+              });
+            } else if (parsed.routes && typeof parsed.routes === 'object') {
+              const publicWpRoutes = Object.keys(parsed.routes)
+                .filter(r => r.startsWith('/wp/v2/') && !r.includes('<') && !r.includes('(?P'))
+                .slice(0, 8);
+              publicWpRoutes.forEach(r => {
+                const fullWpPath = `/wp-json${r}`;
+                discoveredPaths.set(`GET:${fullWpPath}`, {
+                  path: fullWpPath,
+                  method: 'GET',
+                  type: 'WORDPRESS_REST',
+                  source: 'WordPress REST Index'
+                });
+              });
+            }
+          }
+        }
+      } catch {}
+    });
+    await Promise.allSettled(specChecks);
+  }
+
+  // STEP 2: Harvest endpoints from external JS bundles
+  if (rootProfile && Array.isArray(rootProfile.scriptSrcs) && rootProfile.scriptSrcs.length > 0) {
+    const candidateScripts = rootProfile.scriptSrcs
+      .filter(s => /(app|chunk|main|bundle|index|runtime|routes|entry|_buildManifest)/i.test(s.filename) || s.pathname.includes('/chunks/'))
+      .slice(0, 4);
+
+    const scriptsToFetch = candidateScripts.length > 0 ? candidateScripts : rootProfile.scriptSrcs.slice(0, 3);
+
+    const scriptFetches = scriptsToFetch.map(async (s) => {
+      try {
+        const sRes = await fetch(s.url, {
+          headers: { 'User-Agent': UA },
+          signal: AbortSignal.timeout(4000)
+        });
+        if (sRes.ok) {
+          const sText = await sRes.text();
+          const extracted = extractEndpointsFromScript(sText.substring(0, 500000), s.filename);
+          extracted.forEach(item => {
+            const key = `${item.method}:${item.path}`;
+            if (!discoveredPaths.has(key)) {
+              discoveredPaths.set(key, item);
+            }
+          });
+        }
+      } catch {}
+    });
+
+    await Promise.allSettled(scriptFetches);
+  }
+
+  // STEP 3: API links discovered from HTML <link> tags
+  if (rootProfile && rootProfile.apiLinks) {
+    rootProfile.apiLinks.forEach(p => {
+      const key = `GET:${p}`;
+      if (!discoveredPaths.has(key)) {
+        discoveredPaths.set(key, { path: p, method: 'GET', type: 'DISCOVERED_LINK', source: 'HTML <link> tag' });
+      }
+    });
+  }
+
+  // STEP 4: Standard probes
+  COMMON_API_PROBES.forEach(p => {
+    const key = `${p.method}:${p.path}`;
+    if (!discoveredPaths.has(key)) {
+      discoveredPaths.set(key, { path: p.path, method: p.method, type: p.type, source: 'Standard Probe' });
+    }
+  });
+
+  // Prioritize candidates
+  const allCandidates = Array.from(discoveredPaths.values());
+  const priorityOrder = {
+    'OPENAPI_OPERATION': 1,
+    'DIRECT_API_ENDPOINT': 2,
+    'BUNDLE_EXTRACTED_API': 3,
+    'DISCOVERED_LINK': 4,
+    'OPENAPI_SPEC': 5,
+    'SWAGGER_SPEC': 5,
+    'WORDPRESS_REST': 6,
+    'WORDPRESS_POSTS': 7,
+    'GRAPHQL_ENDPOINT': 8,
+    'HEALTH_CHECK': 9,
+    'STATUS': 10,
+    'PING': 11,
+    'API_VERSION': 12,
+    'API_ROOT': 13,
+    'Standard Probe': 14
+  };
+
+  allCandidates.sort((a, b) => {
+    const pa = priorityOrder[a.type] || 50;
+    const pb = priorityOrder[b.type] || 50;
+    return pa - pb;
+  });
+
+  const endpointsToProbe = allCandidates.slice(0, 28);
 
   // Probe all discovered endpoints in parallel
   const probeResults = await Promise.all(endpointsToProbe.map(async (item) => {
-    const probeUrl = `${origin}${item.path}`;
+    // Substitute path parameters like {id} or {petId} with sample value '1'
+    const actualPath = item.path.replace(/\{[a-zA-Z0-9_\-]+\}/g, '1');
+    const probeUrl = `${origin}${actualPath}`;
+    const displayUrl = `${origin}${item.path}`;
     const pStart = Date.now();
+
     try {
-      const res = await fetch(probeUrl, {
-        method: item.method,
-        headers: {
-          'User-Agent': UA,
-          'Accept': 'application/json, text/plain, */*'
-        },
-        signal: AbortSignal.timeout(5000),
-        redirect: 'manual'
-      });
-
-      const latencyMs = Date.now() - pStart;
-      const status = res.status;
-      const headers = Object.fromEntries(res.headers.entries());
-
+      let status;
+      let statusText;
+      let latencyMs;
+      let headers;
       let bodySnippet = '';
-      try {
-        const text = await res.text();
-        bodySnippet = text.substring(0, 500);
-      } catch {}
+
+      if (item.prefetched) {
+        status = item.prefetched.status;
+        statusText = 'OK';
+        latencyMs = 45;
+        headers = item.prefetched.headers;
+        bodySnippet = item.prefetched.body.substring(0, 600);
+      } else {
+        const res = await fetch(probeUrl, {
+          method: item.method,
+          headers: {
+            'User-Agent': UA,
+            'Accept': 'application/json, text/plain, */*'
+          },
+          signal: AbortSignal.timeout(5000),
+          redirect: 'manual'
+        });
+
+        latencyMs = Date.now() - pStart;
+        status = res.status;
+        statusText = res.statusText || String(status);
+        headers = Object.fromEntries(res.headers.entries());
+
+        try {
+          const text = await res.text();
+          bodySnippet = text.substring(0, 600);
+        } catch {}
+      }
 
       // Analyze deprecation
-      const deprecationInfo = analyzeDeprecation(status, headers, bodySnippet, item.path);
+      const deprecationInfo = analyzeDeprecation(status, headers, bodySnippet, item.path, item.deprecatedInSpec);
 
-      // Determine health state
+      // Check SPA Fallback / HTML catch-all
+      const isCatchAll = isSpaCatchAll(status, headers, bodySnippet, rootProfile, item.path);
+      const contentType = (headers['content-type'] || 'unknown').toLowerCase();
+
       let healthStatus = 'UNKNOWN';
-      if (deprecationInfo.isDeprecated) {
-        healthStatus = 'DEPRECATED';
-      } else if (status >= 200 && status < 300) {
+      let isRealApi = false;
+      let isDocPage = false;
+      let format = 'Unknown';
+      let schema = null;
+
+      if (isCatchAll) {
+        healthStatus = 'NOT_AN_API';
+        format = 'HTML Catch-All (SPA Fallback)';
+        isRealApi = false;
+      } else if (contentType.includes('application/json') || contentType.includes('application/problem+json') || contentType.includes('application/ld+json')) {
+        isRealApi = true;
+        format = 'JSON';
+        if (deprecationInfo.isDeprecated) {
+          healthStatus = 'DEPRECATED';
+        } else if (status >= 200 && status < 300) {
+          healthStatus = 'HEALTHY';
+        } else if (status === 401 || status === 403) {
+          healthStatus = 'AUTH_REQUIRED';
+        } else if (status === 405) {
+          healthStatus = 'METHOD_NOT_ALLOWED';
+        } else if (status === 410) {
+          healthStatus = 'DEPRECATED';
+        } else if (status === 404) {
+          healthStatus = 'NOT_FOUND';
+        } else if (status >= 500) {
+          healthStatus = 'SERVER_ERROR';
+        } else {
+          healthStatus = 'HEALTHY';
+        }
+
+        // Schema inspector
+        const parsedJson = safeJsonParse(bodySnippet);
+        if (parsedJson) {
+          if (Array.isArray(parsedJson)) {
+            schema = {
+              type: 'Array',
+              count: parsedJson.length,
+              sampleKeys: parsedJson[0] && typeof parsedJson[0] === 'object' ? Object.keys(parsedJson[0]).slice(0, 8) : []
+            };
+          } else if (typeof parsedJson === 'object') {
+            schema = {
+              type: 'Object',
+              keys: Object.keys(parsedJson).slice(0, 10),
+              keyCount: Object.keys(parsedJson).length
+            };
+          }
+        }
+      } else if (contentType.includes('xml')) {
+        isRealApi = true;
+        format = 'XML';
+        healthStatus = status >= 200 && status < 300 ? 'HEALTHY' : (status === 401 || status === 403 ? 'AUTH_REQUIRED' : 'INACTIVE');
+      } else if (contentType.includes('graphql')) {
+        isRealApi = true;
+        format = 'GraphQL';
         healthStatus = 'HEALTHY';
-      } else if (status === 401 || status === 403) {
-        healthStatus = 'AUTH_REQUIRED';
-      } else if (status >= 300 && status < 400) {
-        healthStatus = 'REDIRECT';
-      } else if (status === 405) {
-        healthStatus = 'METHOD_NOT_ALLOWED';
-      } else if (status === 404 || status >= 500) {
-        healthStatus = 'BROKEN';
+      } else if (contentType.includes('text/html')) {
+        const isDocPath = /(docs|swagger|redoc|rapidoc|openapi)/i.test(item.path);
+        const hasDocContent = /(swagger-ui|redoc|rapidoc|api documentation|developer portal|scalar|postman)/i.test(bodySnippet);
+        if (status >= 200 && status < 300 && (hasDocContent || (isDocPath && /(api|endpoint|reference|request|response|schema)/i.test(bodySnippet)))) {
+          isRealApi = true;
+          isDocPage = true;
+          healthStatus = 'DOCS';
+          format = 'HTML Doc';
+        } else if (status === 404) {
+          isRealApi = false;
+          healthStatus = 'NOT_FOUND';
+          format = 'HTML (404)';
+        } else if (status >= 500) {
+          isRealApi = false;
+          healthStatus = 'SERVER_ERROR';
+          format = 'HTML (5xx)';
+        } else {
+          isRealApi = false;
+          healthStatus = 'HTML_NON_API';
+          format = 'HTML';
+        }
+      } else if (contentType.includes('text/plain')) {
+        const isShort = bodySnippet.trim().length < 120;
+        const looksLikeHealth = /^(ok|healthy|pong|true|1|alive|\{"status":)/i.test(bodySnippet.trim());
+        if (isShort && (looksLikeHealth || status === 200)) {
+          isRealApi = true;
+          format = 'Text';
+          healthStatus = 'HEALTHY';
+        } else {
+          format = 'Text';
+          healthStatus = status >= 200 && status < 300 ? 'HEALTHY' : 'INACTIVE';
+        }
       } else {
-        healthStatus = 'INACTIVE';
+        format = contentType.split(';')[0] || 'Unknown';
+        if (status >= 200 && status < 300) healthStatus = 'HEALTHY';
+        else if (status === 401 || status === 403) healthStatus = 'AUTH_REQUIRED';
+        else if (status >= 400) healthStatus = 'BROKEN';
       }
 
       return {
         path: item.path,
-        url: probeUrl,
-        fullUrl: probeUrl,
-        method: item.method,
+        url: displayUrl,
+        fullUrl: displayUrl,
+        actualProbeUrl: probeUrl,
+        method: item.method || 'GET',
         type: item.type,
         source: item.source,
+        summary: item.summary || item.description || '',
+        parameters: item.parameters || [],
         status,
-        statusText: res.statusText || String(status),
+        statusText,
         latencyMs,
         healthStatus,
+        format,
+        schema,
+        isRealApi,
+        isDocPage,
+        isCatchAllFallback: isCatchAll,
         contentType: headers['content-type'] || 'unknown',
         isDeprecated: deprecationInfo.isDeprecated,
         deprecationReason: deprecationInfo.reason,
@@ -635,13 +1097,17 @@ export async function scanWebsiteEndpoints(targetUrl) {
         path: item.path,
         url: probeUrl,
         fullUrl: probeUrl,
-        method: item.method,
+        method: item.method || 'GET',
         type: item.type,
         source: item.source,
         status: 0,
         statusText: 'ERR_CONNECTION_FAILED',
         latencyMs,
         healthStatus: 'BROKEN',
+        format: 'None',
+        isRealApi: false,
+        isDocPage: false,
+        isCatchAllFallback: false,
         contentType: 'none',
         isDeprecated: false,
         deprecationReason: null,
@@ -653,12 +1119,23 @@ export async function scanWebsiteEndpoints(targetUrl) {
     }
   }));
 
+  // Sort probe results: Real APIs first, then Docs, then Catch-alls
+  probeResults.sort((a, b) => {
+    if (a.isRealApi && !b.isRealApi) return -1;
+    if (!a.isRealApi && b.isRealApi) return 1;
+    if (a.isDeprecated && !b.isDeprecated) return -1;
+    if (!a.isDeprecated && b.isDeprecated) return 1;
+    return 0;
+  });
+
   // Calculate Summary Statistics
   const total = probeResults.length;
-  const healthy = probeResults.filter(p => p.healthStatus === 'HEALTHY').length;
+  const realApis = probeResults.filter(p => p.isRealApi);
+  const healthy = probeResults.filter(p => p.healthStatus === 'HEALTHY' || p.healthStatus === 'DOCS').length;
   const deprecated = probeResults.filter(p => p.isDeprecated).length;
   const authRequired = probeResults.filter(p => p.healthStatus === 'AUTH_REQUIRED').length;
   const broken = probeResults.filter(p => p.healthStatus === 'BROKEN' || p.status === 404 || p.status >= 500).length;
+  const filteredHtmlCatchAlls = probeResults.filter(p => p.isCatchAllFallback).length;
   const redirected = probeResults.filter(p => p.healthStatus === 'REDIRECT').length;
   const validLatencies = probeResults.filter(p => p.latencyMs > 0).map(p => p.latencyMs);
   const avgLatencyMs = validLatencies.length ? Math.round(validLatencies.reduce((a, b) => a + b, 0) / validLatencies.length) : 0;
@@ -668,9 +1145,16 @@ export async function scanWebsiteEndpoints(targetUrl) {
     targetUrl: origin,
     scannedAt: new Date().toISOString(),
     durationMs: Date.now() - startTime,
+    rootProfile: {
+      isSpa: rootProfile?.isSpa || false,
+      title: rootProfile?.title || '',
+      scriptsHarvested: rootProfile?.scriptSrcs?.length || 0
+    },
     summary: {
       totalEndpoints: total,
       total,
+      realApiEndpoints: realApis.length,
+      realApis: realApis.length,
       healthyEndpoints: healthy,
       healthy,
       deprecatedEndpoints: deprecated,
@@ -679,6 +1163,7 @@ export async function scanWebsiteEndpoints(targetUrl) {
       authRequired,
       errorEndpoints: broken,
       broken,
+      filteredHtmlCatchAlls,
       redirected,
       avgLatencyMs,
       healthScore: total > 0 ? Math.max(0, Math.round(((healthy + authRequired * 0.8) / total) * 100)) : 0

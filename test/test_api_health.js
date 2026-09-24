@@ -2,6 +2,10 @@ import assert from 'assert';
 import fetch from 'node-fetch';
 import {
   analyzeDeprecation,
+  unpackOpenApiSpec,
+  extractEndpointsFromScript,
+  profileRootHtml,
+  isSpaCatchAll,
   scanWebsiteEndpoints,
   testPlatformEndpoints,
   PLATFORM_REGISTRY
@@ -40,7 +44,7 @@ async function runTests() {
   }
 
   // ─── 1. DEPRECATION ANALYZER UNIT TESTS ──────────────────
-  console.log('--- 1. Deprecation Analyzer (RFC 8594 / Sunset / HTTP 410) ---');
+  console.log('--- 1. Deprecation Analyzer (RFC 8594 / Sunset / HTTP 410 / OpenAPI) ---');
 
   test('Detects RFC 8594 "Deprecation: true" header', () => {
     const res = analyzeDeprecation(200, { deprecation: 'true' }, '', '/v1/users');
@@ -73,10 +77,116 @@ async function runTests() {
     assert.ok(res.reasons.some(r => r.includes('body indicates deprecation')));
   });
 
+  test('Detects deprecation from OpenAPI spec deprecated flag', () => {
+    const res = analyzeDeprecation(200, { 'content-type': 'application/json' }, '{"status": "ok"}', '/api/v1/legacy', true);
+    assert.strictEqual(res.isDeprecated, true);
+    assert.ok(res.reasons.some(r => r.includes('OpenAPI / Swagger spec explicitly flags this operation as deprecated')));
+  });
+
   test('Active endpoint with no flags returns isDeprecated: false', () => {
     const res = analyzeDeprecation(200, { 'content-type': 'application/json' }, '{"status": "ok"}', '/api/v2/items');
     assert.strictEqual(res.isDeprecated, false);
     assert.strictEqual(res.reasons.length, 0);
+  });
+
+  // ─── 1.2 OPENAPI SPEC UNPACKER TESTS ─────────────────────
+  console.log('\n--- 1.2 OpenAPI & Swagger Spec Unpacker ---');
+
+  test('Unpacks operations, parameters, and deprecated status from OpenAPI 3.x spec', () => {
+    const mockSpec = {
+      openapi: '3.0.1',
+      servers: [{ url: '/api/v1' }],
+      paths: {
+        '/users': {
+          get: { summary: 'List all users', parameters: [{ name: 'limit' }, { name: 'offset' }] },
+          post: { summary: 'Create user' }
+        },
+        '/users/{id}': {
+          get: { summary: 'Get user by ID', parameters: [{ name: 'id' }] },
+          delete: { summary: 'Delete user', deprecated: true }
+        }
+      }
+    };
+
+    const unpacked = unpackOpenApiSpec(mockSpec, 'https://example.com/openapi.json', 'https://example.com');
+    assert.strictEqual(unpacked.length, 4);
+
+    const deleteOp = unpacked.find(op => op.method === 'DELETE');
+    assert.ok(deleteOp, 'Expected DELETE operation to be unpacked');
+    assert.strictEqual(deleteOp.path, '/api/v1/users/{id}');
+    assert.strictEqual(deleteOp.deprecatedInSpec, true);
+
+    const getOp = unpacked.find(op => op.method === 'GET' && op.path === '/api/v1/users');
+    assert.ok(getOp, 'Expected GET /api/v1/users');
+    assert.strictEqual(getOp.deprecatedInSpec, false);
+    assert.deepStrictEqual(getOp.parameters, ['limit', 'offset']);
+  });
+
+  // ─── 1.3 JS BUNDLE ENDPOINT HARVESTER TESTS ──────────────
+  console.log('\n--- 1.3 JavaScript Bundle Route Harvester ---');
+
+  test('Extracts REST API routes and GraphQL endpoints from JS bundle source code', () => {
+    const mockBundleCode = `
+      function loadUser(id) {
+        return fetch('/api/v1/users/' + id).then(r => r.json());
+      }
+      const sessionUrl = "/api/auth/session";
+      const analyticsEndpoint = '/v2/analytics/events';
+      const gql = '/graphql';
+      const ignoreMe = '/assets/logo.png';
+      const ignoreScript = '/_next/static/chunks/app.js';
+      axios.post('/api/checkout/cart', { items: [] });
+    `;
+
+    const routes = extractEndpointsFromScript(mockBundleCode, 'app.chunk.js');
+    const paths = routes.map(r => r.path);
+
+    assert.ok(paths.includes('/api/auth/session'), 'Expected /api/auth/session');
+    assert.ok(paths.includes('/v2/analytics/events'), 'Expected /v2/analytics/events');
+    assert.ok(paths.includes('/graphql'), 'Expected /graphql');
+    assert.ok(paths.includes('/api/checkout/cart'), 'Expected /api/checkout/cart');
+    assert.ok(!paths.includes('/assets/logo.png'), 'Expected static images to be ignored');
+    assert.ok(!paths.includes('/_next/static/chunks/app.js'), 'Expected chunk assets to be ignored');
+  });
+
+  // ─── 1.4 SPA FALLBACK / HTML CATCH-ALL DETECTION ─────────
+  console.log('\n--- 1.4 SPA Catch-All & Anti-False-Positive Filter ---');
+
+  test('Correctly identifies SPA catch-all when probe returns root HTML template', () => {
+    const rootProfile = {
+      title: 'Modern SPA Web Application',
+      byteLength: 4500,
+      isSpa: true
+    };
+
+    const probeBody = `<!DOCTYPE html><html><head><title>Modern SPA Web Application</title></head><body><div id="root"></div><script src="/_next/static/main.js"></script></body></html>`;
+    const isCatchAll = isSpaCatchAll(200, { 'content-type': 'text/html; charset=utf-8' }, probeBody, rootProfile, '/api/random-probe');
+
+    assert.strictEqual(isCatchAll, true, 'SPA index HTML catch-all should be detected as false positive');
+  });
+
+  test('Does NOT flag valid Swagger UI / API documentation as catch-all', () => {
+    const rootProfile = {
+      title: 'App Home',
+      byteLength: 4500,
+      isSpa: true
+    };
+
+    const docBody = `<!DOCTYPE html><html><head><title>API Docs - Swagger UI</title></head><body><div id="swagger-ui"></div></body></html>`;
+    const isCatchAll = isSpaCatchAll(200, { 'content-type': 'text/html; charset=utf-8' }, docBody, rootProfile, '/docs');
+
+    assert.strictEqual(isCatchAll, false, 'Swagger UI documentation should not be treated as SPA catch-all');
+  });
+
+  test('Does NOT flag valid JSON responses as catch-all', () => {
+    const rootProfile = {
+      title: 'App Home',
+      byteLength: 4500,
+      isSpa: true
+    };
+
+    const isCatchAll = isSpaCatchAll(200, { 'content-type': 'application/json' }, '{"status":"ok"}', rootProfile, '/api/health');
+    assert.strictEqual(isCatchAll, false, 'JSON response is never a catch-all');
   });
 
   // ─── 2. PLATFORM REGISTRY CATALOG TESTS ──────────────────
@@ -156,7 +266,10 @@ async function runTests() {
     assert.ok(json.data.summary.totalEndpoints > 0);
     assert.strictEqual(typeof json.data.summary.healthyEndpoints, 'number');
     assert.strictEqual(typeof json.data.summary.deprecatedEndpoints, 'number');
+    assert.strictEqual(typeof json.data.summary.filteredHtmlCatchAlls, 'number');
     assert.strictEqual(typeof json.data.summary.avgLatencyMs, 'number');
+    assert.ok(json.data.endpoints[0].format !== undefined);
+    assert.ok(typeof json.data.endpoints[0].isRealApi === 'boolean');
   });
 
   await testAsync('POST /api/api-health/scan defends against SSRF (blocks localhost and 127.0.0.1)', async () => {
