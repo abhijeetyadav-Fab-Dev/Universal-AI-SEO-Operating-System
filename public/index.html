@@ -3549,6 +3549,11 @@ https://web.dev/explore"></textarea>
           </div>
         </div>
 
+        <div id="modalPageTechStackRow" style="margin-bottom:14px; font-size:0.75rem; color:#94a3b8; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span style="font-weight:700; color:#fff;">⚡ Tech Stack Detected:</span>
+          <span id="modalPageTechStackPills">--</span>
+        </div>
+
         <h4 style="color:#cbd5e1; font-size:0.9rem; margin-bottom:10px;">Identified Issues &amp; 1-Click Code Replacement Patches:</h4>
         <div id="modalIssuesContainer" style="display:flex; flex-direction:column; gap:12px;"></div>
       </div>
@@ -7277,6 +7282,16 @@ https://web.dev/explore"></textarea>
       document.getElementById('modalPageH1').innerText = page ? (page.h1 || 'Missing H1') : '--';
       document.getElementById('modalPageAlts').innerText = page ? `${page.missingAlts} / ${page.imagesCount}` : '--';
       document.getElementById('modalPageTotalIssues').innerText = page ? `${page.issuesCount} Issues` : '0 Issues';
+
+      const techEl = document.getElementById('modalPageTechStackPills');
+      if (techEl) {
+        const stack = (page && Array.isArray(page.techStack) && page.techStack.length) ? page.techStack : [];
+        if (stack.length) {
+          techEl.innerHTML = stack.map(t => `<span class="btn-line-tag" style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#93c5fd; padding:1px 6px; font-size:0.7rem;">${escapeHtml(t)}</span>`).join(' ');
+        } else {
+          techEl.innerHTML = '<span style="color:#64748b; font-style:italic;">None detected from static signatures</span>';
+        }
+      }
 
       // Setup quick action links
       document.getElementById('modalBtnLivePage').href = `/api/inspect-page?url=${encodeURIComponent(url)}&highlight=${encodeURIComponent(page?.h1 || 'Heading')}&issue=Audit%20Issues`;

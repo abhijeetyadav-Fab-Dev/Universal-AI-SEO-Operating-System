@@ -67,6 +67,43 @@ async function fetchHTML(url) {
   }
 }
 
+export const TECH_SIGNATURES = {
+  'WordPress': [/wp-content/i, /wp-includes/i, /name="generator" content="WordPress/i],
+  'Shopify': [/cdn\.shopify\.com/i, /Shopify\.theme/i],
+  'Wix': [/static\.wixstatic\.com/i, /wix\.com/i],
+  'Squarespace': [/squarespace\.com/i, /static1\.squarespace\.com/i],
+  'Webflow': [/webflow\.com/i, /assets-global\.website-files\.com/i],
+  'React': [/react-dom/i, /__NEXT_DATA__/i, /data-reactroot/i],
+  'Next.js': [/__NEXT_DATA__/i, /_next\/static/i],
+  'Vue': [/vue\.js/i, /data-v-/i, /__vue__/i],
+  'Angular': [/ng-version/i, /angular\.js/i],
+  'jQuery': [/jquery(\.min)?\.js/i],
+  'Bootstrap': [/bootstrap(\.min)?\.css/i, /bootstrap(\.min)?\.js/i],
+  'Tailwind CSS': [/tailwindcss/i, /tailwind\.css/i],
+  'Google Analytics': [/gtag\(/i, /google-analytics\.com/i, /googletagmanager\.com/i],
+  'Google Tag Manager': [/googletagmanager\.com\/gtm\.js/i],
+  'Facebook Pixel': [/connect\.facebook\.net.*fbevents/i],
+  'Cloudflare': [/cloudflare/i],
+  'Hotjar': [/hotjar\.com/i],
+  'reCAPTCHA': [/recaptcha/i],
+  'Stripe': [/js\.stripe\.com/i],
+  'PayPal': [/paypal\.com\/sdk/i]
+};
+
+export function detectTechStack(html) {
+  if (!html || typeof html !== 'string') return [];
+  const found = new Set();
+  for (const [tech, patterns] of Object.entries(TECH_SIGNATURES)) {
+    for (const pat of patterns) {
+      if (pat.test(html)) {
+        found.add(tech);
+        break;
+      }
+    }
+  }
+  return Array.from(found).sort();
+}
+
 /**
  * 1. Multi-Page Site Audit (Crawls up to 20 internal pages)
  */
@@ -83,6 +120,7 @@ export async function crawlMultiPageSite(startUrl, maxPages = 15) {
     provider: 'Built-in SSRF-safe multi-page crawler',
     pagesCrawled: 0,
     avgResponseTime: 0,
+    siteLevelTechStack: [],
     issuesFound: 0,
     warningCount: 0,
     infoCount: 0,
@@ -246,6 +284,7 @@ export async function crawlMultiPageSite(startUrl, maxPages = 15) {
           h1: $('h1').first().text().trim().substring(0, 50) || 'Missing H1',
           imagesCount: imagesTotal,
           missingAlts: imagesMissingAlt,
+          techStack: detectTechStack(html),
           issuesCount: pageIssuesList.length,
           issuesList: pageIssuesList
         });
@@ -267,6 +306,11 @@ export async function crawlMultiPageSite(startUrl, maxPages = 15) {
       }
     }));
   }
+
+  // Aggregate site-level tech stack
+  const allTech = new Set();
+  results.crawledPages.forEach(p => (p.techStack || []).forEach(t => allTech.add(t)));
+  results.siteLevelTechStack = Array.from(allTech).sort();
 
   if (results.pagesCrawled > 0) {
     results.avgResponseTime = Math.round(totalResponseTime / results.pagesCrawled);
