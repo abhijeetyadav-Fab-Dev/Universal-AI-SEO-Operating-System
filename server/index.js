@@ -109,6 +109,11 @@ import {
   testPlatformEndpoints,
   PLATFORM_REGISTRY
 } from './adapters/api_health.js';
+import {
+  YATRADHAM_PIPELINE_CONFIG,
+  runYatraDhamAudit,
+  getYatraDhamSkillMarkdown
+} from './adapters/yatradham_pipeline.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -3046,6 +3051,41 @@ app.post(['/api/api-health/scan', '/api/v1/api-health/scan'], async (req, res) =
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
+});
+// ─── YATRADHAM SEO PIPELINE & AUDITOR ──────────────────────
+app.get(['/api/yatradham/endpoints', '/api/v1/yatradham/endpoints'], (req, res) => {
+  res.json({
+    success: true,
+    config: YATRADHAM_PIPELINE_CONFIG
+  });
+});
+
+app.post(['/api/yatradham/audit', '/api/v1/yatradham/audit'], async (req, res) => {
+  try {
+    const { domain, url, query, delayMs } = req.body || {};
+    const report = await runYatraDhamAudit({
+      domain,
+      url,
+      query,
+      delayMs: typeof delayMs === 'number' ? delayMs : 200,
+      apiKeys: {
+        GOOGLE_API_KEY: activeApiSettings.psiApiKey,
+        OPR_API_KEY: process.env.OPR_API_KEY || '',
+        SERPAPI_KEY: process.env.SERPAPI_KEY || '',
+        AHREFS_API_KEY: process.env.AHREFS_API_KEY || ''
+      }
+    });
+    res.json(report);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get(['/api/yatradham/skill', '/api/v1/yatradham/skill'], (req, res) => {
+  res.json({
+    success: true,
+    markdown: getYatraDhamSkillMarkdown()
+  });
 });
 
 // Health check endpoint

@@ -183,6 +183,12 @@ vm.runInContext(big, ctx, { filename: 'inline-app.js' });
   check('Platform sweep button exists in HTML', html.includes('id="btnSweepPlatforms"'));
   check('Platform registry container exists in HTML', html.includes('id="platformsContainer"'));
   check('API Health ribbon tag exists in HTML', html.includes("jumpToEngine('apihealth')"));
+  check('tabYatraDham panel element exists in HTML', html.includes('id="tabYatraDham"'));
+  check('tabYatraDham button exists in HTML', html.includes("switchDeepTab(this, 'tabYatraDham')"));
+  check('YatraDham 21-endpoint table exists in HTML', html.includes('id="ydEndpointsTable"'));
+  check('YatraDham probe button exists in HTML', html.includes('id="btnRunYdAudit"'));
+  check('YatraDham SKILL modal exists in HTML', html.includes('id="ydSkillModal"'));
+  check('YatraDham GAS code modal exists in HTML', html.includes('id="ydCodeModal"'));
 
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

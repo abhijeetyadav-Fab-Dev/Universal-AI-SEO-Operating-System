@@ -1364,12 +1364,16 @@ export async function scanWebsiteEndpoints(targetUrl) {
         format = 'HTML Catch-All (SPA Fallback)';
         isRealApi = false;
       } else if (contentType.includes('application/json') || contentType.includes('application/problem+json') || contentType.includes('application/ld+json')) {
-        isRealApi = true;
         format = 'JSON';
+        const parsedJsonEarly = safeJsonParse(bodySnippet);
+        const hasErrorSignal = parsedJsonEarly && typeof parsedJsonEarly === 'object' && !Array.isArray(parsedJsonEarly) &&
+          Object.keys(parsedJsonEarly).some(k => ['error', 'errors', 'error_type', 'error_message', 'fault'].includes(k.toLowerCase()));
+        // Strict Is Real API check (complies with is_real_fix.py: 2xx + valid JSON without error signals)
+        isRealApi = status >= 200 && status < 300 && !hasErrorSignal;
         if (deprecationInfo.isDeprecated) {
           healthStatus = 'DEPRECATED';
         } else if (status >= 200 && status < 300) {
-          healthStatus = 'HEALTHY';
+          healthStatus = hasErrorSignal ? 'BROKEN' : 'HEALTHY';
         } else if (status === 401 || status === 403) {
           healthStatus = 'AUTH_REQUIRED';
         } else if (status === 405) {

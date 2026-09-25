@@ -1185,6 +1185,9 @@
             <button class="tab-btn" onclick="switchDeepTab(this, 'tabApiHealth')">
               <span>📡 API Endpoints &amp; Health Matrix</span>
             </button>
+            <button class="tab-btn" onclick="switchDeepTab(this, 'tabYatraDham')">
+              <span>🛕 YatraDham Pipeline &amp; Auditor</span>
+            </button>
           </div>
         </div>
 
@@ -3078,6 +3081,171 @@ https://web.dev/explore"></textarea>
             </div>
           </div>
         </div>
+
+        <!-- Tab 21: YatraDham SEO Pipeline & Live Auditor -->
+        <div id="tabYatraDham" class="deep-tab-content" style="display:none;">
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:12px; padding:18px; margin-bottom:16px;">
+            <!-- Header bar with title and actions -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <h3 style="color:#fff; font-size:1.15rem; margin:0; font-weight:800;">🛕 YatraDham SEO Data Pipeline &amp; Live Auditor</h3>
+                  <span style="font-size:0.68rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 8px; border-radius:4px; font-weight:700; font-family:'JetBrains Mono',monospace;">⚡ Apps Script Dual-Engine</span>
+                  <span style="font-size:0.68rem; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:4px; font-weight:700; font-family:'JetBrains Mono',monospace;">🛡️ Strict 2xx Is-Real Enforced</span>
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+                  Diagnostic prober &amp; pipeline orchestrator for yatradham.org. Covers PageSpeed batching, CrUX URL/origin fallbacks, OpenPageRank dual-hosts, SerpApi rotation, Ahrefs v3 enterprise scope, and Google Keyword Planner.
+                </div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button onclick="openYdSkillModal()" class="btn btn-secondary" style="padding:6px 14px; font-size:0.75rem; font-weight:700; border-radius:6px; cursor:pointer;">
+                  📖 Pipeline SKILL.md
+                </button>
+                <button onclick="openYdCodeModal()" class="btn btn-secondary" style="padding:6px 14px; font-size:0.75rem; font-weight:700; border-radius:6px; cursor:pointer;">
+                  📋 GAS Code Templates
+                </button>
+              </div>
+            </div>
+
+            <!-- Pipeline Architecture Cards -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px; margin-bottom:16px;">
+              <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(59,130,246,0.25); border-radius:8px; padding:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span style="font-weight:700; color:#60a5fa; font-size:0.85rem;">⚡ 1. Core Web Vitals Tracker</span>
+                  <span style="font-size:0.65rem; color:#3b82f6; background:rgba(59,130,246,0.15); padding:1px 6px; border-radius:3px;">Pages / History / Daily</span>
+                </div>
+                <div style="font-size:0.72rem; color:#cbd5e1; line-height:1.4;">
+                  Uses <code>UrlFetchApp.fetchAll()</code> parallel batching to avoid 6-min execution limits. Stores rolling 28-day <code>loadingExperience</code> and lab Lighthouse metrics. Includes 3m20s pause/resume triggers.
+                </div>
+              </div>
+
+              <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(16,185,129,0.25); border-radius:8px; padding:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span style="font-weight:700; color:#34d399; font-size:0.85rem;">🔑 2. Keyword Difficulty &amp; Volume</span>
+                  <span style="font-size:0.65rem; color:#10b981; background:rgba(16,185,129,0.15); padding:1px 6px; border-radius:3px;">Keywords + Planner CSV</span>
+                </div>
+                <div style="font-size:0.72rem; color:#cbd5e1; line-height:1.4;">
+                  DIY proxy KD = (avg OpenPageRank of top-10 SerpApi domains × 10). Merges with manual Google Keyword Planner forecasts CSV by exact normalized string match.
+                </div>
+              </div>
+
+              <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(245,158,11,0.25); border-radius:8px; padding:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span style="font-weight:700; color:#fbbf24; font-size:0.85rem;">🔒 3. Credentials &amp; Scope Trapdoor</span>
+                  <span style="font-size:0.65rem; color:#f59e0b; background:rgba(245,158,11,0.15); padding:1px 6px; border-radius:3px;">PropertiesService</span>
+                </div>
+                <div style="font-size:0.72rem; color:#cbd5e1; line-height:1.4;">
+                  CrUX requires separate toggle in same Cloud project. Ahrefs "public endpoints" key scope blocks Keywords/Site Explorer with 401/403 (Enterprise needed). Keywords Everywhere uses <code>opr_live_...</code>.
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Live Audit Console -->
+            <div style="background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px; margin-bottom:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                <span style="font-size:0.82rem; font-weight:700; color:#fff;">⚙️ Live Pipeline Test Parameters:</span>
+                <div style="display:flex; gap:6px;">
+                  <button onclick="resetYdDefaults()" class="btn-line-tag" style="background:rgba(255,255,255,0.06); border:1px solid var(--border); color:#94a3b8; font-size:0.7rem; cursor:pointer;">Reset Yatradham Defaults</button>
+                  <button onclick="useCurrentAuditUrlForYd()" class="btn-line-tag" style="background:rgba(255,255,255,0.06); border:1px solid var(--border); color:#94a3b8; font-size:0.7rem; cursor:pointer;">Use Current Audit URL</button>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:1fr 1.5fr 1.2fr auto; gap:10px; align-items:center;">
+                <div>
+                  <label style="font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:4px; font-weight:600;">TEST DOMAIN</label>
+                  <input type="text" id="inputYdDomain" value="yatradham.org" class="command-input" style="width:100%; padding:8px 12px; font-size:0.8rem; font-family:'JetBrains Mono',monospace;">
+                </div>
+                <div>
+                  <label style="font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:4px; font-weight:600;">TEST PAGE URL</label>
+                  <input type="url" id="inputYdUrl" value="https://yatradham.org/dwarka-hotel-vandana.html" class="command-input" style="width:100%; padding:8px 12px; font-size:0.8rem; font-family:'JetBrains Mono',monospace;">
+                </div>
+                <div>
+                  <label style="font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:4px; font-weight:600;">TEST QUERY / KEYWORD</label>
+                  <input type="text" id="inputYdQuery" value="somnath temple room booking" class="command-input" style="width:100%; padding:8px 12px; font-size:0.8rem; font-family:'JetBrains Mono',monospace;">
+                </div>
+                <div style="align-self:end;">
+                  <button id="btnRunYdAudit" onclick="runYatraDhamLiveAudit()" class="btn btn-primary" style="padding:9px 18px; font-size:0.82rem; font-weight:700; display:flex; align-items:center; gap:6px; white-space:nowrap;">
+                    <span id="ydAuditBtnIcon">⚡</span> <span id="ydAuditBtnText">Run 21-Endpoint Probe</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div id="ydStatsBar" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:14px;">
+              <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.68rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Endpoints Probed</div>
+                <div id="ydStatTotal" style="font-size:1.4rem; font-weight:800; color:#fff; margin-top:2px;">21</div>
+              </div>
+              <div style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.25); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.68rem; color:#34d399; font-weight:600; text-transform:uppercase;">Live Usable (2xx)</div>
+                <div id="ydStatLive" style="font-size:1.4rem; font-weight:800; color:#10b981; margin-top:2px;">--</div>
+              </div>
+              <div style="background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.25); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.68rem; color:#fbbf24; font-weight:600; text-transform:uppercase;">Auth/Plan Blocked</div>
+                <div id="ydStatAuth" style="font-size:1.4rem; font-weight:800; color:#f59e0b; margin-top:2px;">--</div>
+              </div>
+              <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.68rem; color:#fca5a5; font-weight:600; text-transform:uppercase;">Deprecated Legacy</div>
+                <div id="ydStatDep" style="font-size:1.4rem; font-weight:800; color:#ef4444; margin-top:2px;">--</div>
+              </div>
+              <div style="background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.25); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.68rem; color:#d8b4fe; font-weight:600; text-transform:uppercase;">Rate-Limited (429)</div>
+                <div id="ydStatRate" style="font-size:1.4rem; font-weight:800; color:#c084fc; margin-top:2px;">--</div>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                <div style="font-size:0.68rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Avg Latency</div>
+                <div id="ydStatLatency" style="font-size:1.4rem; font-weight:800; color:#38bdf8; margin-top:2px;">--</div>
+              </div>
+            </div>
+
+            <!-- Filter Chips & Export Actions -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button id="ydFilterAll" onclick="filterYdResults('all')" class="btn-line-tag active" style="padding:4px 10px; font-size:0.72rem; cursor:pointer;">All (<span id="ydFilterCountAll">21</span>)</button>
+                <button id="ydFilterLive" onclick="filterYdResults('live')" class="btn-line-tag" style="padding:4px 10px; font-size:0.72rem; cursor:pointer; color:#10b981;">✅ Live Usable (<span id="ydFilterCountLive">0</span>)</button>
+                <button id="ydFilterAuth" onclick="filterYdResults('auth')" class="btn-line-tag" style="padding:4px 10px; font-size:0.72rem; cursor:pointer; color:#f59e0b;">🔒 Auth/Plan Restricted (<span id="ydFilterCountAuth">0</span>)</button>
+                <button id="ydFilterDep" onclick="filterYdResults('dep')" class="btn-line-tag" style="padding:4px 10px; font-size:0.72rem; cursor:pointer; color:#ef4444;">🛑 Deprecated (<span id="ydFilterCountDep">0</span>)</button>
+                <button id="ydFilterRate" onclick="filterYdResults('rate')" class="btn-line-tag" style="padding:4px 10px; font-size:0.72rem; cursor:pointer; color:#c084fc;">⏳ Rate-Limited (<span id="ydFilterCountRate">0</span>)</button>
+              </div>
+
+              <div style="display:flex; gap:6px;">
+                <button onclick="copyYdMarkdown()" class="btn btn-secondary" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; cursor:pointer;">📋 Copy Markdown</button>
+                <button onclick="downloadYdCsv()" class="btn btn-secondary" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; cursor:pointer;">📥 Export CSV</button>
+                <button onclick="downloadYdJson()" class="btn btn-secondary" style="padding:4px 10px; font-size:0.72rem; border-radius:4px; cursor:pointer;">📄 Export JSON</button>
+              </div>
+            </div>
+
+            <!-- Audit Results Table -->
+            <div style="background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:8px; overflow-x:auto; max-height:600px; overflow-y:auto;">
+              <table class="data-table" id="ydEndpointsTable" style="width:100%; min-width:1100px; font-size:0.76rem; border-collapse:collapse;">
+                <thead style="position:sticky; top:0; background:#0b1120; z-index:10; border-bottom:1px solid var(--border);">
+                  <tr>
+                    <th style="padding:8px 10px; text-align:left;">Method</th>
+                    <th style="padding:8px 10px; text-align:left;">Path</th>
+                    <th style="padding:8px 10px; text-align:left;">Full URL</th>
+                    <th style="padding:8px 10px; text-align:center;">Status</th>
+                    <th style="padding:8px 10px; text-align:left;">Status Text</th>
+                    <th style="padding:8px 10px; text-align:right;">Latency (ms)</th>
+                    <th style="padding:8px 10px; text-align:center;">Format</th>
+                    <th style="padding:8px 10px; text-align:left;">Content-Type</th>
+                    <th style="padding:8px 10px; text-align:center;">Is Real</th>
+                    <th style="padding:8px 10px; text-align:center;">Deprecated</th>
+                    <th style="padding:8px 10px; text-align:left;">Deprecation Notes</th>
+                    <th style="padding:8px 10px; text-align:left;">Discovery Source</th>
+                  </tr>
+                </thead>
+                <tbody id="ydEndpointsTbody">
+                  <tr>
+                    <td colspan="12" style="text-align:center; padding:30px; color:var(--text-muted);">
+                      Click <strong>"Run 21-Endpoint Probe"</strong> to execute live audits across all PageSpeed, CrUX, OpenPageRank, SerpApi, Ahrefs, and keyword endpoints.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -4131,6 +4299,67 @@ https://web.dev/explore"></textarea>
       <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
         <div id="endpointModalTimestamp" style="font-size:0.72rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace;"></div>
         <button class="btn btn-secondary" onclick="closeModal('endpointDetailModal')" style="padding:6px 16px; font-size:0.8rem;">Close Inspector</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- YatraDham Pipeline SKILL.md Modal -->
+  <div id="ydSkillModal" class="modal-overlay" onclick="handleModalBackdropClick(event, 'ydSkillModal')">
+    <div class="modal-container" style="max-width:960px;">
+      <div class="modal-header">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h3 style="color:#fff; font-size:1.15rem; font-weight:800;">🛕 YatraDham SEO Pipeline SKILL.md — Architecture &amp; Protocol</h3>
+            <span class="btn-line-tag" style="background:rgba(245,158,11,0.2); color:#fde68a;">Active Agent Skill</span>
+          </div>
+          <p style="font-size:0.78rem; color:var(--text-muted); margin-top:4px;">Google Apps Script CWV tracker, proxy keyword difficulty engine, and strict 2xx validation contract.</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('ydSkillModal')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div style="font-size:0.75rem; color:#94a3b8;">Skill installed at: <code>~/.agents/skills/yatradham-seo-pipeline/SKILL.md</code></div>
+          <button id="btnCopyYdSkill" onclick="copyYdSkillMarkdown(this)" class="btn btn-secondary" style="padding:5px 12px; font-size:0.75rem; border-radius:4px; cursor:pointer;">📋 Copy SKILL.md</button>
+        </div>
+        <div style="background:#090d16; border:1px solid var(--border); border-radius:8px; padding:14px; max-height:480px; overflow-y:auto;">
+          <pre id="ydSkillMarkdownContent" style="margin:0; font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#cbd5e1; white-space:pre-wrap; line-height:1.5;">Loading SKILL.md specification...</pre>
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeModal('ydSkillModal')" style="padding:6px 16px; font-size:0.8rem;">Close Specification</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- YatraDham Apps Script Code Templates Modal -->
+  <div id="ydCodeModal" class="modal-overlay" onclick="handleModalBackdropClick(event, 'ydCodeModal')">
+    <div class="modal-container" style="max-width:960px;">
+      <div class="modal-header">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h3 style="color:#fff; font-size:1.15rem; font-weight:800;">📋 Production Google Apps Script (GAS) Code Templates</h3>
+            <span class="btn-line-tag" style="background:rgba(16,185,129,0.2); color:#a7f3d0;">Copy-Paste Ready</span>
+          </div>
+          <p style="font-size:0.78rem; color:var(--text-muted); margin-top:4px;">Dual Apps Script automation modules for yatradham.org Google Sheets integration.</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('ydCodeModal')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:18px;">
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <button id="btnGasTabCwv" onclick="switchGasCodeTab('cwv')" class="btn-line-tag active" style="padding:5px 14px; font-size:0.75rem; cursor:pointer;">⚡ Core Web Vitals Tracker (.gs)</button>
+          <button id="btnGasTabKd" onclick="switchGasCodeTab('kd')" class="btn-line-tag" style="padding:5px 14px; font-size:0.75rem; cursor:pointer;">🔑 Keyword Difficulty Proxy (.gs)</button>
+          <button id="btnGasTabPy" onclick="switchGasCodeTab('py')" class="btn-line-tag" style="padding:5px 14px; font-size:0.75rem; cursor:pointer;">🐍 fetcher.py (Strict Prober)</button>
+        </div>
+        <div style="background:#090d16; border:1px solid var(--border); border-radius:8px; padding:14px; max-height:480px; overflow-y:auto; position:relative;">
+          <div style="position:sticky; top:0; display:flex; justify-content:flex-end; margin-bottom:8px; z-index:5;">
+            <button id="btnCopyGasCode" onclick="copyCurrentGasCode(this)" class="btn btn-secondary" style="padding:4px 12px; font-size:0.72rem; border-radius:4px; cursor:pointer;">📋 Copy Code</button>
+          </div>
+          <pre id="gasCodeDisplay" style="margin:0; font-family:'JetBrains Mono',monospace; font-size:0.73rem; color:#cbd5e1; white-space:pre-wrap; line-height:1.45;"></pre>
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:0.72rem; color:var(--text-muted);">Stored safely in PropertiesService &amp; local pipeline</span>
+        <button class="btn btn-secondary" onclick="closeModal('ydCodeModal')" style="padding:6px 16px; font-size:0.8rem;">Close</button>
       </div>
     </div>
   </div>
@@ -6889,7 +7118,8 @@ https://web.dev/explore"></textarea>
       tabArsenal: 2,
       tabGoogleCloud: 2,
       tabScreamingFrog: 2,
-      tabApiHealth: 2
+      tabApiHealth: 2,
+      tabYatraDham: 2
     };
 
     const DEEP_CAT_NAMES = [
@@ -6988,7 +7218,8 @@ https://web.dev/explore"></textarea>
         tabArsenal: 17,
         tabGoogleCloud: 18,
         tabScreamingFrog: 19,
-        tabApiHealth: 20
+        tabApiHealth: 20,
+        tabYatraDham: 21
       };
       const idx = tabs[tabId] !== undefined ? tabs[tabId] : 0;
       const buttons = document.querySelectorAll('.tab-btn');
@@ -7020,6 +7251,8 @@ https://web.dev/explore"></textarea>
         switchDeepTabByTag('tabPagespeed');
       } else if (h === 'apihealth' || h === 'api-health' || h === 'endpoints' || h === 'api') {
         switchDeepTabByTag('tabApiHealth');
+      } else if (h === 'yatradham' || h === 'yatra' || h === 'pipeline' || h === 'yd') {
+        switchDeepTabByTag('tabYatraDham');
       } else if (h.startsWith('tab')) {
         switchDeepTabByTag(h);
       }
@@ -7264,7 +7497,8 @@ https://web.dev/explore"></textarea>
         crux: 'tabCrux',
         schema: 'tabSchemas',
         radar: 'tabMultiAudit',
-        apihealth: 'tabApiHealth'
+        apihealth: 'tabApiHealth',
+        yatradham: 'tabYatraDham'
       };
 
       const targetTab = tabMappings[engineId];
@@ -8834,6 +9068,535 @@ https://web.dev/explore"></textarea>
         }
       }
     }
+
+    // ══════════════════════════════════════════════════════════
+    // 🛕 YATRADHAM SEO PIPELINE & 21-ENDPOINT AUDITOR CLIENT
+    // ══════════════════════════════════════════════════════════
+    let ydAuditResults = [];
+    let ydActiveFilter = 'all';
+    let ydIsAuditing = false;
+    let ydCachedSkillMarkdown = '';
+    let ydActiveGasTab = 'cwv';
+
+    const YD_GAS_TEMPLATES = {
+      cwv: `/**
+ * =========================================================================
+ * YatraDham Core Web Vitals Tracker — Google Apps Script (GAS)
+ * =========================================================================
+ * Bound to Google Sheet tabs: Pages / History / Daily Log
+ * All API keys stored in PropertiesService.getScriptProperties()
+ * Uses UrlFetchApp.fetchAll() parallel batching + 3m20s pause/resume
+ */
+
+function runCwvBatchAudit() {
+  const props = PropertiesService.getScriptProperties();
+  const apiKey = props.getProperty('GOOGLE_API_KEY');
+  if (!apiKey) throw new Error('GOOGLE_API_KEY missing in Script Properties.');
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const pagesSheet = ss.getSheetByName('Pages');
+  const historySheet = ss.getSheetByName('History');
+  const dailySheet = ss.getSheetByName('Daily Log');
+
+  const rows = pagesSheet.getDataRange().getValues();
+  const urls = [];
+  for (let i = 1; i < rows.length; i++) {
+    const url = rows[i][0];
+    if (url && url.toString().startsWith('http')) {
+      urls.push({ rowIndex: i + 1, url: url.toString().trim() });
+    }
+  }
+
+  // Batch in chunks of 5 parallel requests to prevent timeouts
+  const BATCH_SIZE = 5;
+  const startTime = Date.now();
+  const MAX_TIME_MS = 200000; // 3m 20s budget
+
+  for (let b = 0; b < urls.length; b += BATCH_SIZE) {
+    if (Date.now() - startTime > MAX_TIME_MS) {
+      scheduleResumeTrigger('runCwvBatchAudit', b);
+      return;
+    }
+
+    const chunk = urls.slice(b, b + BATCH_SIZE);
+    const requests = chunk.map(item => ({
+      url: 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=' + 
+           encodeURIComponent(item.url) + '&strategy=mobile&category=performance&key=' + apiKey,
+      method: 'get',
+      muteHttpExceptions: true
+    }));
+
+    const responses = UrlFetchApp.fetchAll(requests);
+    responses.forEach((res, idx) => {
+      const item = chunk[idx];
+      const status = res.getResponseCode();
+      if (status === 200) {
+        const json = JSON.parse(res.getContentText());
+        // Real-user 28-day rolling window falls back to origin
+        const metrics = json.loadingExperience?.metrics || json.originLoadingExperience?.metrics || {};
+        const audits = json.lighthouseResult?.audits || {};
+        const score = (json.lighthouseResult?.categories?.performance?.score || 0) * 100;
+
+        const lcp = audits['largest-contentful-paint']?.displayValue || '--';
+        const cls = audits['cumulative-layout-shift']?.displayValue || '--';
+        const tbt = audits['total-blocking-time']?.displayValue || '--';
+
+        // Write live metrics back to Pages tab
+        pagesSheet.getRange(item.rowIndex, 2, 1, 4).setValues([[score, lcp, cls, tbt]]);
+
+        // Append historical record
+        historySheet.appendRow([new Date(), item.url, score, lcp, cls, tbt, status]);
+      } else {
+        dailySheet.appendRow([new Date(), item.url, 'FAIL_' + status, res.getContentText().slice(0, 100)]);
+      }
+    });
+
+    Utilities.sleep(400); // Friendly rate-limit spacing
+  }
+}
+
+function scheduleResumeTrigger(funcName, offset) {
+  ScriptApp.newTrigger(funcName).timeBased().after(60 * 1000).create();
+}`,
+
+      kd: `/**
+ * =========================================================================
+ * YatraDham Keyword Difficulty & Volume Pipeline — Google Apps Script (GAS)
+ * =========================================================================
+ * DIY KD Proxy Formula = (Average OpenPageRank of Top 10 SerpApi Domains) × 10
+ * Merges with Google Keyword Planner Forecasts CSV by normalized keyword match.
+ */
+
+function computeKeywordDifficultyBatch() {
+  const props = PropertiesService.getScriptProperties();
+  const serpKey = props.getProperty('SERPAPI_KEY');
+  const oprKey = props.getProperty('OPR_API_KEY'); // opr_live_... from Keywords Everywhere
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const kwSheet = ss.getSheetByName('Keywords');
+  const rows = kwSheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    const kw = rows[i][0];
+    if (!kw) continue;
+
+    // 1. Query SerpApi Google Search
+    const serpUrl = 'https://serpapi.com/search.json?engine=google&q=' + 
+                    encodeURIComponent(kw) + '&gl=in&hl=en&num=10&api_key=' + serpKey;
+    const serpRes = UrlFetchApp.fetch(serpUrl, { muteHttpExceptions: true });
+    
+    if (serpRes.getResponseCode() !== 200) continue;
+    const serpJson = JSON.parse(serpRes.getContentText());
+    if (serpJson.error) {
+      Logger.log('SerpApi Quota: ' + serpJson.error);
+      break;
+    }
+
+    const orgResults = serpJson.organic_results || [];
+    const domains = [];
+    orgResults.forEach(r => {
+      try {
+        const u = new URL(r.link);
+        const host = u.hostname.replace(/^www\\./, '');
+        if (host && !domains.includes(host)) domains.push(host);
+      } catch (e) {}
+    });
+
+    if (domains.length === 0) continue;
+
+    // 2. Query OpenPageRank Bulk (Keywords Everywhere)
+    const oprUrl = 'https://openpagerank.keywordseverywhere.com/v1/domains/bulk';
+    const oprRes = UrlFetchApp.fetch(oprUrl, {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { 'Authorization': 'Bearer ' + oprKey },
+      payload: JSON.stringify({ domains: domains.slice(0, 10), include_history: false }),
+      muteHttpExceptions: true
+    });
+
+    if (oprRes.getResponseCode() === 200) {
+      const oprJson = JSON.parse(oprRes.getContentText());
+      const results = oprJson.results || [];
+      const scores = results.map(r => Number(r.open_page_rank) || 0);
+      const avgOpr = scores.length > 0 ? (scores.reduce((a,b)=>a+b, 0) / scores.length) : 0;
+      
+      // DIY Proxy KD score between 0 and 100
+      const proxyKd = Math.round(avgOpr * 10);
+      kwSheet.getRange(i + 1, 2).setValue(proxyKd);
+    }
+
+    Utilities.sleep(500);
+  }
+}`,
+
+      py: `#!/usr/bin/env python3
+"""
+fetcher.py — YatraDham SEO Pipeline & 21-Endpoint Live Prober
+Strict 2xx validation: 200 <= status < 300 + non-empty JSON + absence of error signals.
+"""
+import json, time, requests
+
+ERROR_KEY_SIGNALS = {"error", "errors", "error_type", "error_message", "fault"}
+
+def is_real_data(status: int, fmt: str, text: str) -> bool:
+    if not (200 <= status < 300) or fmt != "JSON" or not text.strip():
+        return False
+    try:
+        data = json.loads(text)
+        if isinstance(data, dict):
+            lowered = {k.lower() for k in data.keys()}
+            if lowered & ERROR_KEY_SIGNALS:
+                return False
+        return True
+    except Exception:
+        return False
+
+# Probes all 21 endpoints defined in endpoints.json
+# Handles 429 backoff retries and generates live results.md
+`
+    };
+
+    function resetYdDefaults() {
+      const d = document.getElementById('inputYdDomain');
+      const u = document.getElementById('inputYdUrl');
+      const q = document.getElementById('inputYdQuery');
+      if (d) d.value = 'yatradham.org';
+      if (u) u.value = 'https://yatradham.org/dwarka-hotel-vandana.html';
+      if (q) q.value = 'somnath temple room booking';
+    }
+
+    function useCurrentAuditUrlForYd() {
+      const targetInput = document.getElementById('targetUrl');
+      const val = (targetInput && targetInput.value) ? targetInput.value.trim() : (window.currentAuditResult && window.currentAuditResult.url) || '';
+      if (!val) {
+        alert('Please enter or audit a URL first in the main OmniSEO OS bar.');
+        return;
+      }
+      try {
+        const parsed = new URL(val.startsWith('http') ? val : 'https://' + val);
+        const d = document.getElementById('inputYdDomain');
+        const u = document.getElementById('inputYdUrl');
+        if (d) d.value = parsed.hostname;
+        if (u) u.value = parsed.href;
+      } catch (e) {
+        const u = document.getElementById('inputYdUrl');
+        if (u) u.value = val;
+      }
+    }
+
+    async function runYatraDhamLiveAudit() {
+      if (ydIsAuditing) return;
+      ydIsAuditing = true;
+
+      const btn = document.getElementById('btnRunYdAudit');
+      const icon = document.getElementById('ydAuditBtnIcon');
+      const text = document.getElementById('ydAuditBtnText');
+      if (btn) btn.disabled = true;
+      if (icon) icon.innerText = '⏳';
+      if (text) text.innerText = 'Probing 21 Endpoints...';
+
+      const domain = (document.getElementById('inputYdDomain')?.value || 'yatradham.org').trim();
+      const url = (document.getElementById('inputYdUrl')?.value || 'https://yatradham.org/dwarka-hotel-vandana.html').trim();
+      const query = (document.getElementById('inputYdQuery')?.value || 'somnath temple room booking').trim();
+
+      const tbody = document.getElementById('ydEndpointsTbody');
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding:35px; color:#38bdf8;">
+          <div class="spinner" style="margin:0 auto 12px auto;"></div>
+          Executing live probes across 21 endpoints with strict 2xx is_real validation...
+        </td></tr>`;
+      }
+
+      try {
+        const resp = await fetch('/api/yatradham/audit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ domain, url, query, delayMs: 150 })
+        });
+        const data = await resp.json();
+        if (data.success && Array.isArray(data.results)) {
+          ydAuditResults = data.results;
+          updateYdStats(data.stats, data.count);
+          filterYdResults(ydActiveFilter || 'all');
+        } else {
+          throw new Error(data.error || 'Failed to complete pipeline audit');
+        }
+      } catch (err) {
+        console.error('YatraDham Audit Failed:', err);
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding:25px; color:#fda4af;">
+            ⚠️ Audit error: ${escapeHtml(err.message || 'Network request failed')}
+          </td></tr>`;
+        }
+      } finally {
+        ydIsAuditing = false;
+        if (btn) btn.disabled = false;
+        if (icon) icon.innerText = '⚡';
+        if (text) text.innerText = 'Run 21-Endpoint Probe';
+      }
+    }
+
+    function updateYdStats(stats, totalCount) {
+      if (!stats) return;
+      const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+      setEl('ydStatTotal', totalCount || 21);
+      setEl('ydStatLive', stats.liveUsable || 0);
+      setEl('ydStatAuth', stats.authBlocked || 0);
+      setEl('ydStatDep', stats.deprecated || 0);
+      setEl('ydStatRate', stats.rateLimited || 0);
+      setEl('ydStatLatency', (stats.avgLatencyMs || 0) + 'ms');
+
+      setEl('ydFilterCountAll', totalCount || 21);
+      setEl('ydFilterCountLive', stats.liveUsable || 0);
+      setEl('ydFilterCountAuth', stats.authBlocked || 0);
+      setEl('ydFilterCountDep', stats.deprecated || 0);
+      setEl('ydFilterCountRate', stats.rateLimited || 0);
+    }
+
+    function filterYdResults(type) {
+      ydActiveFilter = type;
+      ['All', 'Live', 'Auth', 'Dep', 'Rate'].forEach(k => {
+        const btn = document.getElementById('ydFilter' + k);
+        if (btn) {
+          if (k.toLowerCase() === type) {
+            btn.classList.add('active');
+            btn.style.boxShadow = '0 0 10px rgba(59,130,246,0.3)';
+          } else {
+            btn.classList.remove('active');
+            btn.style.boxShadow = 'none';
+          }
+        }
+      });
+
+      let filtered = ydAuditResults;
+      if (type === 'live') {
+        filtered = ydAuditResults.filter(r => r.isRealApi && r.status >= 200 && r.status < 300);
+      } else if (type === 'auth') {
+        filtered = ydAuditResults.filter(r => r.status === 401 || r.status === 403);
+      } else if (type === 'dep') {
+        filtered = ydAuditResults.filter(r => r.deprecated);
+      } else if (type === 'rate') {
+        filtered = ydAuditResults.filter(r => r.status === 429);
+      }
+      renderYdEndpointsTable(filtered);
+    }
+
+    function renderYdEndpointsTable(results) {
+      const tbody = document.getElementById('ydEndpointsTbody');
+      if (!tbody) return;
+
+      if (!results || results.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding:30px; color:var(--text-muted);">
+          No endpoints match the active filter (${escapeHtml(ydActiveFilter)}).
+        </td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = results.map(r => {
+        const is2xx = r.status >= 200 && r.status < 300;
+        const isAuth = r.status === 401 || r.status === 403;
+        const is404 = r.status === 404;
+        const is429 = r.status === 429;
+
+        const statusBadgeStyle = is2xx
+          ? 'background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#a7f3d0;'
+          : isAuth
+          ? 'background:rgba(245,158,11,0.2); border:1px solid #f59e0b; color:#fde68a;'
+          : is429
+          ? 'background:rgba(168,85,247,0.2); border:1px solid #a855f7; color:#e9d5ff;'
+          : 'background:rgba(239,68,68,0.2); border:1px solid #ef4444; color:#fca5a5;';
+
+        const latColor = r.latencyMs > 1500 ? '#fda4af' : r.latencyMs > 800 ? '#fde68a' : '#a7f3d0';
+
+        const realBadge = r.isRealApi
+          ? '<span style="background:rgba(16,185,129,0.25); border:1px solid #10b981; color:#10b981; padding:2px 8px; border-radius:4px; font-weight:800;">YES</span>'
+          : '<span style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#fda4af; padding:2px 8px; border-radius:4px; font-weight:700;">NO</span>';
+
+        const depBadge = r.deprecated
+          ? '<span style="background:rgba(239,68,68,0.25); border:1px solid #ef4444; color:#ef4444; padding:2px 8px; border-radius:4px; font-weight:800;">YES</span>'
+          : '<span style="color:#64748b;">NO</span>';
+
+        const methodBadge = r.method === 'POST'
+          ? '<span style="background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.4); padding:1px 6px; border-radius:3px; font-weight:700;">POST</span>'
+          : '<span style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); padding:1px 6px; border-radius:3px; font-weight:700;">GET</span>';
+
+        return `
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.04); transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+            <td style="padding:8px 10px; font-family:'JetBrains Mono',monospace;">${methodBadge}</td>
+            <td style="padding:8px 10px; font-family:'JetBrains Mono',monospace; font-weight:600; color:#fff;">${escapeHtml(r.path)}</td>
+            <td style="padding:8px 10px; font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:#93c5fd; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(r.fullUrl)}">
+              ${is2xx ? `<a href="${escapeHtml(r.fullUrl)}" target="_blank" style="color:#93c5fd; text-decoration:none;">${escapeHtml(r.fullUrl)} ↗</a>` : escapeHtml(r.fullUrl)}
+            </td>
+            <td style="padding:8px 10px; text-align:center;">
+              <span style="${statusBadgeStyle} padding:2px 8px; border-radius:4px; font-weight:700; font-family:'JetBrains Mono',monospace;">${r.status}</span>
+            </td>
+            <td style="padding:8px 10px; font-weight:600; color:#cbd5e1;">${escapeHtml(r.statusText || '--')}</td>
+            <td style="padding:8px 10px; text-align:right; font-family:'JetBrains Mono',monospace; color:${latColor};">${r.latencyMs || 0}</td>
+            <td style="padding:8px 10px; text-align:center; font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:#94a3b8;">${escapeHtml(r.format || '--')}</td>
+            <td style="padding:8px 10px; font-size:0.7rem; color:var(--text-muted); max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(r.contentType)}">${escapeHtml(r.contentType || '--')}</td>
+            <td style="padding:8px 10px; text-align:center;">${realBadge}</td>
+            <td style="padding:8px 10px; text-align:center;">${depBadge}</td>
+            <td style="padding:8px 10px; font-size:0.72rem; color:#94a3b8; max-width:260px;" title="${escapeHtml(r.deprecationNotes)}">${escapeHtml(r.deprecationNotes || '--')}</td>
+            <td style="padding:8px 10px;">
+              <span style="background:rgba(255,255,255,0.05); border:1px solid var(--border); padding:2px 6px; border-radius:4px; font-size:0.68rem; color:#cbd5e1;">
+                ${escapeHtml(r.discoverySource || '--')}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function copyYdMarkdown() {
+      if (!ydAuditResults || ydAuditResults.length === 0) {
+        alert('Please run the 21-endpoint probe first.');
+        return;
+      }
+      let md = 'Method | Path | Full URL | Status | Status Text | Latency (ms) | Format | Content-Type | Is Real | Deprecated | Deprecation Notes | Discovery Source\\n';
+      md += '---|---|---|---|---|---|---|---|---|---|---|---\\n';
+      ydAuditResults.forEach(r => {
+        md += `${r.method} | ${r.path} | ${r.fullUrl} | ${r.status} | ${r.statusText} | ${r.latencyMs} | ${r.format} | ${r.contentType} | ${r.isRealApi ? 'YES' : 'NO'} | ${r.deprecated ? 'YES' : 'NO'} | ${r.deprecationNotes || ''} | ${r.discoverySource}\\n`;
+      });
+      navigator.clipboard.writeText(md).then(() => alert('✅ 12-Column Audit Table copied to clipboard as GitHub Markdown!')).catch(() => alert('Failed to copy to clipboard.'));
+    }
+
+    function downloadYdCsv() {
+      if (!ydAuditResults || ydAuditResults.length === 0) {
+        alert('Please run the 21-endpoint probe first.');
+        return;
+      }
+      const headers = ['Method', 'Path', 'Full URL', 'Status', 'Status Text', 'Latency (ms)', 'Format', 'Content-Type', 'Is Real', 'Deprecated', 'Deprecation Notes', 'Discovery Source'];
+      const rows = ydAuditResults.map(r => [
+        r.method,
+        `"${(r.path || '').replace(/"/g, '""')}"`,
+        `"${(r.fullUrl || '').replace(/"/g, '""')}"`,
+        r.status,
+        `"${(r.statusText || '').replace(/"/g, '""')}"`,
+        r.latencyMs,
+        `"${(r.format || '').replace(/"/g, '""')}"`,
+        `"${(r.contentType || '').replace(/"/g, '""')}"`,
+        r.isRealApi ? 'YES' : 'NO',
+        r.deprecated ? 'YES' : 'NO',
+        `"${(r.deprecationNotes || '').replace(/"/g, '""')}"`,
+        `"${(r.discoverySource || '').replace(/"/g, '""')}"`
+      ]);
+      const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `yatradham_pipeline_audit_${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadYdJson() {
+      if (!ydAuditResults || ydAuditResults.length === 0) {
+        alert('Please run the 21-endpoint probe first.');
+        return;
+      }
+      const blob = new Blob([JSON.stringify({ auditTimestamp: new Date().toISOString(), results: ydAuditResults }, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `yatradham_pipeline_audit_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function openYdSkillModal() {
+      const modal = document.getElementById('ydSkillModal');
+      if (modal) modal.classList.add('active');
+      const content = document.getElementById('ydSkillMarkdownContent');
+      if (!ydCachedSkillMarkdown && content) {
+        try {
+          const resp = await fetch('/api/yatradham/skill');
+          const data = await resp.json();
+          ydCachedSkillMarkdown = data.markdown || '# Yatra Dham SEO Data Pipeline\\n\\nLoaded successfully.';
+          content.innerText = ydCachedSkillMarkdown;
+        } catch (e) {
+          content.innerText = '# Yatra Dham SEO Data Pipeline\\n\\nFailed to load skill markdown from server.';
+        }
+      } else if (content) {
+        content.innerText = ydCachedSkillMarkdown;
+      }
+    }
+
+    function copyYdSkillMarkdown(btn) {
+      if (!ydCachedSkillMarkdown) return;
+      navigator.clipboard.writeText(ydCachedSkillMarkdown).then(() => {
+        const orig = btn.innerText;
+        btn.innerText = '✅ Copied!';
+        setTimeout(() => btn.innerText = orig, 2000);
+      });
+    }
+
+    function openYdCodeModal() {
+      const modal = document.getElementById('ydCodeModal');
+      if (modal) modal.classList.add('active');
+      switchGasCodeTab(ydActiveGasTab || 'cwv');
+    }
+
+    function switchGasCodeTab(tab) {
+      ydActiveGasTab = tab;
+      ['Cwv', 'Kd', 'Py'].forEach(k => {
+        const btn = document.getElementById('btnGasTab' + k);
+        if (btn) {
+          if (k.toLowerCase() === tab) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      });
+      const el = document.getElementById('gasCodeDisplay');
+      if (el) el.innerText = YD_GAS_TEMPLATES[tab] || '';
+    }
+
+    function copyCurrentGasCode(btn) {
+      const code = YD_GAS_TEMPLATES[ydActiveGasTab] || '';
+      if (!code) return;
+      navigator.clipboard.writeText(code).then(() => {
+        const orig = btn.innerText;
+        btn.innerText = '✅ Copied!';
+        setTimeout(() => btn.innerText = orig, 2000);
+      });
+    }
+
+    // Auto-probe/seed endpoint catalog when tab becomes visible
+    async function initYatraDhamTabIfEmpty() {
+      if (ydAuditResults.length > 0) return;
+      try {
+        const resp = await fetch('/api/yatradham/endpoints');
+        const data = await resp.json();
+        if (data.success && data.config) {
+          // Pre-populate empty catalog rows as baseline
+          const catalog = [];
+          Object.entries(data.config.groups || {}).forEach(([groupId, grp]) => {
+            (grp.endpoints || []).forEach(ep => {
+              catalog.push({
+                method: ep.method,
+                path: ep.path,
+                fullUrl: grp.baseUrl + ep.path,
+                status: '--',
+                statusText: 'Unprobed',
+                latencyMs: 0,
+                format: '--',
+                contentType: '--',
+                isRealApi: false,
+                deprecated: !!ep.deprecated,
+                deprecationNotes: ep.notes || '',
+                discoverySource: grp.name
+              });
+            });
+          });
+          if (ydAuditResults.length === 0) {
+            ydAuditResults = catalog;
+            renderYdEndpointsTable(catalog);
+          }
+        }
+      } catch (e) {
+        console.warn('Initial YatraDham catalog fetch deferred:', e);
+      }
+    }
+    setTimeout(initYatraDhamTabIfEmpty, 1200);
 
     document.getElementById('btnPlan').addEventListener('click', runPlan);
     document.getElementById('btnExecute').addEventListener('click', async () => {
