@@ -5,6 +5,116 @@ import { queryWikidataEntity, queryWikipediaSummary } from './open_apis.js';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
 /**
+ * Scientific GEO Calculations based on Aggarwal et al. (Princeton / Georgia Tech)
+ * "GEO: Generative Engine Optimization"
+ */
+export function calculateStatisticalDensity(bodyText) {
+  const text = bodyText || '';
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  const wordCount = Math.max(1, words.length);
+
+  const percentages = text.match(/\b\d+(?:\.\d+)?\s*(?:%|percent\b|percentage\b)/gi) || [];
+  const currencies = text.match(/(?:[\$€£¥₹]\s*\d+(?:,\d{3})*(?:\.\d+)?|\b\d+(?:,\d{3})*(?:\.\d+)?\s*(?:USD|INR|EUR|GBP|dollars|rupees)\b)/gi) || [];
+  const metrics = text.match(/\b\d+(?:,\d{3})*(?:\.\d+)?\s*(?:x|times|fold|years|months|days|hours|minutes|seconds|users|customers|queries|tokens|GB|MB|TB|KB|ms|kg|km|GHz|MHz|fps|mph|Gbps|Mbps|MB\/s)\b/gi) || [];
+  const statsTerms = text.match(/\b(?:p\s*[<>=]\s*0?\.\d+|r\s*[<>=]\s*-?0?\.\d+|R\^?2\s*[<>=]\s*0?\.\d+|n\s*=\s*\d+|\d+\s+in\s+\d+|\d+\s+out\s+of\s+\d+|\d+\s*:\s*\d+)\b/gi) || [];
+
+  const totalStats = percentages.length + currencies.length + metrics.length + statsTerms.length;
+  const statDensityPer100Words = Math.round((totalStats / (wordCount / 100)) * 100) / 100;
+
+  let score = 25;
+  if (statDensityPer100Words >= 1.0 && statDensityPer100Words <= 8.0) {
+    score = 100;
+  } else if (statDensityPer100Words > 0.3 && statDensityPer100Words < 1.0) {
+    score = Math.round(50 + (statDensityPer100Words / 1.0) * 45);
+  } else if (statDensityPer100Words > 8.0) {
+    score = Math.max(60, Math.round(100 - (statDensityPer100Words - 8.0) * 8));
+  } else {
+    score = Math.max(10, Math.round(statDensityPer100Words * 80));
+  }
+
+  return {
+    score,
+    totalStats,
+    statDensityPer100Words,
+    wordCount,
+    percentagesCount: percentages.length,
+    currenciesCount: currencies.length,
+    metricsCount: metrics.length,
+    citationBoost: statDensityPer100Words >= 1.0 ? '+37% Generative Citation Probability (Aggarwal et al. 2024)' : 'Standard'
+  };
+}
+
+export function calculateCitationsAndAttribution(html, bodyText) {
+  const $ = cheerio.load(html || '');
+  const blockquotes = $('blockquote, q').length;
+  const citeTags = $('cite').length;
+  const text = bodyText || '';
+
+  const ATTRIBUTION_PATTERNS = [
+    /\baccording\s+to\s+(?:(?:Dr\.|Prof\.|Mr\.|Ms\.)\s+)?[A-Z][a-zA-Z0-9]*(?:\s+[A-Z][a-zA-Z0-9]*){0,3}/i,
+    /\b(?:study|research|survey|report)\s+(?:by|from|conducted\s+by)\s+[A-Z][a-zA-Z0-9]*/i,
+    /\b(?:as\s+stated|as\s+noted|as\s+reported)\s+by\s+[A-Z][a-zA-Z0-9]*/i,
+    /\bpublished\s+in\s+[A-Z][a-zA-Z0-9]*/i,
+    /\b[A-Z][a-z]+\s+et\s+al\./i,
+    /\([A-Z][a-z]+(?:\s+and\s+[A-Z][a-z]+)?,\s*(?:19|20)\d{2}\)/
+  ];
+
+  let attributionMatches = 0;
+  ATTRIBUTION_PATTERNS.forEach(pat => {
+    const m = text.match(new RegExp(pat, 'gi'));
+    if (m) attributionMatches += m.length;
+  });
+
+  const quoteCount = blockquotes;
+  const citationCount = citeTags + attributionMatches;
+
+  let score = 20;
+  if (quoteCount >= 3 && citationCount >= 2) score = 100;
+  else if (quoteCount >= 2 && citationCount >= 1) score = 85;
+  else if (quoteCount >= 1 || citationCount >= 1) score = 65;
+  else if (quoteCount > 0) score = 45;
+
+  return {
+    score,
+    blockquoteCount: blockquotes,
+    citeTagCount: citeTags,
+    attributionCount: attributionMatches,
+    status: score >= 70 ? 'Authoritative Quotes & Attribution Detected' : 'Needs Direct Expert Attribution'
+  };
+}
+
+export function calculatePassageSalience(html) {
+  const $ = cheerio.load(html || '');
+  const directAnswers = [];
+  const questionRegex = /(?:^|[:\d\.\-\s])\b(?:what|how|why|when|where|which|who|can|is|are|do|does|will|should)\b|\?$/i;
+
+  $('h2, h3').each((_, el) => {
+    const headingText = $(el).text().trim();
+    if (questionRegex.test(headingText)) {
+      const nextP = $(el).next('p');
+      if (nextP.length > 0) {
+        const words = nextP.text().trim().split(/\s+/).filter(Boolean);
+        if (words.length >= 20 && words.length <= 90) {
+          directAnswers.push({
+            heading: headingText,
+            wordCount: words.length,
+            salientChunk: words.slice(0, 15).join(' ') + '...'
+          });
+        }
+      }
+    }
+  });
+
+  const score = directAnswers.length >= 2 ? 100 : directAnswers.length === 1 ? 75 : 40;
+  return {
+    score,
+    directAnswersCount: directAnswers.length,
+    directAnswers,
+    ragReadiness: directAnswers.length >= 1 ? 'Optimal RAG Extraction Chunking (20-90 words)' : 'Suboptimal RAG Salience'
+  };
+}
+
+/**
  * Generative Engine Optimization (GEO) & Answer Engine Optimization (AEO) Adapter
  * Evaluates citation readiness, entity extraction clarity, structured fact presence, and AI search grounding.
  * Inspects real DOM schemas (Organization, Person, sameAs, Wikidata, FAQPage) rather than returning fabricated percentages.
@@ -317,6 +427,11 @@ export async function auditGeoAeo(domain, targetBrand, options = {}) {
       : 'Structure page headers into direct user search queries (H2/H3 questions) followed by 40-word direct answers.'
   ];
 
+  const bodyText = html ? cheerio.load(html)('body').text() : '';
+  const statisticalDensity = calculateStatisticalDensity(bodyText);
+  const citationsAttribution = calculateCitationsAndAttribution(html, bodyText);
+  const passageSalience = calculatePassageSalience(html);
+
   return {
     provider: 'OmniSEO GEO/AEO Benchmark Engine v2',
     dataStatus: isRealCitationProbe ? 'measured' : 'simulated',
@@ -332,6 +447,11 @@ export async function auditGeoAeo(domain, targetBrand, options = {}) {
     liveLlmProbe,
     detectedSchemas: schemasFound,
     sameAsLinksCount: sameAsLinks.length,
+    scientificGeo: {
+      statisticalDensity,
+      citationsAttribution,
+      passageSalience
+    },
     entityReadiness: {
       knowledgeGraphPresent,
       schemaCoverageScore,

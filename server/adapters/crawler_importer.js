@@ -64,6 +64,33 @@ export function importExternalCrawlData(payload) {
     }
   }
 
+  // Detect cleven12/seo_optimizer JSON report
+  if (rawData && rawData.meta && (rawData.keyword_analysis || rawData.geo_analysis || rawData.technical_seo)) {
+    const url = rawData.meta.url || '';
+    const issuesList = [];
+    (rawData.top_recommendations || []).forEach(r => {
+      issuesList.push({ type: 'Content Optimization', severity: 'P1 - High', recommendation: r });
+    });
+    if (rawData.technical_seo?.recommendations) {
+      rawData.technical_seo.recommendations.forEach(r => issuesList.push({ type: 'Technical SEO', severity: 'P1 - High', recommendation: r }));
+    }
+    if (rawData.geo_analysis?.recommendations) {
+      rawData.geo_analysis.recommendations.forEach(r => issuesList.push({ type: 'Generative Engine Optimization (GEO)', severity: 'P0 - Critical', recommendation: r }));
+    }
+
+    return {
+      success: true,
+      sourceTool: 'SEO Analyzer (cleven12/seo_optimizer)',
+      type: 'page_audit',
+      overallScore: rawData.overall_score || 0,
+      targetUrl: url,
+      geoAnalysis: rawData.geo_analysis || null,
+      keywords: rawData.keyword_analysis?.individual_keywords || [],
+      issuesCount: issuesList.length,
+      issuesList
+    };
+  }
+
   // Detect SerpBear export
   if (Array.isArray(rawData) && rawData.some(r => r.keyword || r.position)) {
     return {

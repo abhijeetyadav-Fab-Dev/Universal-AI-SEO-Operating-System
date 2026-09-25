@@ -1,7 +1,7 @@
 {
   "0": "openseo.js",
   "1": "test_exporter.js",
-  "2": "package.json",
+  "2": "dependencies",
   "3": "scripts",
   "4": "ui_smoke_test.js",
   "5": "OmniSEO-OS: Universal AI-Powered SEO Operating System",
@@ -29,7 +29,9 @@
   "27": "indexnow_sitemap.js",
   "28": "api_health.js",
   "29": "yatradham_pipeline.js",
-  "30": "test_new_ecosystem.js",
-  "31": "google_cloud.js",
-  "48": "index.js"
+  "30": "package.json",
+  "31": "index.js",
+  "32": "keywords",
+  "33": "repository",
+  "48": "screaming_frog.js"
 }
