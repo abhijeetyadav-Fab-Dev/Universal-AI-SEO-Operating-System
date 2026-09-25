@@ -1,23 +1,23 @@
 # Graph Report - OmniSEO-OS  (2026-09-25)
 
 ## Corpus Check
-- 66 files · ~161,240 words
+- 66 files · ~161,443 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 469 nodes · 1032 edges · 32 communities (30 shown, 2 thin omitted)
+- 471 nodes · 1035 edges · 36 communities (34 shown, 2 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 18 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8eae3370`
+- Built from commit: `4e8d4299`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - openseo.js
 - test_exporter.js
-- package.json
+- dependencies
 - scripts
 - ui_smoke_test.js
 - OmniSEO-OS: Universal AI-Powered SEO Operating System
@@ -35,6 +35,10 @@
 - api_health.js
 - yatradham_pipeline.js
 - index.js
+- google_cloud.js
+- package.json
+- keywords
+- repository
 - screaming_frog.js
 
 ## God Nodes (most connected - your core abstractions)
@@ -64,19 +68,19 @@
 ## Import Cycles
 - None detected.
 
-## Communities (32 total, 2 thin omitted)
+## Communities (36 total, 2 thin omitted)
 
 ### Community 0 - "openseo.js"
-Cohesion: 0.13
-Nodes (25): callAiHorde(), callCustomGateway(), callPollinations(), FREELLM_ENDPOINTS, getFreeLlmCatalog(), queryFreeLlm(), testFreeLlmConnection(), analyzeDomainOverview() (+17 more)
+Cohesion: 0.12
+Nodes (27): callAiHorde(), callCustomGateway(), callPollinations(), FREELLM_ENDPOINTS, getFreeLlmCatalog(), queryFreeLlm(), testFreeLlmConnection(), analyzeDomainOverview() (+19 more)
 
 ### Community 1 - "test_exporter.js"
 Cohesion: 0.08
 Nodes (28): escapeCsvField(), escapeHtml(), exportToCsv(), generateExecutiveReportHtml(), getScoreTier(), RFC-4180, altLines, backlinkLines (+20 more)
 
-### Community 2 - "package.json"
-Cohesion: 0.06
-Nodes (34): cors, dotenv, express, author, bugs, url, dependencies, cheerio (+26 more)
+### Community 2 - "dependencies"
+Cohesion: 0.18
+Nodes (11): cors, dotenv, express, dependencies, cheerio, cors, dotenv, express (+3 more)
 
 ### Community 3 - "scripts"
 Cohesion: 0.08
@@ -99,8 +103,8 @@ Cohesion: 0.83
 Nodes (3): make_request(), run_tests(), scan_for_markers()
 
 ### Community 19 - "mcp.js"
-Cohesion: 0.07
-Nodes (53): forget(), getMemoryStats(), MEMORY_FILE, memoryStore, recall(), remember(), savePersistedMemory(), auditBacklinks() (+45 more)
+Cohesion: 0.10
+Nodes (39): getMemoryStats(), recall(), remember(), auditBacklinks(), estimateDA(), auditTechnical(), ACCESSIBLE_PALETTE, generateSeoDiagram() (+31 more)
 
 ### Community 20 - "storage.js"
 Cohesion: 0.23
@@ -134,16 +138,32 @@ Nodes (15): RFC-8594, RFC-9524, analyzeDeprecation(), COMMON_API_PROBES, DOMAIN_
 Cohesion: 0.18
 Nodes (13): checkDeprecation(), classifyFormat(), __dirname, ERROR_KEY_SIGNALS, __filename, getYatraDhamSkillMarkdown(), isRealApiData(), probeSingleEndpoint() (+5 more)
 
-### Community 31 - "index.js"
-Cohesion: 0.11
-Nodes (29): DEFAULT_CRUX_KEY, buildGa4OrganicReportRequest(), correlateCwvWithGa4(), DEFAULT_GCP_PROJECT_ID, DEFAULT_GCS_BUCKET, ENABLED_GOOGLE_CLOUD_APIS, executeBigQueryQuery(), formatCloudLogEntry() (+21 more)
+### Community 30 - "index.js"
+Cohesion: 0.09
+Nodes (25): forget(), MEMORY_FILE, memoryStore, savePersistedMemory(), crawlInteractive(), takeDomSnapshot(), validateUrl(), auditSecurityPosture() (+17 more)
+
+### Community 31 - "google_cloud.js"
+Cohesion: 0.23
+Nodes (18): DEFAULT_CRUX_KEY, buildGa4OrganicReportRequest(), correlateCwvWithGa4(), DEFAULT_GCP_PROJECT_ID, DEFAULT_GCS_BUCKET, ENABLED_GOOGLE_CLOUD_APIS, executeBigQueryQuery(), formatCloudLogEntry() (+10 more)
+
+### Community 32 - "package.json"
+Cohesion: 0.18
+Nodes (10): author, bugs, url, description, homepage, license, main, name (+2 more)
+
+### Community 33 - "keywords"
+Cohesion: 0.20
+Nodes (10): keywords, aeo, ai-seo, core-web-vitals, crawler, geo, lighthouse, operating-system (+2 more)
+
+### Community 34 - "repository"
+Cohesion: 0.67
+Nodes (3): repository, type, url
 
 ### Community 48 - "screaming_frog.js"
 Cohesion: 0.17
 Nodes (24): buildScreamingFrogCommand(), CRAWL_STORAGE_DIR, crawlJobs, __dirname, __filename, findScreamingFrogBinary(), getScreamingFrogCrawlById(), getScreamingFrogCrawlSummary() (+16 more)
 
 ## Knowledge Gaps
-- **145 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+140 more)
+- **146 isolated node(s):** `name`, `version`, `description`, `main`, `type` (+141 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -157,10 +177,10 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `scanWebsiteEndpoints()` connect `api_health.js` to `index.js`?**
   _High betweenness centrality (0.014) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
-  _145 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _146 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `openseo.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.12857142857142856 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11948790896159317 - nodes in this community are weakly interconnected._
 - **Should `test_exporter.js` be split into smaller, more focused modules?**
   _Cohesion score 0.08275862068965517 - nodes in this community are weakly interconnected._
-- **Should `package.json` be split into smaller, more focused modules?**
-  _Cohesion score 0.05714285714285714 - nodes in this community are weakly interconnected._
+- **Should `scripts` be split into smaller, more focused modules?**
+  _Cohesion score 0.08333333333333333 - nodes in this community are weakly interconnected._

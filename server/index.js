@@ -58,6 +58,7 @@ import {
   generateExecutiveReportHtml,
   exportToCsv
 } from './adapters/exporter.js';
+import { importExternalCrawlData } from './adapters/crawler_importer.js';
 import {
   generateIndexNowKey,
   submitToIndexNow,
@@ -1428,6 +1429,18 @@ app.post(['/api/audit', '/api/v1/audit'], async (req, res) => {
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: 'Site crawl failed: ' + err.message });
+  }
+});
+
+// Universal Multi-Tool Crawl & Rank Importer (Open SEO Crawler, LibreCrawl, Screaming Frog, SerpBear)
+app.post(['/api/crawl/import', '/api/v1/crawl/import'], (req, res) => {
+  try {
+    const payload = req.body?.data || req.body?.content || req.body;
+    if (!payload) return res.status(400).json({ success: false, error: 'Payload data is required for import.' });
+    const result = importExternalCrawlData(payload);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
   }
 });
 

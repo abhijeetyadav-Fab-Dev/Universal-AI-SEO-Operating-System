@@ -104,6 +104,94 @@ export function detectTechStack(html) {
   return Array.from(found).sort();
 }
 
+export function isCrawlerTrap(urlStr) {
+  try {
+    const u = new URL(urlStr);
+    // 1. Elementor / Jetpack / AJAX infinite pagination or filter traps
+    if (/[?&](e-page-|e-filter-|infinity=|_page=|facet_|filter_|paged=)/i.test(u.search)) {
+      const pageMatch = u.search.match(/[?&](?:page|paged|e-page-[\w-]+)=(\d+)/i);
+      if (pageMatch && parseInt(pageMatch[1], 10) > 4) return true;
+    }
+    // 2. Repeating path segments: /category/category/ or /team/team/
+    const segments = u.pathname.split('/').filter(Boolean);
+    for (let i = 0; i < segments.length - 1; i++) {
+      if (segments[i].toLowerCase() === segments[i + 1].toLowerCase()) return true;
+    }
+    // 3. Excessive path depth (> 6 segments)
+    if (segments.length > 6) return true;
+    // 4. Malformed email or invalid protocol in href
+    if (/[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/.test(u.pathname)) return true;
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+export async function probeSoft404(originUrl) {
+  try {
+    const parsed = new URL(originUrl);
+    const token = `_probe_soft404_${Date.now()}`;
+    const probeUrl = `${parsed.origin}/${token}`;
+    const resp = await fetch(probeUrl, {
+      headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(6000),
+      redirect: 'manual'
+    });
+    if (resp.status === 200) {
+      return {
+        detected: true,
+        probeUrl,
+        statusCode: 200,
+        warning: 'Server returns HTTP 200 OK for non-existent URLs (Soft 404). This creates an infinite URL trap that burns Googlebot crawl budget.',
+        recommendation: 'Configure your web server (Nginx/Apache/Express/Cloudflare) to return HTTP 404 Not Found for non-existent routes.'
+      };
+    }
+    return { detected: false, probeUrl, statusCode: resp.status };
+  } catch (e) {
+    return { detected: false, error: e.message };
+  }
+}
+
+export function analyzeCrawlBudgetParameters(urls) {
+  const paramCounts = {};
+  urls.forEach(u => {
+    try {
+      const parsed = new URL(u);
+      for (const [key] of parsed.searchParams.entries()) {
+        paramCounts[key] = (paramCounts[key] || 0) + 1;
+      }
+    } catch {}
+  });
+
+  const parameters = Object.entries(paramCounts).map(([param, count]) => {
+    let category = 'Tracking / Session';
+    let risk = 'Low';
+    if (/page|paged|offset|limit/i.test(param)) {
+      category = 'Pagination';
+      risk = 'Medium';
+    } else if (/sort|order|dir|sortby/i.test(param)) {
+      category = 'Faceted Sort (Potential Trap)';
+      risk = 'High';
+    } else if (/filter|color|size|category|tag|price/i.test(param)) {
+      category = 'Faceted Navigation';
+      risk = 'Medium';
+    } else if (/utm_|ref|fbclid|gclid|_ga/i.test(param)) {
+      category = 'Marketing Tracking';
+      risk = 'Low';
+    }
+
+    return {
+      param,
+      count,
+      category,
+      risk,
+      suggestedDisallow: `Disallow: /*?*${param}=`
+    };
+  }).sort((a, b) => b.count - a.count);
+
+  return parameters;
+}
+
 /**
  * 1. Multi-Page Site Audit (Crawls up to 20 internal pages)
  */
@@ -121,6 +209,8 @@ export async function crawlMultiPageSite(startUrl, maxPages = 15) {
     pagesCrawled: 0,
     avgResponseTime: 0,
     siteLevelTechStack: [],
+    soft404: { detected: false },
+    crawlBudgetParameters: [],
     issuesFound: 0,
     warningCount: 0,
     infoCount: 0,
@@ -289,13 +379,13 @@ export async function crawlMultiPageSite(startUrl, maxPages = 15) {
           issuesList: pageIssuesList
         });
 
-        // Extract internal links to queue
+        // Extract internal links to queue (with crawler trap safeguards)
         $('a[href]').each((_, el) => {
           const href = $(el).attr('href');
           if (href) {
             const nextUrl = normalizeUrl(currentUrl, href);
             if (nextUrl && new URL(nextUrl).hostname === domain && !visited.has(nextUrl) && !queue.includes(nextUrl)) {
-              if (!nextUrl.match(/\.(png|jpg|jpeg|gif|css|js|pdf|zip|svg|ico)$/i)) {
+              if (!nextUrl.match(/\.(png|jpg|jpeg|gif|css|js|pdf|zip|svg|ico)$/i) && !isCrawlerTrap(nextUrl)) {
                 if (queue.length < 30) queue.push(nextUrl);
               }
             }
@@ -311,6 +401,17 @@ export async function crawlMultiPageSite(startUrl, maxPages = 15) {
   const allTech = new Set();
   results.crawledPages.forEach(p => (p.techStack || []).forEach(t => allTech.add(t)));
   results.siteLevelTechStack = Array.from(allTech).sort();
+
+  // Probe for Soft 404 traps
+  results.soft404 = await probeSoft404(startUrl);
+  if (results.soft404 && results.soft404.detected) {
+    results.issuesFound++;
+    results.warningCount++;
+  }
+
+  // Parameter analysis for crawl budget optimization
+  const allDiscoveredUrls = Array.from(visited);
+  results.crawlBudgetParameters = analyzeCrawlBudgetParameters(allDiscoveredUrls);
 
   if (results.pagesCrawled > 0) {
     results.avgResponseTime = Math.round(totalResponseTime / results.pagesCrawled);
